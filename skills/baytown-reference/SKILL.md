@@ -3,13 +3,13 @@ name: baytown-reference
 description: Baytown Builder numbers, runtime data model, save format, milestones, and browser readiness checks. Read before changing simulation or persistence.
 ---
 
-# Baytown reference · milestone 2
+# Baytown reference · milestone 3
 
 The canonical game is `../../index.html`, relative to this directory. It is a single offline HTML file, with WebGL2, inline CSS/JS/SVG, and no runtime library. Use the existing isolated checkout; do not create a worktree unless requested. Read `../../REQUIREMENTS.md` before extending a milestone. Approval is required before each next milestone.
 
 ## Scope and numbers
 
-Milestones 1 and 2 implement construction, persistence, utility networks, budgets, workers, customers, happiness, home growth, and two tiers of goals. Residents are household counts, with no rendered walking/traffic yet. Milestones 3–6 (living world, disasters, interiors, personal features) remain unimplemented. Disasters are off. New starter towns include extra free links and two extra parks; v1 migration preserves the old layout exactly.
+Milestones 1–3 implement construction, persistence, utility networks, budgets, workers, customers, happiness, home growth, two tiers of goals, and a seeded living world with traffic, walkers, pets, harbor ships and day/night lighting. Moving figures illustrate the household population and have no independent income effect or saved identities. Milestones 4–6 (disasters, interiors, personal features) remain unimplemented. Disasters are off. New starter towns include extra free links and two extra parks; v1 migration preserves the old layout exactly.
 
 | Rule                       | Value                                                                              |
 | -------------------------- | ---------------------------------------------------------------------------------- |
@@ -24,7 +24,7 @@ Milestones 1 and 2 implement construction, persistence, utility networks, budget
 | Save file size limit in UI | 2,000,000 bytes                                                                    |
 | Zoom                       | 10–80 map units vertically                                                         |
 | DPR cap                    | Low 1; balanced 1.5; high 2                                                        |
-| Animation                  | Water shimmer only; disabled for reduced motion                                    |
+| Animation                  | Fixed actor pools, water shimmer and turbine blades; frozen for reduced motion     |
 | Low quality                | At most ~30 fps                                                                    |
 | Autosave                   | Check every 5 seconds; only save changed state                                     |
 
@@ -84,7 +84,7 @@ Validation rejects unsupported versions, malformed required fields, unsafe IDs, 
 ## Persistence contract
 
 - IndexedDB database `baytown-builder`, schema 1, object store `saves` contains serialized JSON strings keyed `auto`, `slot1`, `slot2`, `slot3`, `backup`.
-- localStorage mirrors these as `baytown:<key>`. Graphics/audio preferences are `baytown:settings`.
+- localStorage mirrors these as `baytown:<key>`. Graphics/audio/lighting/motion preferences are `baytown:settings`: quality = low/auto/high, sound = boolean, lighting = cycle/day/night, motion = lively/still. Missing or unknown new preference values fall back to cycle/lively; old settings remain usable.
 - Loading considers independently validated copies and chooses the newest valid `updated` timestamp.
 - Save writes are serialized. Version 2 validates the calendar, home growth, goal claims, and bounded history before replacing an open town. Either backend succeeding counts as saved; the UI warns when neither works. Export remains available when storage is denied/full.
 - Save the old open town to `backup` before importing/loading another town or starting another. Abort replacement if both backup writes fail; ask the player to export first.
@@ -94,13 +94,13 @@ Validation rejects unsupported versions, malformed required fields, unsafe IDs, 
 
 ## Engine and iOS-oriented checklist
 
-The renderer batches cubes, gabled roofs, low-poly foliage, and turbine rotors with instanced WebGL2 attributes. Static instance buffers rebuild on construction/layer/hover changes. Frame rendering reuses typed matrices and does not create arrays, vectors, particles, or vehicles. No traffic or particles exist yet; later milestones must set explicit caps before adding them.
+The renderer batches cubes, gabled roofs, low-poly foliage, and turbine rotors with instanced WebGL2 attributes. Static instance buffers rebuild on construction/layer/hover changes. Frame rendering reuses typed matrices, fixed actor arrays, BFS scratch buffers and a dynamic instancing buffer. It does not create actors, vectors, path arrays or GPU buffers each frame. Actor pools cap at 124; dynamic model parts cap at 2,048 cube instances. There are no particles (cap 0).
 
 - Safe areas: `viewport-fit=cover`; top and bottom HUD respect `env(safe-area-inset-*)`.
 - All buttons: minimum 52 × 52 CSS px. No hover-only action is required.
 - Pointer Events with capture; `touch-action:none` only on the map. Two-finger gestures cancel construction; pointer cancellation does not commit a drag.
 - Audio is off by default; create/resume AudioContext only following a user gesture.
-- `prefers-reduced-motion` freezes shader time. Quality caps DPR, with a 30 fps option.
+- `prefers-reduced-motion` freezes actor/water/turbine movement and holds automatic lighting at 14:00. A MediaQueryList listener applies preference changes during play; the economy still advances. Manual day/night views remain available. Quality caps DPR, with a 30 fps option.
 - Card thumbnails use inline SVG immediately, then progressively rasterize during idle time; SVG remains if generation fails.
 - `webglcontextlost` prevents default, retains CPU city state, and pauses drawing. Restoration recreates program, geometry/instance buffers, viewport and resources, then redraws.
 - Serve on a stable origin; autosave, slots, local mirror, file export/import and recovery have browser tests.
@@ -143,3 +143,26 @@ Run `npm ci` then `npm test`, or use the prepared Playwright location as documen
 ### Goal grants
 
 Tier 1: 3 homes → $300; 10 non-path places → $500; 30 road/bridge/dock tiles → $500. Tier 2 unlocks after all three first-tier grants are claimed: 3 fully supplied homes → $600; 30 residents → $1,000; happiness >=80 and positive operating balance for 3 consecutive days → $1,500. Claims are manual, one-time, saved, and not repeatable by undo or reload. Sandbox records the claim without changing funds. Operating profit/history excludes grants and construction spending.
+
+## Milestone 3 living-world contract
+
+Save version **2 remains unchanged**. Decorative actors, route positions, shader time and lighting preferences are not added to the city JSON. `dayProgress` already persists the calendar phase. Existing v1/v2 fixtures must continue to pass; no v3 fixture is appropriate without a v3 format.
+
+`LIVING_CORE_START` / `LIVING_CORE_END` delimit the pure route/pool code exercised by `tests/living.test.cjs`. Use that exact implementation in tests, not a separate mock. Runtime state and diagnostic hooks are available through `window.__baytown.life`.
+
+| Quality | Vehicles | Walkers | Pets | Ships | Stars | Automatic lamps | Route plans/frame |
+| ------- | -------: | ------: | ---: | ----: | ----: | --------------: | ----------------: |
+| low     |       12 |      18 |    6 |     1 |    64 |              48 |                 1 |
+| auto    |       24 |      36 |   12 |     3 |   160 |              96 |                 2 |
+| high    |       40 |      60 |   20 |     4 |   256 |             128 |                 3 |
+
+- A fixed 124-slot pool stores kinds, variants, homes, routes, interpolation, positions, heading, speed, wait and arrival coordinates in typed arrays. Route storage is 124 × 5,184 Int16 entries (~1.3 MB), allocated once. BFS queue/parents are reusable 5,184-entry Int16 arrays. Dynamic rendering reuses 2,048 × 11 float instance storage and one GPU buffer with WebGL2 bufferSubData. No particles are created.
+- At creation/load, topology edits, population changes or graphics changes, rebuild navigation and reseed the decorative pool. Unchanged city data reuses existing routes. Generated models/colors/start positions are deterministic for the seed, town and quality. Nothing from this system changes funds, jobs, utility demand, goals, or home residents.
+- Cars use road/bridge tiles, walkers/pets use road/bridge/dock tiles. Four-neighbor BFS honors grid boundaries and obstructions. Spawns come from occupied homes with at least two connected path cells; there is no traffic on arbitrary empty roads. Counts are ceil(reachable residents / 3) cars, ceil(reachable residents × .8) walkers and ceil(reachable residents × .2) pets, each capped by quality. Destinations use reachable building addresses with a connected-path fallback.
+- Vehicles vary among cars, vans and buses, with eight body palettes. Walkers vary in shirts/skin; pets vary in coats. Speeds are 1.1–1.8, .38–.58, .5–.75 and .45–.65 tiles/second for cars, walkers, pets and ships. Movement follows the game speed (1×/3×). This is illustrative traffic, not congestion or collision physics.
+- Lane/sidewalk offsets are .15 / .36 / .30 tiles for cars / walkers / pets. Interpolate between offset waypoints through corners. When a new route starts, preserve its actual arrival position so a reversal does not jump to the other sidewalk. Road/bridge/dock heights interpolate .11 / .28 / .21; ship base height is −.06.
+- A harbor needs an adjacent connected dock component. Find berths by walking up to three orthogonal unoccupied natural-water steps from connected pier tiles; never infer berth access across land or a blocking bridge/wall from distance alone. Navigable hull cells require all 3 × 3 surrounding tiles to be water and unoccupied, and a water component with at least 12 cells. Land, docks, bridges and sea walls block ship navigation. Each harbor may host two boats, subject to the global cap. Boats travel out and back to the berth, pausing 3–7 seconds on return. There are ferry, cargo and fishing/tug variations; no ship revenue is added.
+- World hour = (8 + dayProgress × 24) modulo 24. Automatic sunlight, warm dawn/dusk, night tint and stars follow that cycle. Manual day is 13:00; manual night is 22:00. Reduced-motion automatic lighting stays at 14:00. No independent lighting calendar is saved.
+- Powered occupied-home windows and other powered-building windows use emissive material 4, bulbs/navigation lights material 5, transparent ground-light discs material 6, and rotating turbine blades material 7. Some windows stay dark for variation. Lamps are automatic roadside decorations, capped above and attached to supplied road networks; they do not change economy numbers. Stars are seeded once on a pointer-transparent canvas and fade with night. Night map labels use lighter ink.
+- Pause, dialogs, hidden documents and context loss stop actor, water and turbine time. A still moment freezes those decorative motions while calendar/economy lighting continue. Live reduced-motion changes stop/resume movement without a reload. WebGL restoration recreates static and dynamic buffers, then reapplies viewport and lighting; CPU actor/town data remain intact.
+- Keep existing economy and persistence tests. Add night/harbor screenshots in both iPad sizes and exercise quality caps, pause/still modes, live reduced motion, road edits and context recovery with ships. Inspect genuine shader output as well as derived metadata. Actual iPad Safari performance remains unverified by headless Chromium.

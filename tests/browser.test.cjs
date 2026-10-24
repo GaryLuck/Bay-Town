@@ -52,8 +52,8 @@ async function dragTiles(page, x0, z0, x1, z1) {
 }
 
 test(
-  "Baytown milestones 1–2 — real browser acceptance suite",
-  { timeout: 180000 },
+  "Baytown milestones 1–3 — real browser acceptance suite",
+  { timeout: 240000 },
   async (t) => {
     await mkdir(screenshots, { recursive: true });
     const server = http.createServer(async (request, response) => {
@@ -91,7 +91,7 @@ test(
       ["portrait", { width: 768, height: 1024 }],
       ["landscape", { width: 1024, height: 768 }],
     ]) {
-      await t.test(`iPad ${name}`, { timeout: 70000 }, async (t) => {
+      await t.test(`iPad ${name}`, { timeout: 110000 }, async (t) => {
         const context = await browser.newContext({
           viewport,
           deviceScaleFactor: 1,
@@ -825,6 +825,372 @@ test(
         );
 
         await t.test(
+          "living actors follow routes, pause with the town and survive road edits",
+          async () => {
+            await api(page, "makeTown", "starter", "A Living Bay", 81024);
+            await api(page, "setPaused", false);
+            const first = await page.evaluate(() => ({
+              info: __baytown.life.info(),
+              x: [...__baytown.life.pool.x.slice(0, __baytown.life.pool.count)],
+              z: [...__baytown.life.pool.z.slice(0, __baytown.life.pool.count)],
+            }));
+            assert.deepEqual(first.info.counts, {
+              cars: 4,
+              walkers: 9,
+              pets: 3,
+              ships: 0,
+            });
+            await page.waitForTimeout(550);
+            const moving = await page.evaluate(() => ({
+              x: [...__baytown.life.pool.x.slice(0, __baytown.life.pool.count)],
+              z: [...__baytown.life.pool.z.slice(0, __baytown.life.pool.count)],
+              time: __baytown.life.info().motionTime,
+            }));
+            assert.ok(moving.time > first.info.motionTime);
+            assert.notDeepEqual(
+              moving.x.concat(moving.z),
+              first.x.concat(first.z),
+            );
+            await page.emulateMedia({ reducedMotion: "reduce" });
+            await page.waitForFunction(() => __baytown.life.info().hour === 14);
+            const liveReduced = await page.evaluate(
+              () => __baytown.life.info().motionTime,
+            );
+            await page.waitForTimeout(250);
+            assert.equal(
+              await page.evaluate(() => __baytown.life.info().motionTime),
+              liveReduced,
+            );
+            assert.equal(
+              await page.evaluate(() => __baytown.life.info().hour),
+              14,
+            );
+            await page.emulateMedia({ reducedMotion: "no-preference" });
+            await page.waitForFunction(
+              (previous) => __baytown.life.info().motionTime > previous,
+              liveReduced,
+            );
+            assert.ok(
+              (await page.evaluate(() => __baytown.life.info().motionTime)) >
+                liveReduced,
+            );
+            await page
+              .getByRole("button", { name: "Pause town", exact: true })
+              .click();
+            const frozen = await page.evaluate(
+              () => __baytown.life.info().motionTime,
+            );
+            await page.waitForTimeout(250);
+            assert.equal(
+              await page.evaluate(() => __baytown.life.info().motionTime),
+              frozen,
+            );
+            await api(page, "place", "remove", 37, 35);
+            const edit = await page.evaluate(() => {
+              const p = __baytown.life.pool,
+                g = __baytown.life.graph;
+              for (let n = 0; n < 100; n++) __baytown.life.step(0.1);
+              let valid = true;
+              for (let i = 0; i < p.count; i++) {
+                const mask =
+                  p.kind[i] === 0
+                    ? g.drive
+                    : p.kind[i] === 3
+                      ? g.water
+                      : g.walk;
+                for (let j = 0; j < p.length[i]; j++)
+                  if (!mask[p.routes[i * 5184 + j]]) valid = false;
+              }
+              return { valid, gap: g.drive[35 * 72 + 37] };
+            });
+            assert.equal(edit.valid, true);
+            assert.equal(edit.gap, 0);
+            await page
+              .getByRole("button", { name: "Town settings", exact: true })
+              .click();
+            await page
+              .getByLabel("Town life", { exact: true })
+              .selectOption("still");
+            await page.getByRole("button", { name: "Close dialog" }).click();
+            await api(page, "setPaused", false);
+            const still = await page.evaluate(
+              () => __baytown.life.info().motionTime,
+            );
+            await page.waitForTimeout(300);
+            assert.equal(
+              await page.evaluate(() => __baytown.life.info().motionTime),
+              still,
+            );
+            await page
+              .getByRole("button", { name: "Town settings", exact: true })
+              .click();
+            await page
+              .getByLabel("Town life", { exact: true })
+              .selectOption("lively");
+            await page.getByRole("button", { name: "Close dialog" }).click();
+          },
+        );
+        await t.test(
+          "quality changes enforce fixed actor caps with reusable route storage",
+          async () => {
+            await api(page, "makeTown", "empty", "Busy Bay", 81024);
+            const busy = await state(page);
+            busy.simPaused = true;
+            let id = 1;
+            for (let z = 20; z <= 55; z++)
+              busy.objects.push({
+                id: id++,
+                type: "road",
+                x: 30,
+                z,
+                rotation: 0,
+                paid: 0,
+              });
+            for (const z of [20, 23, 26, 29, 32, 35, 38, 41, 44, 47])
+              busy.objects.push({
+                id: id++,
+                type: "apartment",
+                x: 31,
+                z,
+                rotation: 0,
+                paid: 0,
+                residents: 32,
+                level: 2,
+                growth: 0,
+              });
+            await api(page, "applySave", busy);
+            await page.evaluate(() => {
+              window.testRoutes = __baytown.life.pool.routes;
+              window.testScratch = __baytown.life.pool.parent;
+            });
+            await page
+              .getByRole("button", { name: "Town settings", exact: true })
+              .click();
+            await page.locator("#quality").selectOption("low");
+            let info = await page.evaluate(() => __baytown.life.info());
+            assert.deepEqual(info.counts, {
+              cars: 12,
+              walkers: 18,
+              pets: 6,
+              ships: 0,
+            });
+            await page.locator("#quality").selectOption("high");
+            info = await page.evaluate(() => __baytown.life.info());
+            assert.deepEqual(info.counts, {
+              cars: 40,
+              walkers: 60,
+              pets: 20,
+              ships: 0,
+            });
+            assert.equal(info.total, 120);
+            assert.equal(
+              await page.evaluate(
+                () =>
+                  window.testRoutes === __baytown.life.pool.routes &&
+                  window.testScratch === __baytown.life.pool.parent,
+              ),
+              true,
+            );
+            await page.locator("#quality").selectOption("auto");
+            await page.getByRole("button", { name: "Close dialog" }).click();
+          },
+        );
+        await t.test(
+          "night shows powered windows, street lamps and stars without changing the economy",
+          async () => {
+            await api(page, "makeTown", "starter", "Moonlit Bay", 81024);
+            await api(page, "setPaused", true);
+            await page
+              .getByRole("button", { name: "Town settings", exact: true })
+              .click();
+            await page
+              .getByLabel("Light by the bay", { exact: true })
+              .selectOption("day");
+            await page.getByRole("button", { name: "Close dialog" }).click();
+            async function sample() {
+              return page.evaluate(
+                () =>
+                  new Promise((resolve) =>
+                    requestAnimationFrame(() => {
+                      const gl = __baytown.getGL(),
+                        pixels = new Uint8Array(4);
+                      gl.readPixels(
+                        Math.floor(gl.drawingBufferWidth * 0.56),
+                        Math.floor(gl.drawingBufferHeight * 0.5),
+                        1,
+                        1,
+                        gl.RGBA,
+                        gl.UNSIGNED_BYTE,
+                        pixels,
+                      );
+                      resolve([...pixels]);
+                    }),
+                  ),
+              );
+            }
+            const dayPixel = await sample(),
+              before = await state(page);
+            await page
+              .getByRole("button", { name: "Town settings", exact: true })
+              .click();
+            await page
+              .getByLabel("Light by the bay", { exact: true })
+              .selectOption("night");
+            await page.getByRole("button", { name: "Close dialog" }).click();
+            await page.waitForTimeout(150);
+            const nightPixel = await sample(),
+              lights = await page.evaluate(() => {
+                __baytown.flush();
+                return __baytown.life.lights();
+              });
+            assert.ok(
+              nightPixel[0] + nightPixel[1] + nightPixel[2] <
+                dayPixel[0] + dayPixel[1] + dayPixel[2],
+            );
+            assert.ok(lights.windows > 10);
+            assert.ok(lights.lamps > 5);
+            assert.ok(lights.pools > 5);
+            assert.equal(
+              await page
+                .locator("#night-sky")
+                .evaluate((el) => Number(getComputedStyle(el).opacity)),
+              1,
+            );
+            assert.equal(
+              await page.evaluate(() => __baytown.life.info().hour),
+              22,
+            );
+            assert.equal((await state(page)).money, before.money);
+            assert.deepEqual((await state(page)).objects, before.objects);
+            await page.waitForTimeout(3700);
+            await page.screenshot({
+              path: path.join(screenshots, `night-ipad-${name}.png`),
+            });
+            await api(page, "saveKey", "auto");
+            await page.reload();
+            await page.waitForFunction(() => __baytown.getReady());
+            assert.equal(
+              await page.evaluate(() => __baytown.life.info().lighting),
+              "night",
+            );
+            assert.equal((await state(page)).day, before.day);
+            await page
+              .getByRole("button", { name: "Town settings", exact: true })
+              .click();
+            await page
+              .getByLabel("Light by the bay", { exact: true })
+              .selectOption("cycle");
+            await page.getByRole("button", { name: "Close dialog" }).click();
+            const dusk = await state(page);
+            dusk.dayProgress = 0.6;
+            await api(page, "applySave", dusk);
+            await page.waitForTimeout(100);
+            assert.equal(
+              await page.evaluate(() => __baytown.life.info().daylight),
+              0,
+            );
+            dusk.dayProgress = 0.18;
+            await api(page, "applySave", dusk);
+            await page.waitForTimeout(100);
+            assert.ok(
+              (await page.evaluate(() => __baytown.life.info().daylight)) >
+                0.95,
+            );
+          },
+        );
+        await t.test(
+          "harbor ships need a dock and navigate clear water; new GPU buffers recover at night",
+          async () => {
+            await api(page, "makeTown", "empty", "Seaglass Harbor", 81024);
+            await api(page, "setPaused", true);
+            const site = await page.evaluate(() => {
+              const t = __baytown.terrain;
+              for (let z = 18; z < 55; z++)
+                for (let x = 48; x < 57; x++) {
+                  if (t[(z + 1) * 72 + x + 3] !== 0) continue;
+                  let land = true;
+                  for (let dz = 0; dz < 3; dz++)
+                    for (let dx = 0; dx < 3; dx++)
+                      if (!t[(z + dz) * 72 + x + dx]) land = false;
+                  if (land) return { x, z };
+                }
+              return null;
+            });
+            assert.ok(site);
+            assert.equal(
+              await api(page, "place", "harbor", site.x, site.z),
+              true,
+            );
+            assert.equal(
+              (await page.evaluate(() => __baytown.life.info())).counts.ships,
+              0,
+            );
+            assert.equal(
+              await api(
+                page,
+                "drawPath",
+                "dock",
+                site.x + 3,
+                site.z + 1,
+                site.x + 7,
+                site.z + 1,
+              ),
+              5,
+            );
+            let info = await page.evaluate(() => __baytown.life.info());
+            assert.equal(info.counts.ships, 2);
+            const before = await state(page);
+            const motion = await page.evaluate(() => {
+              for (let i = 0; i < 250; i++) __baytown.life.step(0.1);
+              const p = __baytown.life.pool,
+                g = __baytown.life.graph;
+              let valid = true;
+              for (let i = 0; i < p.count; i++)
+                for (let n = 0; n < p.length[i]; n++)
+                  if (!g.water[p.routes[i * 5184 + n]]) valid = false;
+              return { valid, arrivals: p.arrivals };
+            });
+            assert.equal(motion.valid, true);
+            assert.deepEqual((await state(page)).objects, before.objects);
+            assert.equal((await state(page)).money, before.money);
+            await page.evaluate(() => __baytown.life.refresh(true));
+            await api(page, "setView", site.x + 5, site.z + 4, 25);
+            await page.waitForTimeout(3800);
+            await page.screenshot({
+              path: path.join(screenshots, `harbor-ipad-${name}.png`),
+            });
+            await page.evaluate(() => __baytown.life.lighting("night"));
+            const supported = await page.evaluate(() => {
+              const ext = __baytown.getGL().getExtension("WEBGL_lose_context");
+              if (!ext) return false;
+              ext.loseContext();
+              setTimeout(() => ext.restoreContext(), 200);
+              return true;
+            });
+            assert.equal(supported, true);
+            await page
+              .getByRole("status")
+              .filter({ hasText: /Back to the bay/ })
+              .waitFor();
+            await page.waitForFunction(
+              () =>
+                __baytown.getReady() &&
+                __baytown.life.info().dynamicInstances > 0,
+            );
+            assert.equal(
+              await page.evaluate(() => __baytown.getGL().getError()),
+              0,
+            );
+            assert.equal(
+              (await page.evaluate(() => __baytown.life.info())).counts.ships,
+              2,
+            );
+            assert.deepEqual((await state(page)).objects, before.objects);
+            await page.evaluate(() => __baytown.life.lighting("cycle"));
+          },
+        );
+
+        await t.test(
           "starter town screenshot, offline independence and clean runtime",
           async () => {
             await api(page, "makeTown", "starter", "Baytown Bay", 81024);
@@ -1092,6 +1458,28 @@ test(
           assert.match(
             await page.locator("#dialog").innerText(),
             /Reduced · follows device/,
+          );
+          await page.getByRole("button", { name: "Close dialog" }).click();
+          await api(page, "makeTown", "starter", "A Gentle Bay", 81024);
+          await api(page, "setPaused", false);
+          const motionTime = await page.evaluate(
+              () => __baytown.life.info().motionTime,
+            ),
+            dayProgress = (await state(page)).dayProgress;
+          await page.waitForTimeout(500);
+          assert.equal(
+            await page.evaluate(() => __baytown.life.info().motionTime),
+            motionTime,
+          );
+          assert.ok((await state(page)).dayProgress > dayProgress);
+          await page.evaluate(() => {
+            __baytown.state.dayProgress = 0.6;
+            __baytown.setPaused(true);
+          });
+          await page.waitForTimeout(100);
+          assert.equal(
+            await page.evaluate(() => __baytown.life.info().hour),
+            14,
           );
         } finally {
           await context.close();

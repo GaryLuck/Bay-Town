@@ -10,7 +10,7 @@ npm start
 
 This serves the checkout on port 8000 using Python 3. The file also works offline; browser storage behavior for directly opened files varies. Export a save file before changing origin, browser, or device.
 
-## What works through milestone 2
+## What works through milestone 3
 
 - A deterministic 72 × 72 seaside map with an eastern ocean, northwest lake, trees, and hills.
 - Starter village, empty land with $30,000, and unlimited sandbox modes.
@@ -21,10 +21,15 @@ This serves the checkout on port 8000 using Python 3. The file also works offlin
 - A daily economy with home income, jobs limited by connected adults, road-distance-based local shopping, upkeep, and a budget notebook with history and early balance warnings. Running out of funds never removes progress or creates debt.
 - Service radii, staffing, nuisance effects, and a happiness map. Happy supplied homes welcome new neighbors and eventually grow a second floor.
 - Two chapters of three goals, with one-time grants. The calendar runs at one day per 60 seconds, with pause and 3× speed. Time stops while a dialog is open or the game is in the background; there is no offline catch-up.
+- Seeded cars, vans and buses on roads/bridges, with walking neighbors and pets on sidewalks and connected docks. Paths reroute after construction; positions interpolate through corners and reversals.
+- Harbor boats that travel between a clear-water berth and the surrounding water. Build a harbor on land against a dock, and give that dock a clear way out to open water. Ships cannot cross land, piers, bridges, or sea walls.
+- A day/night cycle tied to the existing calendar, with warm powered windows, automatic street lamps, head/navigation lights, stars, and turning wind turbines. Settings offer a sunny view, a starry night, or a still moment.
 - Versioned autosave, IndexedDB with a localStorage mirror, three named slots, a recovery backup before loading/starting another town, and file export/import. Invalid imports leave the open town untouched. Unreadable autosaves are preserved for download.
 - WebGL context-loss recovery, safe-area padding, 52px minimum button targets, touch controls, keyboard controls, reduced motion, three graphics settings, and optional user-activated sound.
 
-**Milestones 3–6 are not implemented.** Residents are currently simulated as household counts; walking citizens, pets, traffic, ships, and day/night lighting arrive with the living-world milestone. Disasters, interiors, and personal Ethan features remain later work. Disasters stay off.
+**Milestones 4–6 remain later work:** disasters, interiors, and personal Ethan features. Disasters stay off.
+
+Moving figures illustrate the town’s population and routes; they do not change the economy or hold individually saved identities. Traffic congestion and physical vehicle collisions are not simulated. All town buildings, residents, funds, goals, and calendar progress stay in save version 2, and existing v1/v2 saves remain readable. Actors and their routes regenerate from the town and seed; no save-format upgrade is needed for this milestone.
 
 The new starter town begins with 11 residents, room for 22, full utilities, 77 happiness, and a positive $39.58/day estimate. Existing towns keep their exact buildings, funds, and road layouts when upgraded from v1: use the new maps to connect any missing roads. Home residents initially fill half of each base home’s capacity during migration. Nothing is removed or charged for the upgrade.
 
@@ -43,6 +48,20 @@ With no tool selected, drag to move around or tap a place to inspect it. With a 
 | Ctrl/⌘ Z                | Undo                            |
 | Ctrl/⌘ S                | Save now                        |
 
+## Living-world controls and limits
+
+The graphics setting controls fixed pools:
+
+| Graphics        | Vehicles | Walkers | Pets | Ships | Stars |
+| --------------- | -------: | ------: | ---: | ----: | ----: |
+| Easy on battery |       12 |      18 |    6 |     1 |    64 |
+| Balanced        |       24 |      36 |   12 |     3 |   160 |
+| Extra crisp     |       40 |      60 |   20 |     4 |   256 |
+
+Actual counts depend on occupied homes and usable paths. Each working harbor can host two boats, within the global ship cap. There are no particle effects. Street lamps are decorative and automatic; they add no new upkeep or utility demand.
+
+Pause stops the economy, actors, water shimmer, wind turbines and the day/night cycle. Opening a dialog or hiding the page also stops motion. “A still moment” freezes decorative movement while the economy and lighting continue. Reduced motion follows live device preference changes: actors, water and turbines stay still, and automatic lighting stays in a sunny afternoon; manual day/night views remain available. Settings are saved locally per device and do not rewrite a city’s calendar or money.
+
 ## Browser checks
 
 Node 24, npm 11, Python 3.12, and Chromium were used during development. Only the test tools need installation:
@@ -59,7 +78,9 @@ If Chromium is already installed, skip the browser download. Tests automatically
 NODE_PATH=/workspace/.baytown-tools/node_modules npm test
 ```
 
-The suite starts its own local server. It uses real headless Chromium with ANGLE/SwiftShader, checks iPad portrait (768 × 1024) and landscape (1024 × 768), exercises touch and mouse input, and writes screenshots to `screenshots/`. It covers placement costs and rejection, drag transactions, rotation, refunds, camera controls, IndexedDB/localStorage saves, named slots, reloads, file export/import, the shipped v1/v2 fixtures and migration, corrupt save handling, context recovery, storage failure, and multi-touch gestures. Milestone 2 checks also exercise utility layers, service rings, budget forecasts, pause/speed controls, home growth, day-spanning undo, two-tier goal grants, and 60 days of actual browser simulation. It also verifies that the game makes no external HTTP requests.
+The suite starts its own local server. It uses real headless Chromium with ANGLE/SwiftShader, checks iPad portrait (768 × 1024) and landscape (1024 × 768), exercises touch and mouse input, and writes screenshots to `screenshots/`. It covers placement costs and rejection, drag transactions, rotation, refunds, camera controls, IndexedDB/localStorage saves, named slots, reloads, file export/import, the shipped v1/v2 fixtures and migration, corrupt save handling, context recovery, storage failure, and multi-touch gestures. Milestone 2 checks also exercise utility layers, service rings, budget forecasts, pause/speed controls, home growth, day-spanning undo, two-tier goal grants, and 60 days of actual browser simulation. Milestone 3 adds real movement, actor-cap changes, live reduced-motion toggles, night-pixel/lighting checks, harbor visits, and GPU recovery while ships are visible. It also verifies that the game makes no external HTTP requests.
+
+The pure living-world tests exercise the actual inline route planner and fixed pools: shortest paths and disconnections, bridge/dock rules, map boundaries, deterministic seeded variation, caps, reusable buffers, road removal, smooth corners/reversals, enclosed harbor entrances, and ship hull clearance.
 
 The pure economy tests extract the same inline simulation used by the game. They check separated networks, finite source capacities, bridge versus dock behavior, sources shared between networks, workforce limits, road-distance shopping, unique customers, service radii/nuisances, growth, insolvency, and determinism. A seeded 60-day run writes `test-results/economy-60-days.json`. That report is generated by the current run and is not a save fixture.
 

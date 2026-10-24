@@ -1709,6 +1709,42 @@
           display: none;
         }
       }
+      .night-view .day-pill {
+        color: #bdd7ca;
+        text-shadow: 0 1px 2px #0d2226;
+      }
+      .night-view .compass {
+        color: #b2d0c7;
+      }
+      .night-view .map-caption {
+        color: #8abeb999;
+      }
+      #night-sky {
+        position: absolute;
+        inset: 0;
+        pointer-events: none;
+        z-index: 1;
+        opacity: 0;
+        background: linear-gradient(
+          to bottom,
+          #0d1e32aa 0%,
+          #12293a33 20%,
+          transparent 40%
+        );
+      }
+      #sky-stars {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 34%;
+        pointer-events: none;
+      }
+      .setting-row label {
+        margin: 0;
+        color: var(--ink);
+        font-size: 13px;
+      }
     </style>
   </head>
   <body>
@@ -1718,6 +1754,9 @@
       aria-label="3D town map. Use arrow keys to move, plus and minus to zoom. Select a building and tap the map to place it."
     ></canvas>
     <div class="vignette"></div>
+    <div id="night-sky" aria-hidden="true">
+      <canvas id="sky-stars"></canvas>
+    </div>
     <header class="topbar">
       <div class="brand">
         <div class="brand-mark">
@@ -1966,9 +2005,8 @@
           minimumFractionDigits: Number.isInteger(n) ? 0 : 2,
           maximumFractionDigits: 2,
         });
-      const reducedMotion = matchMedia(
-        "(prefers-reduced-motion: reduce)",
-      ).matches;
+      const motionQuery = matchMedia("(prefers-reduced-motion: reduce)");
+      let reducedMotion = motionQuery.matches;
       let gl,
         program,
         locations,
@@ -1986,13 +2024,24 @@ precision highp float;
 layout(location=0) in vec3 aPosition;layout(location=1) in vec3 aNormal;
 layout(location=2) in vec3 iPosition;layout(location=3) in vec3 iScale;
 layout(location=4) in vec3 iColor;layout(location=5) in float iAngle;layout(location=6) in float iMaterial;
-uniform mat4 uVP;out vec3 vColor;out vec3 vNormal;out vec3 vWorld;flat out float vMaterial;
-void main(){float c=cos(iAngle),s=sin(iAngle);vec3 p=aPosition*iScale;p.xz=mat2(c,-s,s,c)*p.xz;p+=iPosition;vec3 n=aNormal/max(iScale,vec3(.001));n.xz=mat2(c,-s,s,c)*n.xz;vColor=iColor;vNormal=normalize(n);vWorld=p;vMaterial=iMaterial;gl_Position=uVP*vec4(p,1.);}`;
+uniform mat4 uVP;uniform float uTime;out vec3 vColor;out vec3 vNormal;out vec3 vWorld;out vec3 vLocal;flat out float vMaterial;
+void main(){float c=cos(iAngle),s=sin(iAngle);vec3 source=aPosition;if(iMaterial>6.5&&iMaterial<7.5){float a=uTime*.8;source.xy=mat2(cos(a),-sin(a),sin(a),cos(a))*source.xy;}vec3 p=source*iScale;p.xz=mat2(c,-s,s,c)*p.xz;p+=iPosition;vec3 n=aNormal/max(iScale,vec3(.001));n.xz=mat2(c,-s,s,c)*n.xz;vColor=iColor;vNormal=normalize(n);vWorld=p;vLocal=aPosition;vMaterial=iMaterial;gl_Position=uVP*vec4(p,1.);}`;
       const fragmentSource = `#version 300 es
 precision highp float;
-in vec3 vColor;in vec3 vNormal;in vec3 vWorld;flat in float vMaterial;
-uniform float uTime;uniform float uGrid;out vec4 outColor;
-void main(){vec3 light=normalize(vec3(-.55,1.,.45));float sun=max(0.,dot(normalize(vNormal),light));vec3 col=vColor*(.77+.30*sun);if(vMaterial>.5&&vMaterial<1.5){float wave=sin(vWorld.x*2.+vWorld.z*1.7+uTime*.55)*sin(vWorld.z*3.-uTime*.3);col+=wave*.014;float glint=pow(max(0.,sin(vWorld.x*5.+vWorld.z*2.+uTime*.2)),28.);col+=glint*.025;}if(vMaterial>1.5&&uGrid>.5){vec2 f=abs(fract(vWorld.xz+.5)-.5);float line=smoothstep(.47,.495,max(f.x,f.y));col=mix(col,vec3(.40,.53,.32),line*.28);}outColor=vec4(col,1.);}`;
+in vec3 vColor;in vec3 vNormal;in vec3 vWorld;in vec3 vLocal;flat in float vMaterial;
+uniform float uTime;uniform float uGrid;uniform float uDaylight;uniform float uNight;uniform float uWarmth;uniform vec3 uSun;
+out vec4 outColor;
+void main(){
+ if(vMaterial>5.5&&vMaterial<6.5){float falloff=max(0.,1.-length(vLocal.xz)*2.);outColor=vec4(vColor,.30*uNight*falloff);return;}
+ float sun=max(0.,dot(normalize(vNormal),normalize(uSun)));
+ vec3 day=vec3(.77+.30*sun)*mix(vec3(1.),vec3(1.10,.94,.79),uWarmth*.6);
+ vec3 col=vColor*mix(vec3(.27,.38,.54),day,uDaylight);
+ if(vMaterial>.5&&vMaterial<1.5){float wave=sin(vWorld.x*2.+vWorld.z*1.7+uTime*.55)*sin(vWorld.z*3.-uTime*.3);col+=wave*.014*(.4+.6*uDaylight);float glint=pow(max(0.,sin(vWorld.x*5.+vWorld.z*2.+uTime*.2)),28.);col+=glint*.025;}
+ if(vMaterial>1.5&&vMaterial<2.5&&uGrid>.5){vec2 f=abs(fract(vWorld.xz+.5)-.5);float line=smoothstep(.47,.495,max(f.x,f.y));col=mix(col,vec3(.40,.53,.32)*(.4+.6*uDaylight),line*.28);}
+ if(vMaterial>3.5&&vMaterial<4.5)col=mix(col,vec3(1.,.77,.36),uNight*.94);
+ if(vMaterial>4.5&&vMaterial<5.5)col=mix(col,min(vec3(1.),vColor*1.2),uNight);
+ outColor=vec4(col,1.);
+}`;
       function makeMesh(kind) {
         const data = [];
         function tri(a, b, c) {
@@ -2070,6 +2119,16 @@ void main(){vec3 light=normalize(vec3(-.55,1.,.45));float sun=max(0.,dot(normali
             );
           }
         }
+        if (kind === "disc")
+          for (let i = 0; i < 32; i++) {
+            const a = (i * Math.PI * 2) / 32,
+              b = ((i + 1) * Math.PI * 2) / 32;
+            tri(
+              [0, 0, 0],
+              [Math.cos(b) * 0.5, 0, Math.sin(b) * 0.5],
+              [Math.cos(a) * 0.5, 0, Math.sin(a) * 0.5],
+            );
+          }
         return new Float32Array(data);
       }
       const batches = {};
@@ -2146,9 +2205,16 @@ void main(){vec3 light=normalize(vec3(-.55,1.,.45));float sun=max(0.,dot(normali
           vp: gl.getUniformLocation(program, "uVP"),
           time: gl.getUniformLocation(program, "uTime"),
           grid: gl.getUniformLocation(program, "uGrid"),
+          daylight: gl.getUniformLocation(program, "uDaylight"),
+          night: gl.getUniformLocation(program, "uNight"),
+          warmth: gl.getUniformLocation(program, "uWarmth"),
+          sun: gl.getUniformLocation(program, "uSun"),
         };
-        for (const kind of ["cube", "roof", "tree", "rotor"])
+        for (const kind of ["cube", "roof", "tree", "rotor", "disc"])
           batches[kind] = createBatch(kind);
+        initLivingGL();
+        gl.enable(gl.BLEND);
+        gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
         gl.enable(gl.DEPTH_TEST);
         gl.disable(gl.CULL_FACE);
         gl.clearColor(0.79, 0.87, 0.82, 1);
@@ -2277,6 +2343,7 @@ void main(){vec3 light=normalize(vec3(-.55,1.,.45));float sun=max(0.,dot(normali
         }
         gl.viewport(0, 0, w, h);
         updateCamera();
+        drawNightSky();
       }
       function screenToWorld(sx, sy) {
         const nx = (sx / innerWidth) * 2 - 1,
@@ -2367,24 +2434,41 @@ void main(){vec3 light=normalize(vec3(-.55,1.,.45));float sun=max(0.,dot(normali
       function render(time) {
         frame = requestAnimationFrame(render);
         advanceClock(time);
-        if (!active || contextLost || !gl) return;
+        if (!active || contextLost || !gl) {
+          lifeLastTime = time;
+          return;
+        }
         if (quality === "low" && time - lastTime < 32) return;
         lastTime = time;
+        updateLivingFrame(time);
         if (dirty) {
           rebuildWorld();
           dirty = false;
         }
+        gl.clearColor(
+          0.08 + lightDay * 0.71,
+          0.13 + lightDay * 0.74,
+          0.2 + lightDay * 0.62,
+          1,
+        );
         gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
         gl.useProgram(program);
         gl.uniformMatrix4fv(locations.vp, false, vp);
-        gl.uniform1f(locations.time, reducedMotion ? 0 : time * 0.001);
+        gl.uniform1f(locations.time, lifePool.motionTime);
+        gl.uniform1f(locations.daylight, lightDay);
+        gl.uniform1f(locations.night, lightNight);
+        gl.uniform1f(locations.warmth, lightWarm);
+        gl.uniform3f(locations.sun, lightSunX, lightSunY, lightSunZ);
         gl.uniform1f(locations.grid, mapLayer === "grid" || selected ? 1 : 0);
         for (const key in batches) {
           const b = batches[key];
+          gl.depthMask(key !== "disc");
           gl.bindVertexArray(b.vao);
           gl.drawArraysInstanced(gl.TRIANGLES, 0, b.vertices, b.count);
         }
+        gl.depthMask(true);
         gl.bindVertexArray(null);
+        drawLivingActors();
         if (time - lastUI > 5000) {
           lastUI = time;
           maybeAutosave();
@@ -2393,12 +2477,14 @@ void main(){vec3 light=normalize(vec3(-.55,1.,.45));float sun=max(0.,dot(normali
       canvas.addEventListener("webglcontextlost", (e) => {
         e.preventDefault();
         contextLost = true;
+        lifeLastTime = 0;
         toast("The view is resting. Your town is safe.");
       });
       canvas.addEventListener("webglcontextrestored", () => {
         try {
           initGL();
           contextLost = false;
+          resize();
           dirty = true;
           toast("Back to the bay. Your town is just as you left it.");
         } catch (e) {
@@ -3003,7 +3089,7 @@ void main(){vec3 light=normalize(vec3(-.55,1.,.45));float sun=max(0.,dot(normali
           roof: "#758f92",
           height: 1.2,
           description:
-            "A little harbor office. Place on land beside a dock. Ships arrive in milestone 3.",
+            "A busy little waterfront office. Build beside a dock with open water for visiting ships.",
         },
         lighthouse: {
           name: "Lighthouse",
@@ -3068,7 +3154,17 @@ void main(){vec3 light=normalize(vec3(-.55,1.,.45));float sun=max(0.,dot(normali
         def.rgb = hex(def.color);
         def.roofRGB = hex(def.roof || "#8d987b");
       }
-      function windows(x, z, w, d, h, angle, stories) {
+      function windows(
+        x,
+        z,
+        w,
+        d,
+        h,
+        angle,
+        stories,
+        powered = false,
+        seed = 0,
+      ) {
         const c = Math.cos(angle),
           s = Math.sin(angle);
         for (let level = 0; level < stories; level++)
@@ -3086,6 +3182,7 @@ void main(){vec3 light=normalize(vec3(-.55,1.,.45));float sun=max(0.,dot(normali
               0.025,
               C.window,
               angle,
+              powered && hash(level, k, seed) > 0.22 ? 4 : 0,
             );
             if (h > 1.2) {
               const dx2 = w * 0.505,
@@ -3099,6 +3196,7 @@ void main(){vec3 light=normalize(vec3(-.55,1.,.45));float sun=max(0.,dot(normali
                 0.22,
                 C.window,
                 angle,
+                powered && hash(level + 4, k, seed) > 0.22 ? 4 : 0,
               );
             }
           }
@@ -3264,7 +3362,7 @@ void main(){vec3 light=normalize(vec3(-.55,1.,.45));float sun=max(0.,dot(normali
           cube(x, 0.06, z, 0.4, 0.15, 0.4, [0.78, 0.79, 0.67]);
           cube(x, 0.18, z, 0.13, 2.6, 0.13, C.white);
           cube(x, 2.76, z + 0.08, 0.28, 0.22, 0.45, C.white);
-          instance("rotor", x, 2.84, z + 0.33, 1, 1, 1, C.white);
+          instance("rotor", x, 2.84, z + 0.33, 1, 1, 1, C.white, 0, 7);
           instance("tree", x, 2.74, z + 0.38, 0.25, 0.25, 0.25, C.cream);
           return;
         }
@@ -3281,7 +3379,17 @@ void main(){vec3 light=normalize(vec3(-.55,1.,.45));float sun=max(0.,dot(normali
           cube(x, 0.06, z, 0.85, 2.3, 0.85, C.white);
           cube(x, 0.9, z, 0.88, 0.35, 0.88, [0.77, 0.48, 0.34]);
           cube(x, 2.36, z, 1.08, 0.12, 1.08, [0.43, 0.54, 0.49]);
-          cube(x, 2.48, z, 0.72, 0.48, 0.72, [0.82, 0.79, 0.46]);
+          cube(
+            x,
+            2.48,
+            z,
+            0.72,
+            0.48,
+            0.72,
+            [0.82, 0.79, 0.46],
+            0,
+            simView?.records[obj.id]?.power > 0 ? 5 : 0,
+          );
           instance("roof", x, 2.96, z, 1.1, 0.45, 1.1, roof);
           cube(x, 3.38, z, 0.08, 0.18, 0.08, C.trunk);
           cube(x, 0.06, z + 0.44, 0.27, 0.55, 0.03, C.wood);
@@ -3329,7 +3437,20 @@ void main(){vec3 light=normalize(vec3(-.55,1.,.45));float sun=max(0.,dot(normali
               angle,
             );
         }
-        windows(x, z, w, d, h, angle, Math.max(1, Math.floor(h / 0.7)));
+        const lit =
+          simView?.records[obj.id]?.power > 0 &&
+          (!def.capacity || obj.residents > 0);
+        windows(
+          x,
+          z,
+          w,
+          d,
+          h,
+          angle,
+          Math.max(1, Math.floor(h / 0.7)),
+          lit,
+          obj.id ^ town.seed,
+        );
         const frontX = x + Math.sin(angle) * d * 0.51,
           frontZ = z + Math.cos(angle) * d * 0.51;
         cube(frontX, 0.08, frontZ, 0.27, 0.57, 0.04, [0.46, 0.48, 0.36], angle);
@@ -3346,7 +3467,17 @@ void main(){vec3 light=normalize(vec3(-.55,1.,.45));float sun=max(0.,dot(normali
               i % 2 ? C.white : [0.48, 0.62, 0.44],
               angle,
             );
-          cube(x, 0.15, z + d * 0.53, w * 0.8, 0.5, 0.025, C.window, angle);
+          cube(
+            x,
+            0.15,
+            z + d * 0.53,
+            w * 0.8,
+            0.5,
+            0.025,
+            C.window,
+            angle,
+            lit ? 4 : 0,
+          );
         }
         if (k === "service") {
           cube(
@@ -3428,6 +3559,7 @@ void main(){vec3 light=normalize(vec3(-.55,1.,.45));float sun=max(0.,dot(normali
         for (const key in batches) batches[key].data.length = 0;
         buildTerrain();
         for (const obj of town.objects) building(obj);
+        addStreetLamps();
         drawSimulationLayers();
         if (mapLayer === "roads") {
           for (const obj of town.objects) {
@@ -4304,6 +4436,7 @@ void main(){vec3 light=normalize(vec3(-.55,1.,.45));float sun=max(0.,dot(normali
       function refreshSimulation() {
         if (!town) return;
         simView = analyzeCity(town);
+        refreshLivingWorld();
         rebuildBubbles();
       }
       function townStats() {
@@ -4314,6 +4447,7 @@ void main(){vec3 light=normalize(vec3(-.55,1.,.45));float sun=max(0.,dot(normali
         town.updated = Date.now();
         changeSerial++;
         dirty = true;
+        refreshLivingWorld();
         rebuildBubbles();
         updateUI();
         if (inspectorId) updateInspector();
@@ -4347,8 +4481,9 @@ void main(){vec3 light=normalize(vec3(-.55,1.,.45));float sun=max(0.,dot(normali
       }
       function updateClock() {
         if (!town) return;
+        updateLighting();
         $("day-label").textContent =
-          `Day ${town.day} · ${town.simPaused ? "taking a little break" : Math.max(1, Math.ceil(60 * (1 - town.dayProgress))) + "s to tomorrow"}`;
+          `Day ${town.day} · ${town.simPaused ? "taking a little break" : lightingName()}`;
         $("pause-sim").setAttribute("aria-pressed", String(town.simPaused));
         $("pause-sim").setAttribute(
           "aria-label",
@@ -4413,6 +4548,14 @@ void main(){vec3 light=normalize(vec3(-.55,1.,.45));float sun=max(0.,dot(normali
         if (e.radius)
           html += `<div><span>Reach</span><strong>${e.radius} tiles</strong></div><div><span>Happiness lift</span><strong>+${cents(e.bonus * r.strength)} / +${e.bonus}</strong></div>`;
         html += `<div><span>Daily upkeep</span><strong>${money(r.upkeep)}</strong></div>`;
+        if (obj.type === "harbor") {
+          const port = lifeGraph?.harbors.find((h) => h.id === obj.id);
+          let ships = 0;
+          for (let i = 0; i < lifePool.count; i++)
+            if (lifePool.kind[i] === 3 && lifePool.harbor[i] === obj.id)
+              ships++;
+          html += `<div><span>Visiting ships</span><strong>${ships}</strong></div><p class="growth-note">${!port?.hasDock ? "Build a dock against this harbor’s edge to welcome boats." : !port.berths.length ? "Give this dock a clear way out to open water." : "A little comings and goings. Ships follow clear water to and from the dock."}</p>`;
+        }
         $("inspect-details").innerHTML = html;
       }
       function rebuildBubbles() {
@@ -4640,7 +4783,1244 @@ void main(){vec3 light=normalize(vec3(-.55,1.,.45));float sun=max(0.,dot(normali
           `${dialogHeader("A little room to grow")}<div class="budget-total"><span class="eyebrow">Town funds · day ${town.day}</span><h3>${town.mode === "sandbox" ? "Unlimited" : money(town.money)}</h3><span>${s.net >= 0 ? "A little more for tomorrow." : "Let’s find a comfortable balance."}</span></div>${chart}<h3>Next day estimate</h3><div class="budget-lines"><div><span>Homes · ${s.population} neighbors</span><strong>+${money(s.homeIncome)}</strong></div><div><span>Shops · ${s.customers} local customers</span><strong>+${money(s.shopIncome)}</strong></div><div><span>Offices & workshops</span><strong>+${money(s.workIncome)}</strong></div><div><span>Daily care & upkeep</span><strong>−${money(s.upkeep)}</strong></div><div class="budget-net"><span>Daily balance</span><strong>${signed(s.net)}</strong></div></div><p>${s.net < 0 ? (s.daysLeft <= 5 ? `Funds cover about ${s.daysLeft} more ${s.daysLeft === 1 ? "day" : "days"} at this pace. A few homes, better utility links, or fewer costly places can help.` : "Your town uses a little of its savings each day. More connected homes and local customers can help.") : s.population ? "Income covers upkeep. A comfortable place to start." : "Homes bring neighbors, and neighbors bring a little daily income."} If funds run out, buildings and progress stay safe. Unpaid upkeep is forgiven, with no debt.</p><h3>Everyday connections</h3><div class="budget-lines"><div><span>Power capacity / demand</span><strong>${s.powerSupply} / ${s.demand}</strong></div><div><span>Water capacity / demand</span><strong>${s.waterSupply} / ${s.demand}</strong></div><div><span>People at work / adults</span><strong>${s.staff} / ${s.adults}</strong></div><div><span>Available jobs</span><strong>${s.jobs}</strong></div><div><span>Town happiness</span><strong>${s.happiness}%</strong></div></div><p>Power and water follow connected roads and bridges. Each separate road network must have its own supply. Capacity shared by two networks is split between them.</p>${simView.networks.length ? `<details><summary>See ${simView.networks.length} road ${simView.networks.length === 1 ? "network" : "networks"}</summary><div class="network-list">${simView.networks.map((n, i) => `<p>Network ${i + 1}: ${n.tiles.length} road tiles · ${n.population} neighbors<br>Power ${cents(n.powerSupply)} / ${n.demand} · water ${cents(n.waterSupply)} / ${n.demand}</p>`).join("")}</div></details>` : ""}${last ? `<h3>Yesterday · day ${last.day}</h3><p>Income ${money(last.income)} · upkeep ${money(last.upkeep)} · balance ${signed(last.net)}${last.unpaid ? " · " + money(last.unpaid) + " upkeep forgiven" : ""}.<br>${last.moveIns} new ${last.moveIns === 1 ? "neighbor" : "neighbors"} · ${last.upgrades} ${last.upgrades === 1 ? "home" : "homes"} grew a new floor.</p>` : ""}<div class="feature-note">Homes earn $8 per neighbor/day at full strength. Either missing utility makes a place run at half strength, never a quarter. Shops earn $2 per customer, scaled by staffing and utility strength. One neighbor shops once per day, within 10 road tiles. More detail is in each place’s card.</div>`,
         );
       }
-      // Living-world simulation, disasters and interiors are later milestones.
+      /* 05b · LIVING WORLD — fixed actor pools, reusable routes and night lights. */
+      /* LIVING_CORE_START — shared by the renderer and routing tests. */
+      const LIFE_LIMITS = Object.freeze({
+        low: { cars: 12, walkers: 18, pets: 6, ships: 1, stars: 64 },
+        auto: { cars: 24, walkers: 36, pets: 12, ships: 3, stars: 160 },
+        high: { cars: 40, walkers: 60, pets: 20, ships: 4, stars: 256 },
+      });
+      const LIFE_MAX = 124,
+        LIFE_TILES = 72 * 72,
+        LIFE_PATH = 72 * 72;
+      function lifeNeighbor(ix, d) {
+        const x = ix % 72;
+        if (d === 0) return x < 71 ? ix + 1 : -1;
+        if (d === 1) return ix < 5112 ? ix + 72 : -1;
+        if (d === 2) return x > 0 ? ix - 1 : -1;
+        return ix >= 72 ? ix - 72 : -1;
+      }
+      function lifeComponents(mask) {
+        const labels = new Int16Array(LIFE_TILES);
+        labels.fill(-1);
+        const components = [],
+          queue = new Int16Array(LIFE_TILES);
+        for (let start = 0; start < LIFE_TILES; start++)
+          if (mask[start] && labels[start] === -1) {
+            const nodes = [],
+              id = components.length;
+            let head = 0,
+              tail = 0;
+            queue[tail++] = start;
+            labels[start] = id;
+            while (head < tail) {
+              const ix = queue[head++];
+              nodes.push(ix);
+              for (let d = 0; d < 4; d++) {
+                const next = lifeNeighbor(ix, d);
+                if (next >= 0 && mask[next] && labels[next] === -1) {
+                  labels[next] = id;
+                  queue[tail++] = next;
+                }
+              }
+            }
+            components.push(nodes);
+          }
+        return { labels, components };
+      }
+      function lifeAccess(object, mask, defs) {
+        const n = defs[object.type].size,
+          result = [];
+        const add = (x, z) => {
+          if (
+            x >= 0 &&
+            z >= 0 &&
+            x < 72 &&
+            z < 72 &&
+            mask[z * 72 + x] &&
+            !result.includes(z * 72 + x)
+          )
+            result.push(z * 72 + x);
+        };
+        for (let k = 0; k < n; k++) {
+          add(object.x + k, object.z - 1);
+          add(object.x + k, object.z + n);
+          add(object.x - 1, object.z + k);
+          add(object.x + n, object.z + k);
+        }
+        return result;
+      }
+      function buildLifeGraph(state, land, defs) {
+        const drive = new Uint8Array(LIFE_TILES),
+          walk = new Uint8Array(LIFE_TILES),
+          water = new Uint8Array(LIFE_TILES),
+          blocked = new Uint8Array(LIFE_TILES),
+          docks = new Uint8Array(LIFE_TILES);
+        for (const o of state.objects) {
+          const n = defs[o.type].size;
+          for (let z = 0; z < n; z++)
+            for (let x = 0; x < n; x++) blocked[(o.z + z) * 72 + o.x + x] = 1;
+          const ix = o.z * 72 + o.x;
+          if (o.type === "road") {
+            drive[ix] = walk[ix] = 1;
+          } else if (o.type === "bridge") {
+            drive[ix] = walk[ix] = 2;
+          } else if (o.type === "dock") {
+            walk[ix] = 3;
+            docks[ix] = 1;
+          }
+        }
+        // Hulls keep a full tile of clearance from land, piers, bridges and walls.
+        for (let z = 1; z < 71; z++)
+          for (let x = 1; x < 71; x++) {
+            let clear = true;
+            for (let dz = -1; dz <= 1 && clear; dz++)
+              for (let dx = -1; dx <= 1; dx++) {
+                const ix = (z + dz) * 72 + x + dx;
+                if (land[ix] !== 0 || blocked[ix]) {
+                  clear = false;
+                  break;
+                }
+              }
+            if (clear) water[z * 72 + x] = 1;
+          }
+        const dg = lifeComponents(drive),
+          wg = lifeComponents(walk),
+          sg = lifeComponents(water),
+          dockGraph = lifeComponents(docks),
+          homes = [],
+          destinations = [],
+          harbors = [];
+        let population = 0;
+        for (const o of state.objects) {
+          if (defs[o.type].capacity && o.residents > 0) {
+            population += o.residents;
+            homes.push({
+              id: o.id,
+              residents: o.residents,
+              drive: lifeAccess(o, drive, defs),
+              walk: lifeAccess(o, walk, defs),
+            });
+          }
+          if (
+            ![
+              "road",
+              "bridge",
+              "dock",
+              "tree",
+              "flower",
+              "mountain",
+              "seawall",
+            ].includes(o.type)
+          )
+            destinations.push({
+              id: o.id,
+              drive: lifeAccess(o, drive, defs),
+              walk: lifeAccess(o, walk, defs),
+            });
+          if (o.type === "harbor") {
+            const connected = lifeAccess(o, docks, defs),
+              berths = [];
+            const seen = new Set();
+            for (const ix of connected) {
+              const component = dockGraph.labels[ix];
+              if (seen.has(component)) continue;
+              seen.add(component);
+              for (const pier of dockGraph.components[component]) {
+                const fringe = [pier],
+                  depths = [0],
+                  visited = new Set([pier]);
+                for (let head = 0; head < fringe.length; head++) {
+                  if (depths[head] >= 3) continue;
+                  for (let direction = 0; direction < 4; direction++) {
+                    const next = lifeNeighbor(fringe[head], direction);
+                    if (
+                      next < 0 ||
+                      visited.has(next) ||
+                      land[next] !== 0 ||
+                      blocked[next]
+                    )
+                      continue;
+                    visited.add(next);
+                    fringe.push(next);
+                    depths.push(depths[head] + 1);
+                    if (
+                      water[next] &&
+                      sg.components[sg.labels[next]].length >= 12 &&
+                      !berths.includes(next)
+                    )
+                      berths.push(next);
+                  }
+                }
+              }
+            }
+            harbors.push({ id: o.id, berths, hasDock: connected.length > 0 });
+          }
+        }
+        return {
+          drive,
+          walk,
+          water,
+          driveLabels: dg.labels,
+          walkLabels: wg.labels,
+          waterLabels: sg.labels,
+          driveComponents: dg.components,
+          walkComponents: wg.components,
+          waterComponents: sg.components,
+          homes,
+          destinations,
+          harbors,
+          population,
+        };
+      }
+      function findLifeRoute(
+        mask,
+        start,
+        goal,
+        out,
+        offset,
+        parent,
+        queue,
+        order = 0,
+      ) {
+        if (
+          start < 0 ||
+          goal < 0 ||
+          start >= LIFE_TILES ||
+          goal >= LIFE_TILES ||
+          !mask[start] ||
+          !mask[goal]
+        )
+          return 0;
+        parent.fill(-1);
+        parent[start] = start;
+        let head = 0,
+          tail = 0;
+        queue[tail++] = start;
+        while (head < tail && parent[goal] === -1) {
+          const ix = queue[head++];
+          for (let k = 0; k < 4; k++) {
+            const next = lifeNeighbor(ix, (k + order) % 4);
+            if (next >= 0 && mask[next] && parent[next] === -1) {
+              parent[next] = ix;
+              queue[tail++] = next;
+            }
+          }
+        }
+        if (parent[goal] === -1) return 0;
+        let length = 0,
+          at = goal;
+        while (length < LIFE_PATH) {
+          out[offset + length++] = at;
+          if (at === start) break;
+          at = parent[at];
+        }
+        for (let a = 0, b = length - 1; a < b; a++, b--) {
+          const v = out[offset + a];
+          out[offset + a] = out[offset + b];
+          out[offset + b] = v;
+        }
+        return length;
+      }
+      function createLifePool(seed = 1) {
+        return {
+          seed: seed >>> 0 || 1,
+          count: 0,
+          kind: new Uint8Array(LIFE_MAX),
+          variant: new Uint8Array(LIFE_MAX),
+          home: new Int16Array(LIFE_MAX),
+          harbor: new Int32Array(LIFE_MAX),
+          length: new Uint16Array(LIFE_MAX),
+          step: new Uint16Array(LIFE_MAX),
+          progress: new Float32Array(LIFE_MAX),
+          speed: new Float32Array(LIFE_MAX),
+          wait: new Float32Array(LIFE_MAX),
+          x: new Float32Array(LIFE_MAX),
+          y: new Float32Array(LIFE_MAX),
+          z: new Float32Array(LIFE_MAX),
+          yaw: new Float32Array(LIFE_MAX),
+          departX: new Float32Array(LIFE_MAX).fill(NaN),
+          departZ: new Float32Array(LIFE_MAX).fill(NaN),
+          routes: new Int16Array(LIFE_MAX * LIFE_PATH),
+          parent: new Int16Array(LIFE_TILES),
+          queue: new Int16Array(LIFE_TILES),
+          arrivals: 0,
+          routesPlanned: 0,
+          motionTime: 0,
+        };
+      }
+      function lifeRandom(pool) {
+        let x = pool.seed;
+        x ^= x << 13;
+        x ^= x >>> 17;
+        x ^= x << 5;
+        pool.seed = x >>> 0;
+        return pool.seed / 4294967296;
+      }
+      function lifeMask(graph, kind) {
+        return kind === 3 ? graph.water : kind === 0 ? graph.drive : graph.walk;
+      }
+      function lifeLabels(graph, kind) {
+        return kind === 3
+          ? graph.waterLabels
+          : kind === 0
+            ? graph.driveLabels
+            : graph.walkLabels;
+      }
+      function lifeNodes(graph, kind, label) {
+        return kind === 3
+          ? graph.waterComponents[label]
+          : kind === 0
+            ? graph.driveComponents[label]
+            : graph.walkComponents[label];
+      }
+      function planLifeRoute(
+        pool,
+        graph,
+        i,
+        start,
+        goal,
+        preservePosition = false,
+      ) {
+        pool.departX[i] = preservePosition ? pool.x[i] : NaN;
+        pool.departZ[i] = preservePosition ? pool.z[i] : NaN;
+        const n = findLifeRoute(
+          lifeMask(graph, pool.kind[i]),
+          start,
+          goal,
+          pool.routes,
+          i * LIFE_PATH,
+          pool.parent,
+          pool.queue,
+          i % 4,
+        );
+        pool.length[i] = n;
+        pool.step[i] = 0;
+        pool.progress[i] = 0;
+        if (n > 1) pool.routesPlanned++;
+        return n;
+      }
+      function chooseLifeGoal(pool, graph, i, start) {
+        const kind = pool.kind[i],
+          labels = lifeLabels(graph, kind),
+          label = labels[start],
+          nodes = lifeNodes(graph, kind, label);
+        if (!nodes || nodes.length < 2) return start;
+        if (kind === 3 && start !== pool.home[i]) return pool.home[i];
+        if (kind !== 3) {
+          const key = kind === 0 ? "drive" : "walk";
+          for (let attempt = 0; attempt < 8; attempt++) {
+            const address =
+              graph.destinations[
+                Math.floor(lifeRandom(pool) * graph.destinations.length)
+              ];
+            if (!address) break;
+            const access = address[key];
+            if (access.length) {
+              const goal = access[Math.floor(lifeRandom(pool) * access.length)];
+              if (goal !== start && labels[goal] === label) return goal;
+            }
+          }
+        }
+        for (let attempt = 0; attempt < 12; attempt++) {
+          const goal = nodes[Math.floor(lifeRandom(pool) * nodes.length)];
+          if (
+            goal !== start &&
+            (kind !== 3 ||
+              Math.hypot(
+                (goal % 72) - (start % 72),
+                Math.floor(goal / 72) - Math.floor(start / 72),
+              ) >= 6)
+          )
+            return goal;
+        }
+        return nodes[(nodes.indexOf(start) + 1) % nodes.length];
+      }
+      function lifeWaypoint(pool, i, index, axis) {
+        const base = i * LIFE_PATH,
+          cell = pool.routes[base + index],
+          previous = pool.routes[base + Math.max(0, index - 1)],
+          next = pool.routes[base + Math.min(pool.length[i] - 1, index + 1)];
+        const dx = (next % 72) - (previous % 72),
+          dz = Math.floor(next / 72) - Math.floor(previous / 72),
+          length = Math.hypot(dx, dz) || 1,
+          kind = pool.kind[i],
+          offset = kind === 0 ? 0.15 : kind === 1 ? 0.36 : kind === 2 ? 0.3 : 0;
+        return axis === 0
+          ? (cell % 72) + (dz / length) * offset
+          : Math.floor(cell / 72) - (dx / length) * offset;
+      }
+      function placeLifeActor(pool, graph, i) {
+        const base = i * LIFE_PATH,
+          length = pool.length[i];
+        if (!length) return;
+        const step = Math.min(pool.step[i], Math.max(0, length - 2)),
+          last = Math.min(length - 1, step + 1),
+          a = pool.routes[base + step],
+          b = pool.routes[base + last],
+          t = pool.progress[i],
+          kind = pool.kind[i];
+        const ax =
+            step === 0 && Number.isFinite(pool.departX[i])
+              ? pool.departX[i]
+              : lifeWaypoint(pool, i, step, 0),
+          az =
+            step === 0 && Number.isFinite(pool.departZ[i])
+              ? pool.departZ[i]
+              : lifeWaypoint(pool, i, step, 1),
+          bx = lifeWaypoint(pool, i, last, 0),
+          bz = lifeWaypoint(pool, i, last, 1);
+        pool.x[i] = ax + (bx - ax) * t;
+        pool.z[i] = az + (bz - az) * t;
+        pool.yaw[i] = Math.atan2(bx - ax, bz - az);
+        if (kind === 3) pool.y[i] = -0.06;
+        else {
+          const mask = lifeMask(graph, kind),
+            ay = mask[a] === 2 ? 0.28 : mask[a] === 3 ? 0.21 : 0.11,
+            by = mask[b] === 2 ? 0.28 : mask[b] === 3 ? 0.21 : 0.11;
+          pool.y[i] = ay + (by - ay) * t;
+        }
+      }
+      function seedLifePool(pool, graph, limits) {
+        pool.count = 0;
+        pool.motionTime = 0;
+        pool.arrivals = 0;
+        pool.routesPlanned = 0;
+        for (let kind = 0; kind < 3; kind++) {
+          const key = kind === 0 ? "drive" : "walk",
+            labels = lifeLabels(graph, kind);
+          const origins = [];
+          let residents = 0;
+          for (const h of graph.homes) {
+            const nodes = h[key].filter(
+              (ix) => lifeNodes(graph, kind, labels[ix]).length > 1,
+            );
+            if (nodes.length) {
+              origins.push(...nodes);
+              residents += h.residents;
+            }
+          }
+          const cap =
+              kind === 0
+                ? limits.cars
+                : kind === 1
+                  ? limits.walkers
+                  : limits.pets,
+            desired = Math.min(
+              cap,
+              Math.ceil(
+                residents * (kind === 0 ? 1 / 3 : kind === 1 ? 0.8 : 0.2),
+              ),
+            );
+          for (let n = 0; n < desired && origins.length; n++) {
+            const i = pool.count++,
+              start = origins[Math.floor(lifeRandom(pool) * origins.length)];
+            pool.kind[i] = kind;
+            pool.variant[i] = Math.floor(lifeRandom(pool) * 8);
+            pool.home[i] = start;
+            pool.harbor[i] = 0;
+            pool.speed[i] =
+              kind === 0
+                ? 1.1 + lifeRandom(pool) * 0.7
+                : kind === 1
+                  ? 0.38 + lifeRandom(pool) * 0.2
+                  : 0.5 + lifeRandom(pool) * 0.25;
+            pool.wait[i] = lifeRandom(pool) * 1.2;
+            const goal = chooseLifeGoal(pool, graph, i, start);
+            planLifeRoute(pool, graph, i, start, goal);
+            if (pool.length[i] > 1) {
+              pool.progress[i] = lifeRandom(pool);
+              pool.step[i] = Math.floor(
+                lifeRandom(pool) * Math.max(1, pool.length[i] - 1),
+              );
+            }
+            placeLifeActor(pool, graph, i);
+          }
+        }
+        const ports = graph.harbors.filter((h) => h.berths.length);
+        for (let n = 0; n < Math.min(limits.ships, ports.length * 2); n++) {
+          const port = ports[n % ports.length],
+            i = pool.count++,
+            start =
+              port.berths[Math.floor(lifeRandom(pool) * port.berths.length)];
+          pool.kind[i] = 3;
+          pool.variant[i] = n % 3;
+          pool.home[i] = start;
+          pool.harbor[i] = port.id;
+          pool.speed[i] = 0.45 + lifeRandom(pool) * 0.2;
+          pool.wait[i] = n * 1.5;
+          const goal = chooseLifeGoal(pool, graph, i, start);
+          planLifeRoute(pool, graph, i, start, goal);
+          pool.progress[i] = lifeRandom(pool);
+          if (pool.length[i] > 3)
+            pool.step[i] = Math.floor(
+              lifeRandom(pool) * Math.min(8, pool.length[i] - 1),
+            );
+          placeLifeActor(pool, graph, i);
+        }
+      }
+      function stepLifePool(pool, graph, dt, maxPlans = 2) {
+        if (!(dt > 0) || !graph) return;
+        pool.motionTime += dt;
+        let plans = 0;
+        for (let i = 0; i < pool.count; i++) {
+          if (pool.wait[i] > 0) {
+            pool.wait[i] = Math.max(0, pool.wait[i] - dt);
+            continue;
+          }
+          if (pool.length[i] < 2) {
+            continue;
+          }
+          pool.progress[i] += dt * pool.speed[i];
+          while (pool.progress[i] >= 1) {
+            pool.progress[i] -= 1;
+            pool.step[i]++;
+            if (pool.step[i] >= pool.length[i] - 1) {
+              pool.step[i] = pool.length[i] - 2;
+              pool.progress[i] = 1;
+              break;
+            }
+          }
+          placeLifeActor(pool, graph, i);
+          if (
+            pool.progress[i] >= 1 &&
+            pool.step[i] === pool.length[i] - 2 &&
+            plans < maxPlans
+          ) {
+            const end = pool.routes[i * LIFE_PATH + pool.length[i] - 1],
+              goal = chooseLifeGoal(pool, graph, i, end);
+            plans++;
+            pool.arrivals++;
+            planLifeRoute(pool, graph, i, end, goal, true);
+            pool.wait[i] =
+              pool.kind[i] === 3
+                ? end === pool.home[i]
+                  ? 3 + lifeRandom(pool) * 4
+                  : 1
+                : pool.kind[i] === 0
+                  ? 0.15 + lifeRandom(pool) * 0.4
+                  : 0.4 + lifeRandom(pool) * 1.5;
+          }
+        }
+      }
+      /* LIVING_CORE_END */
+
+      const lifePool = createLifePool(81024),
+        dynamicData = new Float32Array(2048 * 11);
+      const CAR_PALETTE = new Float32Array([
+        0.79, 0.4, 0.29, 0.86, 0.72, 0.42, 0.45, 0.64, 0.65, 0.39, 0.52, 0.42,
+        0.87, 0.83, 0.68, 0.5, 0.58, 0.69, 0.72, 0.55, 0.46, 0.57, 0.66, 0.49,
+      ]);
+      const SHIRT_PALETTE = new Float32Array([
+        0.75, 0.4, 0.3, 0.86, 0.69, 0.38, 0.4, 0.57, 0.67, 0.43, 0.6, 0.43,
+        0.76, 0.57, 0.63, 0.87, 0.81, 0.64, 0.58, 0.51, 0.69, 0.65, 0.74, 0.65,
+      ]);
+      const SKIN_PALETTE = new Float32Array([
+        0.85, 0.64, 0.46, 0.64, 0.43, 0.3, 0.94, 0.77, 0.58, 0.43, 0.29, 0.2,
+      ]);
+      let lifeGraph = null,
+        lifeKey = "",
+        lifeSourceTown = null,
+        lifeLastTime = 0,
+        dynamicBatch = null,
+        dynamicCount = 0,
+        lifeLighting = "cycle",
+        lifeMotion = "lively";
+      let lightDay = 1,
+        lightNight = 0,
+        lightWarm = 0,
+        lightHour = 8,
+        lightSunX = -0.5,
+        lightSunY = 0.8,
+        lightSunZ = 0.4,
+        skyTick = -1;
+      function refreshLivingWorld(force = false) {
+        if (!town) return;
+        const key =
+          town.seed +
+          "|" +
+          quality +
+          "|" +
+          town.objects
+            .map(
+              (o) =>
+                o.id +
+                ":" +
+                o.type +
+                ":" +
+                o.x +
+                ":" +
+                o.z +
+                ":" +
+                (o.residents || 0),
+            )
+            .join(";");
+        if (!force && lifeSourceTown === town && key === lifeKey) return;
+        lifeKey = key;
+        lifeSourceTown = town;
+        lifeGraph = buildLifeGraph(town, terrain, DEFS);
+        lifePool.seed = (town.seed ^ 0x5ba71a3) >>> 0 || 1;
+        seedLifePool(lifePool, lifeGraph, LIFE_LIMITS[quality]);
+        lifeLastTime = 0;
+        drawNightSky();
+      }
+      function initLivingGL() {
+        dynamicBatch = createBatch("cube");
+        gl.bindBuffer(gl.ARRAY_BUFFER, dynamicBatch.instance);
+        gl.bufferData(gl.ARRAY_BUFFER, dynamicData.byteLength, gl.DYNAMIC_DRAW);
+      }
+      function lightingName() {
+        return lightHour < 6 || lightHour >= 20
+          ? "a starry night"
+          : lightHour < 11
+            ? "morning by the bay"
+            : lightHour < 17
+              ? "a sunny afternoon"
+              : "a golden evening";
+      }
+      function updateLighting(force = false) {
+        const fraction = reducedMotion ? 0.25 : town?.dayProgress || 0;
+        lightHour =
+          lifeLighting === "day"
+            ? 13
+            : lifeLighting === "night"
+              ? 22
+              : (8 + fraction * 24) % 24;
+        const a = ((lightHour - 6) / 12) * Math.PI,
+          sun = Math.sin(a);
+        lightDay = clamp((sun + 0.12) / 0.8, 0, 1);
+        lightNight = 1 - lightDay;
+        lightWarm =
+          clamp(1 - Math.abs(sun) / 0.5, 0, 1) * (sun > -0.15 ? 1 : 0);
+        lightSunX = -Math.cos(a) * 0.8;
+        lightSunY = Math.max(0.15, sun);
+        lightSunZ = 0.4;
+        const tick = Math.floor((town?.dayProgress || 0) * 240);
+        if (force || tick !== skyTick) {
+          skyTick = tick;
+          const opacity = clamp((lightNight - 0.65) / 0.35, 0, 1);
+          $("night-sky").style.opacity = String(opacity);
+          document.body.classList.toggle("night-view", lightNight > 0.65);
+          $("night-sky").setAttribute("aria-hidden", "true");
+        }
+      }
+      function drawNightSky() {
+        const sky = $("sky-stars");
+        if (!sky) return;
+        sky.width = Math.round(innerWidth);
+        sky.height = Math.round(Math.min(330, innerHeight * 0.34));
+        const ctx = sky.getContext("2d");
+        ctx.clearRect(0, 0, sky.width, sky.height);
+        let seed = (town?.seed || 81024) ^ 0x7a44;
+        const random = () => {
+          seed = (Math.imul(seed, 1664525) + 1013904223) >>> 0;
+          return seed / 4294967296;
+        };
+        for (let i = 0; i < LIFE_LIMITS[quality].stars; i++) {
+          const x = random() * sky.width,
+            y = 20 + random() * (sky.height - 30),
+            size = 0.5 + random() * 1.2;
+          ctx.globalAlpha =
+            (0.4 + random() * 0.5) * (1 - (y / sky.height) * 0.85);
+          ctx.fillStyle = i % 7 === 0 ? "#f4d898" : "#e5f0ed";
+          ctx.fillRect(x - size / 2, y - size / 2, size, size);
+          if (i % 13 === 0) {
+            ctx.fillRect(x - 2.5, y - 0.35, 5, 0.7);
+            ctx.fillRect(x - 0.35, y - 2.5, 0.7, 5);
+          }
+        }
+        ctx.globalAlpha = 1;
+      }
+      function updateLivingFrame(time) {
+        const dt = lifeLastTime
+          ? clamp((time - lifeLastTime) / 1000, 0, 0.25)
+          : 0;
+        lifeLastTime = time;
+        const running =
+          welcomed &&
+          town &&
+          !town.simPaused &&
+          $("modal").hidden &&
+          active &&
+          !contextLost &&
+          !reducedMotion &&
+          lifeMotion === "lively";
+        if (running)
+          stepLifePool(
+            lifePool,
+            lifeGraph,
+            dt * town.speed,
+            quality === "low" ? 1 : quality === "high" ? 3 : 2,
+          );
+        updateLighting();
+      }
+      function putDynamic(
+        x,
+        y,
+        z,
+        sx,
+        sy,
+        sz,
+        r,
+        g,
+        b,
+        angle = 0,
+        material = 0,
+      ) {
+        if (dynamicCount >= 2048) return;
+        const p = dynamicCount++ * 11;
+        dynamicData[p] = x;
+        dynamicData[p + 1] = y;
+        dynamicData[p + 2] = z;
+        dynamicData[p + 3] = sx;
+        dynamicData[p + 4] = sy;
+        dynamicData[p + 5] = sz;
+        dynamicData[p + 6] = r;
+        dynamicData[p + 7] = g;
+        dynamicData[p + 8] = b;
+        dynamicData[p + 9] = angle;
+        dynamicData[p + 10] = material;
+      }
+      function actorPart(
+        i,
+        lx,
+        ly,
+        lz,
+        sx,
+        sy,
+        sz,
+        r,
+        g,
+        b,
+        material = 0,
+        turn = 0,
+      ) {
+        const a = lifePool.yaw[i],
+          c = Math.cos(a),
+          s = Math.sin(a);
+        putDynamic(
+          lifePool.x[i] + c * lx + s * lz,
+          lifePool.y[i] + ly,
+          lifePool.z[i] - s * lx + c * lz,
+          sx,
+          sy,
+          sz,
+          r,
+          g,
+          b,
+          a + turn,
+          material,
+        );
+      }
+      function buildDynamicActors() {
+        dynamicCount = 0;
+        for (let i = 0; i < lifePool.count; i++) {
+          if (lifePool.length[i] < 2) continue;
+          const kind = lifePool.kind[i],
+            v = lifePool.variant[i],
+            a = lifePool.yaw[i];
+          if (kind === 0) {
+            const p = v * 3,
+              r = CAR_PALETTE[p],
+              g = CAR_PALETTE[p + 1],
+              b = CAR_PALETTE[p + 2],
+              model = v % 3,
+              length = model === 2 ? 0.81 : model === 1 ? 0.66 : 0.57;
+            actorPart(i, 0, 0.025, 0, 0.27, 0.16, length, r, g, b);
+            actorPart(
+              i,
+              0,
+              0.185,
+              model === 2 ? -0.02 : -0.04,
+              0.23,
+              model === 1 ? 0.2 : 0.14,
+              length * 0.57,
+              r * 0.9,
+              g * 0.9,
+              b * 0.9,
+            );
+            actorPart(
+              i,
+              0,
+              0.205,
+              length * 0.235,
+              0.235,
+              0.08,
+              0.025,
+              0.3,
+              0.48,
+              0.53,
+            );
+            actorPart(
+              i,
+              0,
+              0.205,
+              -length * 0.33,
+              0.235,
+              0.08,
+              0.025,
+              0.3,
+              0.48,
+              0.53,
+            );
+            for (let side = -1; side <= 1; side += 2)
+              for (let end = -1; end <= 1; end += 2)
+                actorPart(
+                  i,
+                  side * 0.14,
+                  0,
+                  end * length * 0.32,
+                  0.055,
+                  0.09,
+                  0.11,
+                  0.24,
+                  0.28,
+                  0.26,
+                );
+            actorPart(
+              i,
+              -0.085,
+              0.08,
+              length * 0.51,
+              0.06,
+              0.05,
+              0.025,
+              0.97,
+              0.92,
+              0.66,
+              5,
+            );
+            actorPart(
+              i,
+              0.085,
+              0.08,
+              length * 0.51,
+              0.06,
+              0.05,
+              0.025,
+              0.97,
+              0.92,
+              0.66,
+              5,
+            );
+            actorPart(
+              i,
+              -0.085,
+              0.08,
+              -length * 0.51,
+              0.05,
+              0.04,
+              0.025,
+              0.72,
+              0.28,
+              0.22,
+              5,
+            );
+            actorPart(
+              i,
+              0.085,
+              0.08,
+              -length * 0.51,
+              0.05,
+              0.04,
+              0.025,
+              0.72,
+              0.28,
+              0.22,
+              5,
+            );
+          } else if (kind === 1) {
+            const p = v * 3,
+              skin = (v % 4) * 3,
+              walk = Math.sin(lifePool.motionTime * 8 + i) * 0.025;
+            actorPart(
+              i,
+              0,
+              0.1,
+              0,
+              0.105,
+              0.16,
+              0.08,
+              SHIRT_PALETTE[p],
+              SHIRT_PALETTE[p + 1],
+              SHIRT_PALETTE[p + 2],
+            );
+            actorPart(
+              i,
+              0,
+              0.265,
+              0,
+              0.095,
+              0.095,
+              0.09,
+              SKIN_PALETTE[skin],
+              SKIN_PALETTE[skin + 1],
+              SKIN_PALETTE[skin + 2],
+            );
+            actorPart(i, 0, 0.34, -0.012, 0.1, 0.035, 0.085, 0.28, 0.24, 0.19);
+            actorPart(
+              i,
+              -0.027,
+              0.015,
+              walk,
+              0.037,
+              0.09,
+              0.043,
+              0.3,
+              0.36,
+              0.34,
+            );
+            actorPart(
+              i,
+              0.027,
+              0.015,
+              -walk,
+              0.037,
+              0.09,
+              0.043,
+              0.3,
+              0.36,
+              0.34,
+            );
+            actorPart(
+              i,
+              -0.07,
+              0.13,
+              0,
+              0.027,
+              0.09,
+              0.035,
+              SKIN_PALETTE[skin],
+              SKIN_PALETTE[skin + 1],
+              SKIN_PALETTE[skin + 2],
+            );
+            actorPart(
+              i,
+              0.07,
+              0.13,
+              0,
+              0.027,
+              0.09,
+              0.035,
+              SKIN_PALETTE[skin],
+              SKIN_PALETTE[skin + 1],
+              SKIN_PALETTE[skin + 2],
+            );
+          } else if (kind === 2) {
+            const r = v % 3 === 0 ? 0.82 : v % 3 === 1 ? 0.45 : 0.68,
+              g = v % 3 === 0 ? 0.75 : v % 3 === 1 ? 0.39 : 0.51,
+              b = v % 3 === 0 ? 0.57 : v % 3 === 1 ? 0.32 : 0.34;
+            actorPart(i, 0, 0.065, 0, 0.1, 0.09, 0.19, r, g, b);
+            actorPart(i, 0, 0.13, 0.09, 0.085, 0.08, 0.08, r, g, b);
+            for (let side = -1; side <= 1; side += 2)
+              for (let end = -1; end <= 1; end += 2)
+                actorPart(
+                  i,
+                  side * 0.035,
+                  0.01,
+                  end * 0.06,
+                  0.023,
+                  0.065,
+                  0.025,
+                  r * 0.7,
+                  g * 0.7,
+                  b * 0.7,
+                );
+            actorPart(
+              i,
+              0,
+              0.12,
+              -0.12,
+              0.025,
+              0.09,
+              0.025,
+              r,
+              g,
+              b,
+              0,
+              Math.sin(lifePool.motionTime * 6 + i) * 0.3,
+            );
+            actorPart(
+              i,
+              -0.035,
+              0.2,
+              0.08,
+              0.025,
+              0.055,
+              0.035,
+              r * 0.7,
+              g * 0.7,
+              b * 0.7,
+            );
+            actorPart(
+              i,
+              0.035,
+              0.2,
+              0.08,
+              0.025,
+              0.055,
+              0.035,
+              r * 0.7,
+              g * 0.7,
+              b * 0.7,
+            );
+          } else {
+            const bob =
+              reducedMotion || lifeMotion === "still"
+                ? 0
+                : Math.sin(lifePool.motionTime * 1.5 + i) * 0.018;
+            actorPart(i, 0, 0.04 + bob, 0, 0.58, 0.19, 1.52, 0.37, 0.48, 0.48);
+            actorPart(i, 0, 0.23 + bob, 0, 0.6, 0.08, 1.35, 0.84, 0.8, 0.63);
+            actorPart(
+              i,
+              0,
+              0.31 + bob,
+              -0.25,
+              0.44,
+              0.27,
+              0.55,
+              0.9,
+              0.89,
+              0.75,
+            );
+            actorPart(
+              i,
+              0,
+              0.4 + bob,
+              0.04,
+              0.45,
+              0.1,
+              0.026,
+              0.31,
+              0.52,
+              0.58,
+              4,
+            );
+            actorPart(
+              i,
+              0,
+              0.58 + bob,
+              -0.25,
+              0.46,
+              0.06,
+              0.59,
+              0.88,
+              0.88,
+              0.76,
+            );
+            if (v === 0) {
+              for (let k = 0; k < 3; k++)
+                actorPart(
+                  i,
+                  0,
+                  0.31 + bob,
+                  0.22 + k * 0.23,
+                  0.37,
+                  0.24,
+                  0.19,
+                  0.73 - k * 0.06,
+                  0.5 + k * 0.07,
+                  0.31 + k * 0.06,
+                );
+            } else if (v === 1) {
+              actorPart(
+                i,
+                0,
+                0.31 + bob,
+                0.36,
+                0.4,
+                0.23,
+                0.48,
+                0.88,
+                0.88,
+                0.76,
+              );
+              actorPart(
+                i,
+                0,
+                0.41 + bob,
+                0.61,
+                0.36,
+                0.09,
+                0.028,
+                0.33,
+                0.54,
+                0.59,
+                4,
+              );
+            } else {
+              actorPart(
+                i,
+                0,
+                0.35 + bob,
+                0.3,
+                0.12,
+                0.48,
+                0.12,
+                0.81,
+                0.65,
+                0.39,
+              );
+            }
+            actorPart(
+              i,
+              -0.26,
+              0.33 + bob,
+              0.3,
+              0.05,
+              0.06,
+              0.05,
+              0.77,
+              0.27,
+              0.24,
+              5,
+            );
+            actorPart(
+              i,
+              0.26,
+              0.33 + bob,
+              0.3,
+              0.05,
+              0.06,
+              0.05,
+              0.34,
+              0.69,
+              0.45,
+              5,
+            );
+            actorPart(
+              i,
+              0,
+              0.6 + bob,
+              -0.35,
+              0.09,
+              0.22,
+              0.1,
+              0.56,
+              0.43,
+              0.34,
+            );
+            actorPart(
+              i,
+              -0.31,
+              -0.025,
+              -1,
+              0.05,
+              0.015,
+              0.44,
+              0.66,
+              0.81,
+              0.77,
+            );
+            actorPart(i, 0.31, -0.025, -1, 0.05, 0.015, 0.44, 0.66, 0.81, 0.77);
+          }
+        }
+      }
+      function drawLivingActors() {
+        if (!dynamicBatch) return;
+        buildDynamicActors();
+        gl.bindVertexArray(dynamicBatch.vao);
+        gl.bindBuffer(gl.ARRAY_BUFFER, dynamicBatch.instance);
+        gl.bufferSubData(gl.ARRAY_BUFFER, 0, dynamicData, 0, dynamicCount * 11);
+        gl.drawArraysInstanced(
+          gl.TRIANGLES,
+          0,
+          dynamicBatch.vertices,
+          dynamicCount,
+        );
+        gl.bindVertexArray(null);
+      }
+      function addStreetLamps() {
+        if (!simView) return;
+        let count = 0;
+        const cap = quality === "low" ? 48 : quality === "high" ? 128 : 96;
+        for (const o of town.objects) {
+          if (
+            (o.type !== "road" && o.type !== "bridge") ||
+            hash(o.x, o.z, town.seed) > 0.18 ||
+            count >= cap
+          )
+            continue;
+          const netIndex = simView.roadNetwork[o.z * 72 + o.x],
+            net = simView.networks[netIndex];
+          const powered = net && net.power > 0;
+          const side = hash(o.x + 5, o.z, town.seed) > 0.5 ? 1 : -1,
+            x = o.x + 0.43 * side,
+            z = o.z + 0.4,
+            base = o.type === "bridge" ? 0.28 : 0.11;
+          cube(x, base, z, 0.055, 0.86, 0.055, [0.34, 0.43, 0.37]);
+          cube(x, base + 0.86, z, 0.13, 0.045, 0.13, [0.48, 0.54, 0.43]);
+          cube(
+            x,
+            base + 0.74,
+            z,
+            0.1,
+            0.12,
+            0.1,
+            powered ? [0.98, 0.83, 0.48] : [0.55, 0.6, 0.49],
+            0,
+            powered ? 5 : 0,
+          );
+          if (powered)
+            instance(
+              "disc",
+              x,
+              0.125,
+              z,
+              1.65,
+              0.01,
+              1.65,
+              [0.98, 0.8, 0.43],
+              0,
+              6,
+            );
+          count++;
+        }
+      }
+      function lifeInfo() {
+        const counts = { cars: 0, walkers: 0, pets: 0, ships: 0 };
+        for (let i = 0; i < lifePool.count; i++)
+          counts[["cars", "walkers", "pets", "ships"][lifePool.kind[i]]]++;
+        return {
+          counts,
+          cap: LIFE_LIMITS[quality],
+          total: lifePool.count,
+          routesPlanned: lifePool.routesPlanned,
+          arrivals: lifePool.arrivals,
+          motionTime: lifePool.motionTime,
+          daylight: lightDay,
+          hour: lightHour,
+          lighting: lifeLighting,
+          motion: lifeMotion,
+          dynamicInstances: dynamicCount,
+          harbors: lifeGraph?.harbors || [],
+        };
+      }
+      function savePreferences() {
+        localSet(
+          "baytown:settings",
+          JSON.stringify({
+            quality,
+            sound,
+            lighting: lifeLighting,
+            motion: lifeMotion,
+          }),
+        );
+      }
+      function setWorldLighting(mode) {
+        if (!["cycle", "day", "night"].includes(mode)) return;
+        lifeLighting = mode;
+        skyTick = -1;
+        updateLighting(true);
+        updateClock();
+        savePreferences();
+      }
+      function setWorldMotion(mode) {
+        if (!["lively", "still"].includes(mode)) return;
+        lifeMotion = mode;
+        savePreferences();
+      }
+      // Disasters and interiors remain later milestones.
       /* 06 · DISASTERS — opt-in only; not enabled or simulated in milestone 2. */
       /* 07 · INTERIOR — home interiors and decorating arrive in milestone 5. */
 
@@ -4932,7 +6312,7 @@ void main(){vec3 light=normalize(vec3(-.55,1.,.45));float sun=max(0.,dot(normali
       function showWelcome(isNew = false) {
         let mode = "starter";
         openDialog(
-          `<div class="welcome"><div class="welcome-art">${thumbSVG("cottage")}${thumbSVG("lighthouse")}${thumbSVG("tree")}</div><div class="eyebrow">Welcome to your little corner of the coast</div><h2 id="dialog-title">Let's make<br>somewhere lovely.</h2><p>A road by the water. A home under the trees.<br>A whole little world, built your way.</p><label for="town-name">What should we call your town?</label><input id="town-name" maxlength="32" value="Baytown Bay" autocomplete="off"><div class="mode-options"><button class="mode-option" data-mode="starter" aria-pressed="true">${icon("town")}<span><strong>A little head start</strong><small>A seaside village, ready to make your own</small></span></button><button class="mode-option" data-mode="empty" aria-pressed="false">${icon("leaf")}<span><strong>A blank canvas</strong><small>Just the coast, the trees, and $30,000</small></span></button><button class="mode-option" data-mode="sandbox" aria-pressed="false">${icon("infinity")}<span><strong>Big imagination</strong><small>Unlimited funds. Build as you please.</small></span></button></div><button class="action" id="begin-town">Let's build a town <span aria-hidden="true">↗</span></button>${isNew ? '<button class="action secondary" id="cancel-new">Back to my town</button>' : ""}<div class="feature-note">Chapter 2: a little town that grows.<br>Roads carry power and water. Happy homes welcome new neighbors.</div></div>`,
+          `<div class="welcome"><div class="welcome-art">${thumbSVG("cottage")}${thumbSVG("lighthouse")}${thumbSVG("tree")}</div><div class="eyebrow">Welcome to your little corner of the coast</div><h2 id="dialog-title">Let's make<br>somewhere lovely.</h2><p>A road by the water. A home under the trees.<br>A whole little world, built your way.</p><label for="town-name">What should we call your town?</label><input id="town-name" maxlength="32" value="Baytown Bay" autocomplete="off"><div class="mode-options"><button class="mode-option" data-mode="starter" aria-pressed="true">${icon("town")}<span><strong>A little head start</strong><small>A seaside village, ready to make your own</small></span></button><button class="mode-option" data-mode="empty" aria-pressed="false">${icon("leaf")}<span><strong>A blank canvas</strong><small>Just the coast, the trees, and $30,000</small></span></button><button class="mode-option" data-mode="sandbox" aria-pressed="false">${icon("infinity")}<span><strong>Big imagination</strong><small>Unlimited funds. Build as you please.</small></span></button></div><button class="action" id="begin-town">Let's build a town <span aria-hidden="true">↗</span></button>${isNew ? '<button class="action secondary" id="cancel-new">Back to my town</button>' : ""}<div class="feature-note">Chapter 3: a town with a little life.<br>Neighbors take a stroll. Boats come and go. Windows glow after sunset.</div></div>`,
         );
         for (const b of $("dialog").querySelectorAll("[data-mode]"))
           b.addEventListener("click", () => {
@@ -4965,25 +6345,35 @@ void main(){vec3 light=normalize(vec3(-.55,1.,.45));float sun=max(0.,dot(normali
       }
       function showHelp() {
         openDialog(
-          `${dialogHeader("A little town planner’s guide")}<p>There’s no hurry here. Choose a place, find a little space, and make the bay your own.</p><div class="help-grid"><div><strong>Look around</strong>Drag the map with one finger when nothing is selected. With a tool selected, use two fingers. Pinch or scroll to zoom.</div><div><strong>Build a place</strong>Pick a card, then tap a clear spot. Drag to draw roads, bridges, or docks. Tap the same card to put your tool away.</div><div><strong>Change your mind</strong>Undo brings back the last change. Remove refunds the full price you paid. Starter places have no refund.</div><div><strong>Keep your town</strong>It saves as you build. Use the save button for three extra slots and a file you can keep somewhere safe.</div></div><h3>A few handy keys</h3><p>Arrow keys / WASD: move · + / −: zoom · Q / E: turn view · R: turn building · Escape: put tool away · ⌘/Ctrl Z: undo · ⌘/Ctrl S: save.</p><div class="feature-note">This is milestone 2. Homes earn $8 per neighbor each day. Power and water follow roads. Both utilities and 75 happiness help homes grow. Shops need nearby road-connected customers and people at work. Use the map layers and town budget to see why places work. Missing power or water only makes a place run at half strength. Time pauses while a notebook is open or you leave the game. Living people, vehicles, disasters, and interiors come in later chapters.</div>`,
+          `${dialogHeader("A little town planner’s guide")}<p>There’s no hurry here. Choose a place, find a little space, and make the bay your own.</p><div class="help-grid"><div><strong>Look around</strong>Drag the map with one finger when nothing is selected. With a tool selected, use two fingers. Pinch or scroll to zoom.</div><div><strong>Build a place</strong>Pick a card, then tap a clear spot. Drag to draw roads, bridges, or docks. Tap the same card to put your tool away.</div><div><strong>Change your mind</strong>Undo brings back the last change. Remove refunds the full price you paid. Starter places have no refund.</div><div><strong>Keep your town</strong>It saves as you build. Use the save button for three extra slots and a file you can keep somewhere safe.</div></div><h3>A few handy keys</h3><p>Arrow keys / WASD: move · + / −: zoom · Q / E: turn view · R: turn building · Escape: put tool away · ⌘/Ctrl Z: undo · ⌘/Ctrl S: save.</p><div class="feature-note">This is milestone 3. Homes earn $8 per neighbor each day. Power and water follow roads. Both utilities and 75 happiness help homes grow. Shops need nearby road-connected customers and people at work. Use the map layers and town budget to see why places work. Missing power or water only makes a place run at half strength. Time pauses while a notebook is open or you leave the game. Neighbors, pets, and traffic follow the paths you build. Harbor ships need a dock and open water. Night brings warm windows, lamps, and stars. Disasters and interiors come in later chapters.</div>`,
         );
       }
       function showSettings() {
         openDialog(
-          `${dialogHeader("Your little corner")}<p>A few ways to make yourself comfortable.</p><div class="setting-row"><span>Graphics</span><select id="quality"><option value="auto">Balanced</option><option value="low">Easy on battery</option><option value="high">Extra crisp</option></select></div><div class="setting-row"><span>Gentle building sounds</span><button class="action secondary" id="sound">${sound ? "On" : "Off"}</button></div><div class="setting-row"><span>Motion</span><span style="color:var(--muted);font-size:12px">${reducedMotion ? "Reduced · follows device" : "Gentle water shimmer"}</span></div><div class="setting-row"><span>Disasters</span><span style="color:var(--muted);font-size:12px">Off · later chapter</span></div><div class="actions" style="margin-top:22px"><button class="action secondary" id="settings-help">How to play</button><button class="action secondary" id="new-town">Another town</button></div><div class="feature-note">Starting another town keeps this one in a recovery backup. Named save slots are kept too. Export a file for a lasting copy.</div>`,
+          `${dialogHeader("Your little corner")}<p>A few ways to make yourself comfortable.</p><div class="setting-row"><label for="quality">Graphics</label><select id="quality"><option value="auto">Balanced</option><option value="low">Easy on battery</option><option value="high">Extra crisp</option></select></div><div class="setting-row"><span>Gentle building sounds</span><button class="action secondary" id="sound">${sound ? "On" : "Off"}</button></div><div class="setting-row"><span>Motion</span><span id="motion-status" style="color:var(--muted);font-size:12px">${reducedMotion ? "Reduced · follows device" : "Gentle life around the bay"}</span></div><div class="setting-row"><label for="world-lighting">Light by the bay</label><select id="world-lighting"><option value="cycle">Follow the day</option><option value="day">Always sunny</option><option value="night">Starry night</option></select></div><div class="setting-row"><label for="world-motion">Town life</label><select id="world-motion"><option value="lively">A little bustle</option><option value="still">A still moment</option></select></div><div class="setting-row"><span>Disasters</span><span style="color:var(--muted);font-size:12px">Off · later chapter</span></div><div class="actions" style="margin-top:22px"><button class="action secondary" id="settings-help">How to play</button><button class="action secondary" id="new-town">Another town</button></div><div class="feature-note">Starting another town keeps this one in a recovery backup. Named save slots are kept too. Export a file for a lasting copy.</div>`,
+        );
+        $("world-lighting").value = lifeLighting;
+        $("world-motion").value = lifeMotion;
+        $("world-lighting").addEventListener("change", (e) =>
+          setWorldLighting(e.target.value),
+        );
+        $("world-motion").addEventListener("change", (e) =>
+          setWorldMotion(e.target.value),
         );
         $("quality").value = quality;
         $("quality").addEventListener("change", (e) => {
           quality = e.target.value;
           resize();
-          localSet("baytown:settings", JSON.stringify({ quality, sound }));
+          refreshLivingWorld(true);
+          dirty = true;
+          savePreferences();
         });
         $("sound").addEventListener("click", () => {
           sound = !sound;
           unlockAudio();
           $("sound").textContent = sound ? "On" : "Off";
           playNote(520);
-          localSet("baytown:settings", JSON.stringify({ quality, sound }));
+          savePreferences();
         });
         $("settings-help").addEventListener("click", showHelp);
         $("new-town").addEventListener("click", () => showWelcome(true));
@@ -5882,9 +7272,26 @@ void main(){vec3 light=normalize(vec3(-.55,1.,.45));float sun=max(0.,dot(normali
       });
       document.addEventListener("visibilitychange", () => {
         active = !document.hidden;
-        if (!active) maybeAutosave();
-        else resize();
+        if (!active) {
+          lifeLastTime = 0;
+          maybeAutosave();
+        } else resize();
       });
+      function motionPreferenceChanged(event) {
+        reducedMotion = event.matches;
+        lifeLastTime = 0;
+        skyTick = -1;
+        updateLighting(true);
+        updateClock();
+        const caption = $("motion-status");
+        if (caption)
+          caption.textContent = reducedMotion
+            ? "Reduced · follows device"
+            : "Gentle life around the bay";
+      }
+      if (motionQuery.addEventListener)
+        motionQuery.addEventListener("change", motionPreferenceChanged);
+      else motionQuery.addListener(motionPreferenceChanged);
       // A readable debug handle for the real browser suite and later milestones.
       window.__baytown = {
         get state() {
@@ -5906,6 +7313,32 @@ void main(){vec3 light=normalize(vec3(-.55,1.,.45));float sun=max(0.,dot(normali
           return SAVE_VERSION;
         },
         defs: DEFS,
+        life: {
+          info: lifeInfo,
+          get pool() {
+            return lifePool;
+          },
+          get graph() {
+            return lifeGraph;
+          },
+          limits: LIFE_LIMITS,
+          buildGraph: buildLifeGraph,
+          findRoute: findLifeRoute,
+          refresh: refreshLivingWorld,
+          step: (seconds) => stepLifePool(lifePool, lifeGraph, seconds),
+          lighting: setWorldLighting,
+          motion: setWorldMotion,
+          lights: () => {
+            let windows = 0,
+              lamps = 0;
+            const a = batches.cube.data;
+            for (let i = 10; i < a.length; i += 11) {
+              if (a[i] === 4) windows++;
+              if (a[i] === 5) lamps++;
+            }
+            return { windows, lamps, pools: batches.disc.count };
+          },
+        },
         stats: townStats,
         analyzeCity,
         stepEconomy,
@@ -5979,6 +7412,9 @@ void main(){vec3 light=normalize(vec3(-.55,1.,.45));float sun=max(0.,dot(normali
               if (["auto", "low", "high"].includes(s.quality))
                 quality = s.quality;
               sound = s.sound === true;
+              if (["cycle", "day", "night"].includes(s.lighting))
+                lifeLighting = s.lighting;
+              if (["lively", "still"].includes(s.motion)) lifeMotion = s.motion;
             } catch (_) {}
           makeTown();
           resize();
