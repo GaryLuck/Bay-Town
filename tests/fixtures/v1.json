@@ -1,0 +1,14 @@
+{
+  "version": 1,
+  "name": "First little town",
+  "seed": 81024,
+  "mode": "empty",
+  "money": 29360,
+  "objects": [
+    { "id": 1, "type": "road", "x": 36, "z": 36, "rotation": 0, "paid": 40 },
+    { "id": 2, "type": "cottage", "x": 37, "z": 36, "rotation": 0, "paid": 600 }
+  ],
+  "created": 1792843200000,
+  "updated": 1792843200000,
+  "camera": { "x": 38, "z": 36, "zoom": 28, "angle": 0.63, "pitch": 0.7 }
+}

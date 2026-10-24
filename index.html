@@ -1,0 +1,4593 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, viewport-fit=cover"
+    />
+    <meta name="theme-color" content="#f5f3e9" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+    <meta
+      name="description"
+      content="A little town. A big imagination. Build your own seaside town in a self-contained, offline 3D game."
+    />
+    <title>Baytown Builder · A little town, a big imagination</title>
+    <style>
+      :root {
+        color-scheme: light;
+        --ink: #243e38;
+        --muted: #6f7f71;
+        --paper: #faf8f0;
+        --line: #e0e4d6;
+        --green: #2c6451;
+        --lime: #d7e7a9;
+        --shadow: 0 8px 30px #203d3020;
+        --safe-top: env(safe-area-inset-top, 0px);
+        --safe-bottom: env(safe-area-inset-bottom, 0px);
+      }
+      * {
+        box-sizing: border-box;
+      }
+      html,
+      body {
+        margin: 0;
+        width: 100%;
+        height: 100%;
+        overflow: hidden;
+        background: #dce8df;
+        font-family:
+          ui-rounded,
+          "SF Pro Rounded",
+          -apple-system,
+          BlinkMacSystemFont,
+          "Segoe UI",
+          sans-serif;
+        color: var(--ink);
+      }
+      button,
+      input,
+      select {
+        font: inherit;
+      }
+      button {
+        cursor: pointer;
+        color: inherit;
+        -webkit-tap-highlight-color: transparent;
+      }
+      button:focus-visible,
+      input:focus-visible,
+      select:focus-visible {
+        outline: 3px solid #e0a849;
+        outline-offset: 3px;
+      }
+      button:disabled {
+        cursor: default;
+      }
+      button,
+      select {
+        min-height: 52px;
+        min-width: 52px;
+      }
+      button svg {
+        width: 22px;
+        height: 22px;
+        flex-shrink: 0;
+        stroke: currentColor;
+        stroke-width: 1.7;
+        fill: none;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+      }
+      button {
+        touch-action: manipulation;
+      }
+      button:active:not(:disabled) {
+        transform: translateY(1px);
+      }
+      [hidden] {
+        display: none !important;
+      }
+      h1,
+      h2,
+      h3,
+      p {
+        margin: 0;
+      }
+      .serif,
+      h1,
+      h2,
+      h3 {
+        font-family: Georgia, "Times New Roman", serif;
+        font-weight: normal;
+      }
+      .eyebrow {
+        font-size: 10px;
+        letter-spacing: 1.8px;
+        text-transform: uppercase;
+        font-weight: 750;
+        color: var(--muted);
+      }
+      #world {
+        display: block;
+        width: 100%;
+        height: 100%;
+        touch-action: none;
+        outline: none;
+        position: absolute;
+        inset: 0;
+      }
+      #world:focus-visible {
+        outline: 3px solid #e0a849;
+        outline-offset: -4px;
+      }
+      .vignette {
+        position: absolute;
+        inset: 0;
+        pointer-events: none;
+        box-shadow: inset 0 0 150px #486c4a12;
+      }
+      .topbar {
+        position: absolute;
+        top: calc(18px + var(--safe-top));
+        left: 22px;
+        right: 22px;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        pointer-events: none;
+        z-index: 3;
+      }
+      .topbar > * {
+        pointer-events: auto;
+      }
+      .brand {
+        display: flex;
+        align-items: center;
+        gap: 11px;
+        padding: 11px 17px 11px 12px;
+        background: var(--paper);
+        border: 1px solid #fff8;
+        border-radius: 19px;
+        box-shadow: var(--shadow);
+        height: 72px;
+      }
+      .brand-mark {
+        width: 42px;
+        height: 42px;
+        border-radius: 12px;
+        background: var(--green);
+        display: grid;
+        place-items: center;
+        color: #e4ecb9;
+      }
+      .brand-mark svg {
+        width: 30px;
+        height: 30px;
+        stroke: currentColor;
+        fill: none;
+        stroke-width: 1.5;
+      }
+      .brand h1 {
+        font-size: 25px;
+        line-height: 1;
+      }
+      .brand .eyebrow {
+        font-size: 8px;
+        letter-spacing: 1.5px;
+        margin-top: 6px;
+      }
+      .stats {
+        display: flex;
+        align-items: center;
+        gap: 0;
+        background: var(--paper);
+        border-radius: 19px;
+        height: 72px;
+        box-shadow: var(--shadow);
+        padding: 0 6px;
+      }
+      .stat {
+        padding: 0 18px;
+        min-width: 100px;
+        position: relative;
+      }
+      .stat + .stat {
+        border-left: 1px solid var(--line);
+      }
+      .stat-label {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        color: var(--muted);
+        font-size: 10px;
+        letter-spacing: 0.5px;
+      }
+      .stat-label svg {
+        width: 13px;
+        height: 13px;
+        stroke: currentColor;
+        fill: none;
+        stroke-width: 1.8;
+      }
+      .stat strong {
+        display: block;
+        font-size: 19px;
+        line-height: 1.5;
+        font-weight: 650;
+        white-space: nowrap;
+        font-variant-numeric: tabular-nums;
+      }
+      .stat small {
+        font-size: 10px;
+        color: var(--muted);
+      }
+      .top-spacer {
+        flex: 1;
+      }
+      .icon-button {
+        border: 1px solid #fff7;
+        border-radius: 16px;
+        background: var(--paper);
+        height: 54px;
+        min-width: 54px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        box-shadow: var(--shadow);
+      }
+      .icon-button.active,
+      .icon-button[aria-pressed="true"] {
+        background: var(--green);
+        color: var(--paper);
+      }
+      .day-pill {
+        position: absolute;
+        left: 25px;
+        top: calc(107px + var(--safe-top));
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        color: #456751;
+        font-size: 11px;
+        letter-spacing: 0.3px;
+      }
+      .sun {
+        width: 7px;
+        height: 7px;
+        background: #e9b44e;
+        box-shadow: 0 0 0 4px #f4d99b66;
+        border-radius: 50%;
+      }
+      .day-pill span:last-child {
+        opacity: 0.6;
+      }
+      .journal {
+        position: absolute;
+        top: calc(150px + var(--safe-top));
+        left: 22px;
+        width: 212px;
+        background: #faf8f0f5;
+        box-shadow: var(--shadow);
+        border-radius: 18px;
+        padding: 18px;
+        z-index: 2;
+      }
+      .journal-heading {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 12px;
+      }
+      .journal-heading svg {
+        width: 22px;
+        height: 22px;
+        stroke: #568361;
+        fill: none;
+        stroke-width: 1.4;
+      }
+      .journal h2 {
+        font-size: 23px;
+        line-height: 1.1;
+        margin-bottom: 8px;
+      }
+      .journal p {
+        font-size: 11px;
+        line-height: 1.7;
+        color: var(--muted);
+      }
+      .journal .progress {
+        height: 4px;
+        background: #e3e7d7;
+        border-radius: 4px;
+        overflow: hidden;
+        margin: 15px 0 10px;
+      }
+      .journal .progress div {
+        height: 100%;
+        background: #7d9b56;
+        transition: width 0.4s;
+      }
+      .journal-bottom {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        font-size: 10px;
+        color: var(--green);
+      }
+      .journal .tiny-button {
+        margin-top: 12px;
+        width: 100%;
+        border: 1px solid var(--line);
+        background: none;
+        border-radius: 11px;
+        font-size: 11px;
+        min-height: 52px;
+        text-align: left;
+        padding: 0 11px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+      }
+      .tiny-button svg {
+        width: 15px;
+        height: 15px;
+      }
+      .journal-illustration {
+        display: flex;
+        gap: 4px;
+        align-items: flex-end;
+        height: 40px;
+        margin-top: 10px;
+      }
+      .journal-illustration i {
+        display: block;
+        background: #b5c793;
+        border-radius: 2px 2px 0 0;
+        width: 17px;
+        height: 20px;
+      }
+      .journal-illustration i:nth-child(2) {
+        height: 29px;
+        background: #80a58b;
+      }
+      .journal-illustration i:nth-child(3) {
+        height: 37px;
+        background: #ddb38a;
+      }
+      .journal-illustration i:nth-child(4) {
+        height: 26px;
+        background: #94ad9f;
+      }
+      .journal-illustration i:nth-child(5) {
+        height: 16px;
+        background: #b8cc9c;
+      }
+      .compass {
+        position: absolute;
+        right: 28px;
+        top: calc(115px + var(--safe-top));
+        width: 52px;
+        height: 68px;
+        color: #3b6358;
+        display: flex;
+        align-items: center;
+        flex-direction: column;
+        gap: 4px;
+        font-size: 10px;
+        letter-spacing: 2px;
+        pointer-events: none;
+      }
+      .compass svg {
+        width: 36px;
+        height: 36px;
+        fill: none;
+        stroke: currentColor;
+        stroke-width: 1.2;
+      }
+      .compass #compass-needle {
+        transform-origin: center;
+      }
+      .camera-controls {
+        position: absolute;
+        right: 23px;
+        top: 50%;
+        transform: translateY(-50%);
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        z-index: 3;
+      }
+      .camera-controls .icon-button {
+        height: 52px;
+        min-width: 52px;
+        border-radius: 15px;
+        background: #faf8f0ed;
+      }
+      .camera-controls .divider {
+        height: 2px;
+      }
+      .camera-controls .icon-button svg {
+        width: 19px;
+        height: 19px;
+      }
+      .map-caption {
+        position: absolute;
+        right: 100px;
+        top: calc(145px + var(--safe-top));
+        font-family: Georgia, serif;
+        font-size: 16px;
+        letter-spacing: 3px;
+        transform: rotate(-8deg);
+        color: #45858c77;
+        pointer-events: none;
+      }
+      .hint {
+        position: absolute;
+        bottom: calc(226px + var(--safe-bottom));
+        left: 50%;
+        transform: translateX(-50%);
+        background: #faf8f0ed;
+        box-shadow: 0 3px 15px #25443412;
+        border: 1px solid #fff8;
+        border-radius: 100px;
+        padding: 11px 18px;
+        font-size: 11px;
+        color: #5e7865;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        white-space: nowrap;
+        pointer-events: none;
+        max-width: 90vw;
+      }
+      .hint svg {
+        width: 16px;
+        height: 16px;
+        stroke: currentColor;
+        fill: none;
+        stroke-width: 1.7;
+      }
+      .hint kbd {
+        font-family: inherit;
+        background: #e7eddf;
+        border-radius: 4px;
+        padding: 2px 5px;
+        font-size: 10px;
+      }
+      .toast {
+        position: absolute;
+        top: calc(106px + var(--safe-top));
+        left: 50%;
+        transform: translate(-50%, -10px);
+        padding: 12px 20px;
+        border-radius: 12px;
+        max-width: 90vw;
+        background: var(--green);
+        color: #fff9e9;
+        font-size: 12px;
+        box-shadow: var(--shadow);
+        opacity: 0;
+        pointer-events: none;
+        transition: 0.2s;
+        z-index: 11;
+        text-align: center;
+      }
+      .toast.show {
+        opacity: 1;
+        transform: translate(-50%, 0);
+      }
+      .build-dock {
+        position: absolute;
+        left: 22px;
+        right: 22px;
+        bottom: calc(17px + var(--safe-bottom));
+        background: #faf8f0f7;
+        border: 1px solid #fff9;
+        border-radius: 22px;
+        box-shadow: 0 10px 50px #2e513b26;
+        z-index: 4;
+        overflow: hidden;
+      }
+      .dock-top {
+        height: 57px;
+        display: flex;
+        align-items: center;
+        padding: 0 15px;
+        border-bottom: 1px solid var(--line);
+        gap: 18px;
+      }
+      .dock-title {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        white-space: nowrap;
+        font-size: 12px;
+        font-weight: 700;
+      }
+      .dock-title svg {
+        width: 19px;
+        height: 19px;
+        stroke: var(--green);
+        fill: none;
+        stroke-width: 1.8;
+      }
+      .categories {
+        display: flex;
+        align-items: center;
+        gap: 3px;
+        overflow-x: auto;
+        scrollbar-width: none;
+        height: 100%;
+        flex: 1;
+      }
+      .categories::-webkit-scrollbar {
+        display: none;
+      }
+      .category {
+        border: 0;
+        background: none;
+        min-height: 52px;
+        white-space: nowrap;
+        padding: 0 12px;
+        font-size: 11px;
+        color: #778371;
+        position: relative;
+      }
+      .category[aria-selected="true"] {
+        color: var(--green);
+        font-weight: 700;
+      }
+      .category[aria-selected="true"]:after {
+        content: "";
+        height: 3px;
+        bottom: 0;
+        left: 13px;
+        right: 13px;
+        background: var(--green);
+        position: absolute;
+        border-radius: 2px;
+      }
+      .undo {
+        border: 0;
+        border-left: 1px solid var(--line);
+        background: none;
+        min-width: 62px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 7px;
+        font-size: 11px;
+        padding-left: 16px;
+      }
+      .undo svg {
+        width: 17px;
+        height: 17px;
+      }
+      .undo:disabled {
+        opacity: 0.35;
+      }
+      .catalog {
+        height: 126px;
+        display: flex;
+        gap: 9px;
+        padding: 11px 14px;
+        overflow-x: auto;
+        scrollbar-width: thin;
+        scrollbar-color: #cdd6bd transparent;
+      }
+      .card {
+        position: relative;
+        flex: 0 0 119px;
+        height: 102px;
+        border: 1px solid #e2e6d9;
+        border-radius: 13px;
+        background: #f0f2e7;
+        text-align: left;
+        padding: 9px 10px;
+        display: flex;
+        flex-direction: column;
+        justify-content: flex-end;
+        overflow: hidden;
+        transition:
+          background 0.15s,
+          border-color 0.15s;
+      }
+      .card:hover {
+        background: #e5ebd9;
+      }
+      .card[aria-pressed="true"] {
+        background: #e2ecd5;
+        border: 1.5px solid var(--green);
+      }
+      .card .thumb {
+        position: absolute;
+        width: 68px;
+        height: 60px;
+        right: 0;
+        top: -3px;
+        pointer-events: none;
+      }
+      .card .thumb svg,
+      .card .thumb img {
+        width: 100%;
+        height: 100%;
+      }
+      .card .card-key {
+        position: absolute;
+        top: 9px;
+        left: 10px;
+        color: #8e9a84;
+        font-size: 8px;
+      }
+      .card strong {
+        font-weight: 600;
+        font-size: 11px;
+        line-height: 1.4;
+        position: relative;
+      }
+      .card .price {
+        font-size: 10px;
+        color: #688262;
+        line-height: 1.5;
+        position: relative;
+      }
+      .card .price.unaffordable {
+        color: #a26842;
+      }
+      .card .selected-dot {
+        display: none;
+        position: absolute;
+        top: 10px;
+        left: 10px;
+        width: 5px;
+        height: 5px;
+        border-radius: 50%;
+        background: var(--green);
+      }
+      .card[aria-pressed="true"] .selected-dot {
+        display: block;
+      }
+      .card[aria-pressed="true"] .card-key {
+        display: none;
+      }
+      .dock-footer {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        justify-content: space-between;
+        padding: 0 18px 10px;
+        font-size: 9px;
+        color: #98a28e;
+      }
+      .dock-footer .status {
+        display: flex;
+        align-items: center;
+        gap: 5px;
+      }
+      .status-dot {
+        width: 4px;
+        height: 4px;
+        border-radius: 50%;
+        background: #7d9c65;
+      }
+      .inspect {
+        position: absolute;
+        right: 90px;
+        top: calc(175px + var(--safe-top));
+        width: 230px;
+        padding: 19px;
+        background: var(--paper);
+        box-shadow: var(--shadow);
+        border-radius: 18px;
+        z-index: 5;
+      }
+      .inspect .close-small {
+        position: absolute;
+        right: 5px;
+        top: 5px;
+        min-width: 52px;
+        min-height: 52px;
+        border: 0;
+        background: none;
+        font-size: 22px;
+        color: var(--muted);
+      }
+      .inspect h2 {
+        font-size: 24px;
+        margin: 10px 0;
+      }
+      .inspect p {
+        font-size: 12px;
+        line-height: 1.7;
+        color: var(--muted);
+      }
+      .inspect .pill {
+        font-size: 10px;
+        padding: 5px 8px;
+        border-radius: 6px;
+        background: #e7eddb;
+        display: inline-block;
+        margin: 12px 0;
+      }
+      .inspect button.action {
+        width: 100%;
+        margin-top: 10px;
+      }
+      .action {
+        background: var(--green);
+        border: 1px solid var(--green);
+        border-radius: 12px;
+        color: #faf8f0;
+        padding: 0 18px;
+        font-size: 12px;
+        font-weight: 600;
+        display: inline-flex;
+        justify-content: center;
+        align-items: center;
+        gap: 8px;
+      }
+      .action.secondary {
+        background: transparent;
+        border: 1px solid #d7decc;
+        color: var(--green);
+      }
+      .action.danger {
+        background: #a9684b;
+        border-color: #a9684b;
+      }
+      .actions {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+      }
+      .actions > * {
+        flex: 1;
+      }
+      .dialog-backdrop {
+        position: absolute;
+        inset: 0;
+        z-index: 10;
+        background: #183e344a;
+        backdrop-filter: blur(7px);
+        -webkit-backdrop-filter: blur(7px);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 20px;
+      }
+      .dialog {
+        background: var(--paper);
+        border: 1px solid #fff8;
+        border-radius: 25px;
+        box-shadow: 0 30px 100px #1e3e3433;
+        width: 460px;
+        max-width: 100%;
+        max-height: calc(100dvh - 40px - var(--safe-top) - var(--safe-bottom));
+        overflow-y: auto;
+        padding: 29px;
+      }
+      .dialog-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 15px;
+        margin-bottom: 15px;
+      }
+      .dialog-header h2 {
+        font-size: 32px;
+      }
+      .dialog-header .close-dialog {
+        border: 1px solid var(--line);
+        border-radius: 12px;
+        background: transparent;
+        min-width: 52px;
+        display: grid;
+        place-items: center;
+      }
+      .dialog p {
+        font-size: 13px;
+        line-height: 1.8;
+        color: var(--muted);
+        margin: 9px 0 18px;
+      }
+      .dialog h3 {
+        font-size: 21px;
+        margin: 22px 0 12px;
+      }
+      .dialog label {
+        display: block;
+        font-size: 12px;
+        color: var(--muted);
+        margin-bottom: 7px;
+      }
+      .dialog input,
+      .dialog select {
+        width: 100%;
+        border: 1px solid #d6decd;
+        background: #fffdf7;
+        color: var(--ink);
+        border-radius: 11px;
+        padding: 13px;
+        margin-bottom: 16px;
+        min-height: 52px;
+      }
+      .mode-options {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 8px;
+      }
+      .mode-option {
+        text-align: left;
+        min-height: 72px;
+        padding: 13px 16px;
+        background: #f0f2e6;
+        border: 1px solid #dce2d2;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        gap: 13px;
+      }
+      .mode-option[aria-pressed="true"] {
+        border-color: var(--green);
+        background: #e5edd7;
+      }
+      .mode-option svg {
+        width: 28px;
+        height: 28px;
+      }
+      .mode-option strong {
+        display: block;
+        font-size: 13px;
+        font-weight: 600;
+      }
+      .mode-option small {
+        display: block;
+        font-size: 11px;
+        color: var(--muted);
+        margin-top: 4px;
+      }
+      .welcome-art {
+        height: 95px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: #e7eddb;
+        border-radius: 15px;
+        margin-bottom: 21px;
+        overflow: hidden;
+      }
+      .welcome-art svg {
+        width: 260px;
+        height: 105px;
+      }
+      .welcome h2 {
+        font-size: 38px;
+        line-height: 1.1;
+      }
+      .welcome .eyebrow {
+        margin-bottom: 8px;
+      }
+      .welcome .action {
+        width: 100%;
+        margin-top: 18px;
+      }
+      .save-row {
+        border: 1px solid var(--line);
+        border-radius: 12px;
+        padding: 12px;
+        margin-bottom: 10px;
+      }
+      .save-info {
+        font-size: 12px;
+        margin-bottom: 10px;
+        line-height: 1.7;
+      }
+      .save-info small {
+        color: var(--muted);
+        display: block;
+        font-size: 10px;
+      }
+      .save-row .action {
+        min-height: 52px;
+      }
+      .setting-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 15px;
+        margin: 12px 0;
+        padding: 12px 0;
+        border-bottom: 1px solid var(--line);
+        font-size: 13px;
+      }
+      .setting-row select {
+        width: 155px;
+        margin: 0;
+      }
+      .setting-row button {
+        min-width: 84px;
+        min-height: 52px;
+      }
+      .help-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+      }
+      .help-grid div {
+        background: #eef1e5;
+        border-radius: 12px;
+        padding: 14px;
+        font-size: 11px;
+        color: var(--muted);
+        line-height: 1.7;
+      }
+      .help-grid strong {
+        display: block;
+        color: var(--green);
+        margin-bottom: 4px;
+      }
+      .feature-note {
+        padding: 13px 15px;
+        background: #eaf0de;
+        border-radius: 11px;
+        font-size: 11px;
+        line-height: 1.8;
+        color: #64805f;
+        margin-top: 18px;
+      }
+      .view-modes {
+        display: flex;
+        gap: 8px;
+        margin: 12px 0;
+      }
+      .view-modes button {
+        flex: 1;
+        min-height: 60px;
+        border: 1px solid var(--line);
+        border-radius: 12px;
+        background: #edf1e2;
+        font-size: 12px;
+      }
+      .sr-only {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        padding: 0;
+        margin: -1px;
+        overflow: hidden;
+        clip: rect(0, 0, 0, 0);
+        white-space: nowrap;
+        border: 0;
+      }
+      .fatal {
+        position: absolute;
+        inset: 0;
+        display: grid;
+        place-items: center;
+        z-index: 30;
+        background: var(--paper);
+        padding: 30px;
+        text-align: center;
+      }
+      .fatal div {
+        max-width: 420px;
+      }
+      .fatal h2 {
+        font-size: 35px;
+        margin-bottom: 15px;
+      }
+      .fatal p {
+        font-size: 14px;
+        line-height: 1.8;
+        color: var(--muted);
+      }
+      @media (min-width: 1250px) {
+        .topbar,
+        .build-dock {
+          left: 30px;
+          right: 30px;
+        }
+        .journal {
+          left: 30px;
+        }
+        .build-dock {
+          max-width: 1160px;
+          margin: auto;
+        }
+        .catalog {
+          gap: 12px;
+        }
+        .card {
+          flex-basis: 132px;
+        }
+        .day-pill {
+          left: 32px;
+        }
+      }
+      @media (max-width: 900px) {
+        .topbar {
+          left: 16px;
+          right: 16px;
+          gap: 8px;
+        }
+        .brand {
+          padding: 10px 13px 10px 10px;
+          gap: 8px;
+          height: 65px;
+        }
+        .brand h1 {
+          font-size: 22px;
+        }
+        .brand-mark {
+          width: 37px;
+          height: 37px;
+        }
+        .brand .eyebrow {
+          font-size: 7px;
+        }
+        .stats {
+          height: 65px;
+        }
+        .stat {
+          padding: 0 12px;
+          min-width: 83px;
+        }
+        .stat strong {
+          font-size: 17px;
+        }
+        .stat small {
+          font-size: 9px;
+        }
+        .top-spacer {
+          display: none;
+        }
+        .topbar .icon-button {
+          height: 52px;
+          min-width: 52px;
+          border-radius: 14px;
+        }
+        .journal {
+          left: 16px;
+          top: calc(142px + var(--safe-top));
+          width: 180px;
+          padding: 15px;
+        }
+        .journal h2 {
+          font-size: 21px;
+        }
+        .journal p {
+          font-size: 10px;
+        }
+        .journal .eyebrow {
+          font-size: 9px;
+        }
+        .day-pill {
+          left: 20px;
+          top: calc(99px + var(--safe-top));
+        }
+        .build-dock {
+          left: 14px;
+          right: 14px;
+          bottom: calc(14px + var(--safe-bottom));
+        }
+        .dock-top {
+          padding: 0 12px;
+          gap: 8px;
+        }
+        .dock-title {
+          font-size: 11px;
+        }
+        .category {
+          padding: 0 10px;
+          font-size: 10px;
+        }
+        .undo {
+          min-width: 52px;
+          padding-left: 10px;
+        }
+        .undo span {
+          display: none;
+        }
+        .hint {
+          font-size: 10px;
+          bottom: calc(225px + var(--safe-bottom));
+          padding: 10px 14px;
+        }
+        .camera-controls {
+          right: 16px;
+        }
+        .compass {
+          right: 20px;
+          top: calc(104px + var(--safe-top));
+        }
+        .map-caption {
+          right: 88px;
+          top: calc(139px + var(--safe-top));
+          font-size: 14px;
+        }
+        .inspect {
+          right: 80px;
+          width: 220px;
+        }
+      }
+      @media (max-width: 700px) {
+        .topbar {
+          top: calc(10px + var(--safe-top));
+          gap: 6px;
+          left: 10px;
+          right: 10px;
+          flex-wrap: wrap;
+        }
+        .brand {
+          height: 58px;
+          padding: 8px 10px;
+          border-radius: 14px;
+        }
+        .brand h1 {
+          font-size: 21px;
+        }
+        .brand-mark {
+          width: 32px;
+          height: 32px;
+          border-radius: 9px;
+        }
+        .brand-mark svg {
+          width: 24px;
+        }
+        .brand .eyebrow {
+          display: none;
+        }
+        .stats {
+          height: 58px;
+          flex: 1;
+          border-radius: 14px;
+        }
+        .stat {
+          padding: 0 9px;
+          min-width: 0;
+          flex: 1;
+        }
+        .stat-label {
+          font-size: 8px;
+          gap: 4px;
+        }
+        .stat strong {
+          font-size: 15px;
+        }
+        .stat small {
+          display: none;
+        }
+        .topbar .icon-button {
+          height: 52px;
+          min-width: 52px;
+        }
+        .topbar #help-button {
+          display: none;
+        }
+        .day-pill {
+          top: calc(82px + var(--safe-top));
+          left: 16px;
+          font-size: 10px;
+        }
+        .journal {
+          top: calc(122px + var(--safe-top));
+          left: 12px;
+          width: 158px;
+          padding: 13px;
+        }
+        .journal h2 {
+          font-size: 20px;
+        }
+        .journal-illustration {
+          display: none;
+        }
+        .journal .tiny-button {
+          margin-top: 8px;
+          font-size: 10px;
+          padding: 0 8px;
+        }
+        .journal p {
+          line-height: 1.6;
+        }
+        .journal-heading {
+          margin-bottom: 8px;
+        }
+        .journal-heading svg {
+          width: 18px;
+        }
+        .journal .progress {
+          margin: 11px 0 8px;
+        }
+        .journal-bottom {
+          font-size: 9px;
+        }
+        .compass {
+          top: calc(90px + var(--safe-top));
+          right: 13px;
+        }
+        .map-caption {
+          display: none;
+        }
+        .camera-controls {
+          right: 12px;
+          top: 44%;
+          gap: 6px;
+        }
+        .camera-controls .icon-button {
+          min-width: 52px;
+          min-height: 52px;
+        }
+        .dock-title {
+          display: none;
+        }
+        .build-dock {
+          left: 9px;
+          right: 9px;
+          bottom: calc(9px + var(--safe-bottom));
+          border-radius: 17px;
+        }
+        .dock-top {
+          padding: 0 7px;
+          height: 55px;
+          gap: 0;
+        }
+        .category {
+          font-size: 10px;
+          padding: 0 11px;
+        }
+        .catalog {
+          padding: 9px;
+          height: 119px;
+          gap: 7px;
+        }
+        .card {
+          flex-basis: 107px;
+          height: 98px;
+          padding: 8px;
+        }
+        .card strong {
+          font-size: 10px;
+        }
+        .card .price {
+          font-size: 9px;
+        }
+        .card .thumb {
+          width: 64px;
+        }
+        .dock-footer {
+          font-size: 8px;
+          padding: 0 12px 8px;
+        }
+        .hint {
+          bottom: calc(210px + var(--safe-bottom));
+          font-size: 9px;
+          gap: 5px;
+          padding: 9px 11px;
+          white-space: normal;
+          text-align: center;
+          max-width: 80vw;
+          width: max-content;
+        }
+        .hint kbd {
+          display: none;
+        }
+        .inspect {
+          right: 73px;
+          top: calc(120px + var(--safe-top));
+          width: 205px;
+          padding: 16px;
+        }
+        .inspect h2 {
+          font-size: 22px;
+        }
+        .inspect p {
+          font-size: 11px;
+        }
+        .dialog {
+          padding: 23px;
+          border-radius: 20px;
+        }
+        .dialog h2 {
+          font-size: 29px;
+        }
+        .dialog-backdrop {
+          padding: 15px;
+        }
+        .welcome h2 {
+          font-size: 35px;
+        }
+      }
+      @media (max-height: 650px) {
+        .journal {
+          top: calc(112px + var(--safe-top));
+          padding: 13px;
+        }
+        .journal h2 {
+          font-size: 20px;
+        }
+        .journal p,
+        .journal-illustration,
+        .journal .tiny-button {
+          display: none;
+        }
+        .journal .progress {
+          margin: 12px 0 8px;
+        }
+        .compass {
+          top: calc(98px + var(--safe-top));
+        }
+        .camera-controls {
+          top: 44%;
+          gap: 4px;
+        }
+        .camera-controls .icon-button {
+          height: 52px;
+        }
+        .build-dock {
+          bottom: calc(8px + var(--safe-bottom));
+        }
+        .catalog {
+          height: 106px;
+          padding: 7px 10px;
+        }
+        .card {
+          height: 90px;
+        }
+        .dock-footer {
+          display: none;
+        }
+        .hint {
+          bottom: calc(175px + var(--safe-bottom));
+          padding: 8px 13px;
+        }
+        .inspect {
+          top: calc(104px + var(--safe-top));
+        }
+        .dialog {
+          max-height: calc(100dvh - 24px);
+          padding: 21px;
+        }
+        .welcome-art {
+          display: none;
+        }
+      }
+      @media (prefers-reduced-motion: reduce) {
+        * {
+          transition: none !important;
+          scroll-behavior: auto !important;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <canvas
+      id="world"
+      tabindex="0"
+      aria-label="3D town map. Use arrow keys to move, plus and minus to zoom. Select a building and tap the map to place it."
+    ></canvas>
+    <div class="vignette"></div>
+    <header class="topbar">
+      <div class="brand">
+        <div class="brand-mark">
+          <svg viewBox="0 0 40 40" aria-hidden="true">
+            <path
+              d="M5 27V16l9-7 9 7v11M10 27V18h8v9m7 0V12l5-4 5 4v15M3 31c6-4 9 4 15 0s9 4 18 0M14 9V5"
+            />
+          </svg>
+        </div>
+        <div>
+          <h1>Baytown</h1>
+          <div class="eyebrow">A little town. A big imagination.</div>
+        </div>
+      </div>
+      <div class="stats" aria-label="Town statistics">
+        <div class="stat">
+          <span class="stat-label"
+            ><svg viewBox="0 0 20 20">
+              <path d="M3 6h14v10H3zM3 6l10-3v3m1 4h3v3h-3z" /></svg
+            >Town funds</span
+          ><strong id="funds">$30,000</strong>
+        </div>
+        <div class="stat">
+          <span class="stat-label"
+            ><svg viewBox="0 0 20 20">
+              <circle cx="10" cy="6" r="3" />
+              <path d="M4 17v-2a6 6 0 0112 0v2" /></svg
+            >Room for</span
+          ><strong id="population">0 <small>neighbors</small></strong>
+        </div>
+        <div class="stat">
+          <span class="stat-label"
+            ><svg viewBox="0 0 20 20">
+              <path d="M3 17V7l7-5 7 5v10zM8 17v-6h4v6" /></svg
+            >Built</span
+          ><strong id="building-count">0 <small>places</small></strong>
+        </div>
+      </div>
+      <div class="top-spacer"></div>
+      <button
+        id="save-button"
+        class="icon-button"
+        aria-label="Save and load"
+        title="Save and load"
+      ></button
+      ><button
+        id="help-button"
+        class="icon-button"
+        aria-label="How to play"
+        title="How to play"
+      ></button
+      ><button
+        id="menu-button"
+        class="icon-button"
+        aria-label="Town settings"
+        title="Town settings"
+      ></button>
+    </header>
+    <div class="day-pill">
+      <i class="sun"></i><strong id="town-label">Baytown Bay</strong
+      ><span>·</span><span>Founder's edition · Milestone 1</span>
+    </div>
+    <aside class="journal" aria-label="Town guide">
+      <div class="journal-heading">
+        <span class="eyebrow">A fresh beginning</span
+        ><svg viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M5 4h13v16H5zM8 8h7M8 12h7M8 16h4M18 6h2v16H7" />
+        </svg>
+      </div>
+      <h2 id="goal-title">Make yourself<br />at home.</h2>
+      <p id="goal-description">
+        Every great town starts small. Give three homes a place by the bay.
+      </p>
+      <div class="journal-illustration" aria-hidden="true">
+        <i></i><i></i><i></i><i></i><i></i>
+      </div>
+      <div class="progress"><div id="goal-progress"></div></div>
+      <div class="journal-bottom">
+        <span id="goal-count">0 of 3 homes</span
+        ><span id="goal-reward">Your first chapter</span>
+      </div>
+      <button class="tiny-button" id="guide-button">
+        <span>A note from the town planner</span
+        ><svg viewBox="0 0 20 20"><path d="M4 10h12m-5-5 5 5-5 5" /></svg>
+      </button>
+    </aside>
+    <div class="compass" aria-hidden="true">
+      <span>N</span
+      ><svg viewBox="0 0 40 40" id="compass-needle">
+        <path d="M20 3l6 27-6-7-6 7z" fill="#668977" />
+        <path d="M20 3v20" stroke="#faf8f0" />
+      </svg>
+    </div>
+    <div class="map-caption" aria-hidden="true">
+      S E A G L A S S &nbsp; B A Y
+    </div>
+    <div class="camera-controls" aria-label="Map controls">
+      <button
+        class="icon-button"
+        id="zoom-in"
+        aria-label="Zoom in"
+        title="Zoom in"
+      ></button
+      ><button
+        class="icon-button"
+        id="zoom-out"
+        aria-label="Zoom out"
+        title="Zoom out"
+      ></button>
+      <div class="divider"></div>
+      <button
+        class="icon-button"
+        id="rotate"
+        aria-label="Turn the view"
+        title="Turn the view"
+      ></button
+      ><button
+        class="icon-button"
+        id="home-view"
+        aria-label="Center the town"
+        title="Center the town"
+      ></button
+      ><button
+        class="icon-button"
+        id="view-button"
+        aria-label="Map layers"
+        title="Map layers"
+      ></button>
+    </div>
+    <div class="hint" id="hint">
+      <span id="hint-icon"></span
+      ><span id="hint-text"
+        >A little space to make your own. Tap a place to start building.</span
+      >
+    </div>
+    <aside class="inspect" id="inspect" aria-label="Selected place" hidden>
+      <button
+        class="close-small"
+        aria-label="Close place details"
+        id="close-inspect"
+      >
+        ×
+      </button>
+      <div class="eyebrow" id="inspect-category">A place in your town</div>
+      <h2 id="inspect-title"></h2>
+      <p id="inspect-description"></p>
+      <div class="pill" id="inspect-info"></div>
+      <p id="inspect-coordinates"></p>
+      <button class="action secondary" id="inspect-remove">
+        Remove & refund
+      </button>
+    </aside>
+    <footer class="build-dock">
+      <div class="dock-top">
+        <div class="dock-title">
+          <svg viewBox="0 0 24 24">
+            <path d="M4 20v-8l8-7 8 7v8H4zm5 0v-6h6v6M2 12l10-9 10 9" /></svg
+          >Make it yours
+        </div>
+        <nav
+          class="categories"
+          role="tablist"
+          aria-label="Building categories"
+        ></nav>
+        <button
+          class="undo"
+          id="turn-building"
+          aria-label="Turn building"
+          title="Turn building · R"
+          hidden
+        ></button
+        ><button
+          class="undo"
+          id="undo"
+          aria-label="Undo last change"
+          title="Undo last change"
+          disabled
+        ></button>
+      </div>
+      <div
+        class="catalog"
+        id="catalog"
+        role="group"
+        aria-label="Places to build"
+      ></div>
+      <div class="dock-footer">
+        <span id="selection-label">Little things make a town.</span
+        ><span class="status"
+          ><i class="status-dot"></i
+          ><span id="save-status" role="status"
+            >Your town stays with you</span
+          ></span
+        >
+      </div>
+    </footer>
+    <div class="toast" id="toast" role="status" aria-live="polite"></div>
+    <div class="dialog-backdrop" id="modal" hidden>
+      <section
+        class="dialog"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="dialog-title"
+        id="dialog"
+      ></section>
+    </div>
+    <div class="fatal" id="fatal" hidden>
+      <div>
+        <h2>A little more sunshine.</h2>
+        <p id="fatal-message"></p>
+        <button
+          class="action"
+          onclick="location.reload()"
+          style="margin-top: 20px"
+        >
+          Try again
+        </button>
+      </div>
+    </div>
+    <script>
+      "use strict";
+      /* 01 · ENGINE — a small instanced WebGL2 renderer. No runtime dependencies. */
+      const $ = (id) => document.getElementById(id),
+        canvas = $("world");
+      const TAU = Math.PI * 2,
+        clamp = (x, a, b) => Math.max(a, Math.min(b, x)),
+        lerp = (a, b, t) => a + (b - a) * t;
+      const money = (n) => "$" + Math.round(n).toLocaleString("en-US");
+      const reducedMotion = matchMedia(
+        "(prefers-reduced-motion: reduce)",
+      ).matches;
+      let gl,
+        program,
+        locations,
+        contextLost = false,
+        frame = 0,
+        lastTime = 0,
+        lastUI = 0,
+        dirty = true,
+        active = true;
+      let quality = "auto",
+        dpr = 1,
+        rendererError = null;
+      const vertexSource = `#version 300 es
+precision highp float;
+layout(location=0) in vec3 aPosition;layout(location=1) in vec3 aNormal;
+layout(location=2) in vec3 iPosition;layout(location=3) in vec3 iScale;
+layout(location=4) in vec3 iColor;layout(location=5) in float iAngle;layout(location=6) in float iMaterial;
+uniform mat4 uVP;out vec3 vColor;out vec3 vNormal;out vec3 vWorld;flat out float vMaterial;
+void main(){float c=cos(iAngle),s=sin(iAngle);vec3 p=aPosition*iScale;p.xz=mat2(c,-s,s,c)*p.xz;p+=iPosition;vec3 n=aNormal/max(iScale,vec3(.001));n.xz=mat2(c,-s,s,c)*n.xz;vColor=iColor;vNormal=normalize(n);vWorld=p;vMaterial=iMaterial;gl_Position=uVP*vec4(p,1.);}`;
+      const fragmentSource = `#version 300 es
+precision highp float;
+in vec3 vColor;in vec3 vNormal;in vec3 vWorld;flat in float vMaterial;
+uniform float uTime;uniform float uGrid;out vec4 outColor;
+void main(){vec3 light=normalize(vec3(-.55,1.,.45));float sun=max(0.,dot(normalize(vNormal),light));vec3 col=vColor*(.77+.30*sun);if(vMaterial>.5&&vMaterial<1.5){float wave=sin(vWorld.x*2.+vWorld.z*1.7+uTime*.55)*sin(vWorld.z*3.-uTime*.3);col+=wave*.014;float glint=pow(max(0.,sin(vWorld.x*5.+vWorld.z*2.+uTime*.2)),28.);col+=glint*.025;}if(vMaterial>1.5&&uGrid>.5){vec2 f=abs(fract(vWorld.xz+.5)-.5);float line=smoothstep(.47,.495,max(f.x,f.y));col=mix(col,vec3(.40,.53,.32),line*.28);}outColor=vec4(col,1.);}`;
+      function makeMesh(kind) {
+        const data = [];
+        function tri(a, b, c) {
+          const ux = b[0] - a[0],
+            uy = b[1] - a[1],
+            uz = b[2] - a[2],
+            vx = c[0] - a[0],
+            vy = c[1] - a[1],
+            vz = c[2] - a[2];
+          let nx = uy * vz - uz * vy,
+            ny = uz * vx - ux * vz,
+            nz = ux * vy - uy * vx;
+          const l = Math.hypot(nx, ny, nz) || 1;
+          const sign = kind === "cube" || kind === "roof" ? -1 : 1;
+          nx = (nx / l) * sign;
+          ny = (ny / l) * sign;
+          nz = (nz / l) * sign;
+          for (const p of [a, b, c]) data.push(...p, nx, ny, nz);
+        }
+        function quad(a, b, c, d) {
+          tri(a, b, c);
+          tri(a, c, d);
+        }
+        if (kind === "cube") {
+          const p = [
+            [-0.5, 0, -0.5],
+            [0.5, 0, -0.5],
+            [0.5, 1, -0.5],
+            [-0.5, 1, -0.5],
+            [-0.5, 0, 0.5],
+            [0.5, 0, 0.5],
+            [0.5, 1, 0.5],
+            [-0.5, 1, 0.5],
+          ];
+          quad(p[3], p[2], p[6], p[7]);
+          quad(p[4], p[5], p[1], p[0]);
+          quad(p[0], p[1], p[2], p[3]);
+          quad(p[5], p[4], p[7], p[6]);
+          quad(p[4], p[0], p[3], p[7]);
+          quad(p[1], p[5], p[6], p[2]);
+        }
+        if (kind === "roof") {
+          quad([-0.5, 0, -0.5], [0.5, 0, -0.5], [0.5, 1, 0], [-0.5, 1, 0]);
+          quad([-0.5, 1, 0], [0.5, 1, 0], [0.5, 0, 0.5], [-0.5, 0, 0.5]);
+          tri([-0.5, 0, 0.5], [-0.5, 0, -0.5], [-0.5, 1, 0]);
+          tri([0.5, 0, -0.5], [0.5, 0, 0.5], [0.5, 1, 0]);
+        }
+        if (kind === "tree") {
+          const top = [0, 1, 0],
+            bot = [0, 0, 0],
+            ring = [
+              [0.5, 0.48, 0],
+              [0, 0.48, 0.5],
+              [-0.5, 0.48, 0],
+              [0, 0.48, -0.5],
+            ];
+          for (let i = 0; i < 4; i++) {
+            tri(top, ring[(i + 1) % 4], ring[i]);
+            tri(bot, ring[i], ring[(i + 1) % 4]);
+          }
+        }
+        if (kind === "rotor") {
+          for (let i = 0; i < 3; i++) {
+            const a = (i * TAU) / 3 + 0.2;
+            const point = (x, y) => [
+              x * Math.cos(a) - y * Math.sin(a),
+              x * Math.sin(a) + y * Math.cos(a),
+              0,
+            ];
+            quad(
+              point(-0.035, 0.08),
+              point(0.035, 0.08),
+              point(0.075, 1.13),
+              point(-0.035, 1.25),
+            );
+          }
+        }
+        return new Float32Array(data);
+      }
+      const batches = {};
+      function createBatch(kind) {
+        const mesh = makeMesh(kind),
+          vao = gl.createVertexArray();
+        gl.bindVertexArray(vao);
+        const vertex = gl.createBuffer();
+        gl.bindBuffer(gl.ARRAY_BUFFER, vertex);
+        gl.bufferData(gl.ARRAY_BUFFER, mesh, gl.STATIC_DRAW);
+        for (let i = 0; i < 2; i++) {
+          gl.enableVertexAttribArray(i);
+          gl.vertexAttribPointer(i, 3, gl.FLOAT, false, 24, i * 12);
+        }
+        const instance = gl.createBuffer();
+        gl.bindBuffer(gl.ARRAY_BUFFER, instance);
+        const sizes = [3, 3, 3, 1, 1],
+          offs = [0, 3, 6, 9, 10];
+        for (let i = 0; i < 5; i++) {
+          gl.enableVertexAttribArray(i + 2);
+          gl.vertexAttribPointer(
+            i + 2,
+            sizes[i],
+            gl.FLOAT,
+            false,
+            44,
+            offs[i] * 4,
+          );
+          gl.vertexAttribDivisor(i + 2, 1);
+        }
+        gl.bindVertexArray(null);
+        return {
+          vao,
+          vertex,
+          instance,
+          vertices: mesh.length / 6,
+          count: 0,
+          data: [],
+        };
+      }
+      function compile(type, source) {
+        const s = gl.createShader(type);
+        gl.shaderSource(s, source);
+        gl.compileShader(s);
+        if (!gl.getShaderParameter(s, gl.COMPILE_STATUS)) {
+          const message = gl.getShaderInfoLog(s);
+          gl.deleteShader(s);
+          throw Error(message);
+        }
+        return s;
+      }
+      function initGL() {
+        gl = canvas.getContext("webgl2", {
+          antialias: true,
+          alpha: false,
+          preserveDrawingBuffer: false,
+          powerPreference: "low-power",
+        });
+        if (!gl)
+          throw Error(
+            "This town needs WebGL2. Try an up-to-date Safari or Chrome browser with graphics enabled. Your saved town will still be here.",
+          );
+        const vs = compile(gl.VERTEX_SHADER, vertexSource),
+          fs = compile(gl.FRAGMENT_SHADER, fragmentSource);
+        program = gl.createProgram();
+        gl.attachShader(program, vs);
+        gl.attachShader(program, fs);
+        gl.linkProgram(program);
+        gl.deleteShader(vs);
+        gl.deleteShader(fs);
+        if (!gl.getProgramParameter(program, gl.LINK_STATUS))
+          throw Error(gl.getProgramInfoLog(program));
+        locations = {
+          vp: gl.getUniformLocation(program, "uVP"),
+          time: gl.getUniformLocation(program, "uTime"),
+          grid: gl.getUniformLocation(program, "uGrid"),
+        };
+        for (const kind of ["cube", "roof", "tree", "rotor"])
+          batches[kind] = createBatch(kind);
+        gl.enable(gl.DEPTH_TEST);
+        gl.disable(gl.CULL_FACE);
+        gl.clearColor(0.79, 0.87, 0.82, 1);
+        resize();
+        dirty = true;
+      }
+      const view = new Float32Array(16),
+        projection = new Float32Array(16),
+        vp = new Float32Array(16),
+        inverse = new Float32Array(16),
+        eye = new Float32Array(3);
+      const camera = { x: 36, z: 35, zoom: 29, angle: 0.63, pitch: 0.7 };
+      function multiply(out, a, b) {
+        for (let i = 0; i < 4; i++)
+          for (let j = 0; j < 4; j++)
+            out[i * 4 + j] =
+              a[j] * b[i * 4] +
+              a[4 + j] * b[i * 4 + 1] +
+              a[8 + j] * b[i * 4 + 2] +
+              a[12 + j] * b[i * 4 + 3];
+      }
+      function invert(out, a) {
+        const a00 = a[0],
+          a01 = a[1],
+          a02 = a[2],
+          a03 = a[3],
+          a10 = a[4],
+          a11 = a[5],
+          a12 = a[6],
+          a13 = a[7],
+          a20 = a[8],
+          a21 = a[9],
+          a22 = a[10],
+          a23 = a[11],
+          a30 = a[12],
+          a31 = a[13],
+          a32 = a[14],
+          a33 = a[15],
+          b00 = a00 * a11 - a01 * a10,
+          b01 = a00 * a12 - a02 * a10,
+          b02 = a00 * a13 - a03 * a10,
+          b03 = a01 * a12 - a02 * a11,
+          b04 = a01 * a13 - a03 * a11,
+          b05 = a02 * a13 - a03 * a12,
+          b06 = a20 * a31 - a21 * a30,
+          b07 = a20 * a32 - a22 * a30,
+          b08 = a20 * a33 - a23 * a30,
+          b09 = a21 * a32 - a22 * a31,
+          b10 = a21 * a33 - a23 * a31,
+          b11 = a22 * a33 - a23 * a32;
+        let d =
+          b00 * b11 - b01 * b10 + b02 * b09 + b03 * b08 - b04 * b07 + b05 * b06;
+        if (!d) return;
+        d = 1 / d;
+        out[0] = (a11 * b11 - a12 * b10 + a13 * b09) * d;
+        out[1] = (a02 * b10 - a01 * b11 - a03 * b09) * d;
+        out[2] = (a31 * b05 - a32 * b04 + a33 * b03) * d;
+        out[3] = (a22 * b04 - a21 * b05 - a23 * b03) * d;
+        out[4] = (a12 * b08 - a10 * b11 - a13 * b07) * d;
+        out[5] = (a00 * b11 - a02 * b08 + a03 * b07) * d;
+        out[6] = (a32 * b02 - a30 * b05 - a33 * b01) * d;
+        out[7] = (a20 * b05 - a22 * b02 + a23 * b01) * d;
+        out[8] = (a10 * b10 - a11 * b08 + a13 * b06) * d;
+        out[9] = (a01 * b08 - a00 * b10 - a03 * b06) * d;
+        out[10] = (a30 * b04 - a31 * b02 + a33 * b00) * d;
+        out[11] = (a21 * b02 - a20 * b04 - a23 * b00) * d;
+        out[12] = (a11 * b07 - a10 * b09 - a12 * b06) * d;
+        out[13] = (a00 * b09 - a01 * b07 + a02 * b06) * d;
+        out[14] = (a31 * b01 - a30 * b03 - a32 * b00) * d;
+        out[15] = (a20 * b03 - a21 * b01 + a22 * b00) * d;
+      }
+      function updateCamera() {
+        const a = camera.angle,
+          p = camera.pitch,
+          ex = Math.sin(a) * Math.cos(p),
+          ey = Math.sin(p),
+          ez = Math.cos(a) * Math.cos(p);
+        eye[0] = camera.x + ex * 90;
+        eye[1] = ey * 90;
+        eye[2] = camera.z + ez * 90;
+        const xx = Math.cos(a),
+          xz = -Math.sin(a),
+          yx = -Math.sin(a) * ey,
+          yy = Math.cos(p),
+          yz = -Math.cos(a) * ey;
+        view[0] = xx;
+        view[1] = yx;
+        view[2] = ex;
+        view[3] = 0;
+        view[4] = 0;
+        view[5] = yy;
+        view[6] = ey;
+        view[7] = 0;
+        view[8] = xz;
+        view[9] = yz;
+        view[10] = ez;
+        view[11] = 0;
+        view[12] = -(xx * eye[0] + xz * eye[2]);
+        view[13] = -(yx * eye[0] + yy * eye[1] + yz * eye[2]);
+        view[14] = -(ex * eye[0] + ey * eye[1] + ez * eye[2]);
+        view[15] = 1;
+        const aspect = canvas.width / canvas.height,
+          halfY = camera.zoom / 2,
+          halfX = halfY * aspect;
+        projection.fill(0);
+        projection[0] = 1 / halfX;
+        projection[5] = 1 / halfY;
+        projection[10] = -2 / 250;
+        projection[14] = -1;
+        projection[15] = 1;
+        multiply(vp, projection, view);
+        invert(inverse, vp);
+        $("compass-needle").style.transform =
+          `rotate(${(Math.atan2(Math.sin(a), Math.cos(a) * Math.sin(p)) * 180) / Math.PI}deg)`;
+      }
+      function resize() {
+        if (!gl || contextLost) return;
+        const cap = quality === "high" ? 2 : quality === "low" ? 1 : 1.5;
+        dpr = Math.min(devicePixelRatio || 1, cap);
+        const w = Math.max(1, Math.round(innerWidth * dpr)),
+          h = Math.max(1, Math.round(innerHeight * dpr));
+        if (canvas.width !== w || canvas.height !== h) {
+          canvas.width = w;
+          canvas.height = h;
+        }
+        gl.viewport(0, 0, w, h);
+        updateCamera();
+      }
+      function screenToWorld(sx, sy) {
+        const nx = (sx / innerWidth) * 2 - 1,
+          ny = 1 - (sy / innerHeight) * 2;
+        const near = [0, 0, 0],
+          far = [0, 0, 0];
+        for (let k = 0; k < 3; k++) {
+          near[k] =
+            inverse[k] * nx +
+            inverse[k + 4] * ny -
+            inverse[k + 8] +
+            inverse[k + 12];
+          far[k] =
+            inverse[k] * nx +
+            inverse[k + 4] * ny +
+            inverse[k + 8] +
+            inverse[k + 12];
+        }
+        const t = -near[1] / (far[1] - near[1]);
+        return {
+          x: near[0] + (far[0] - near[0]) * t,
+          z: near[2] + (far[2] - near[2]) * t,
+        };
+      }
+      function worldToScreen(x, z, y = 0) {
+        const px = vp[0] * x + vp[4] * y + vp[8] * z + vp[12],
+          py = vp[1] * x + vp[5] * y + vp[9] * z + vp[13];
+        return {
+          x: ((px + 1) * innerWidth) / 2,
+          y: ((1 - py) * innerHeight) / 2,
+        };
+      }
+      const C = {
+        grass: [0.57, 0.7, 0.4],
+        sand: [0.86, 0.82, 0.6],
+        water: [0.31, 0.66, 0.7],
+        road: [0.5, 0.54, 0.48],
+        sidewalk: [0.76, 0.77, 0.65],
+        wood: [0.64, 0.47, 0.3],
+        trunk: [0.46, 0.35, 0.23],
+        leaf: [0.31, 0.5, 0.31],
+        window: [0.33, 0.52, 0.53],
+        cream: [0.92, 0.87, 0.7],
+        white: [0.94, 0.93, 0.82],
+        roof: [0.68, 0.39, 0.27],
+      };
+      function instance(
+        kind,
+        x,
+        y,
+        z,
+        sx,
+        sy,
+        sz,
+        color,
+        angle = 0,
+        material = 0,
+      ) {
+        batches[kind].data.push(
+          x,
+          y,
+          z,
+          sx,
+          sy,
+          sz,
+          color[0],
+          color[1],
+          color[2],
+          angle,
+          material,
+        );
+      }
+      function cube(x, y, z, sx, sy, sz, col, rot = 0, mat = 0) {
+        instance("cube", x, y, z, sx, sy, sz, col, rot, mat);
+      }
+      function uploadWorld() {
+        for (const key in batches) {
+          const b = batches[key];
+          gl.bindBuffer(gl.ARRAY_BUFFER, b.instance);
+          gl.bufferData(
+            gl.ARRAY_BUFFER,
+            new Float32Array(b.data),
+            gl.STATIC_DRAW,
+          );
+          b.count = b.data.length / 11;
+        }
+      }
+      function render(time) {
+        frame = requestAnimationFrame(render);
+        if (!active || contextLost || !gl) return;
+        if (quality === "low" && time - lastTime < 32) return;
+        lastTime = time;
+        if (dirty) {
+          rebuildWorld();
+          dirty = false;
+        }
+        gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+        gl.useProgram(program);
+        gl.uniformMatrix4fv(locations.vp, false, vp);
+        gl.uniform1f(locations.time, reducedMotion ? 0 : time * 0.001);
+        gl.uniform1f(locations.grid, mapLayer === "grid" || selected ? 1 : 0);
+        for (const key in batches) {
+          const b = batches[key];
+          gl.bindVertexArray(b.vao);
+          gl.drawArraysInstanced(gl.TRIANGLES, 0, b.vertices, b.count);
+        }
+        gl.bindVertexArray(null);
+        if (time - lastUI > 5000) {
+          lastUI = time;
+          maybeAutosave();
+        }
+      }
+      canvas.addEventListener("webglcontextlost", (e) => {
+        e.preventDefault();
+        contextLost = true;
+        toast("The view is resting. Your town is safe.");
+      });
+      canvas.addEventListener("webglcontextrestored", () => {
+        try {
+          initGL();
+          contextLost = false;
+          dirty = true;
+          toast("Back to the bay. Your town is just as you left it.");
+        } catch (e) {
+          fatal(e.message);
+        }
+      });
+      function fatal(message) {
+        rendererError = message;
+        $("fatal-message").textContent = message;
+        $("fatal").hidden = false;
+      }
+
+      /* 02 · WORLD — deterministic terrain regenerated from a seed. */
+      const SIZE = 72,
+        SAVE_VERSION = 1,
+        MAX_OBJECTS = 5000;
+      let terrain = new Uint8Array(SIZE * SIZE),
+        scenery = [],
+        occupancy = new Int32Array(SIZE * SIZE),
+        town = null;
+      let selected = null,
+        category = "Essentials",
+        rotation = 0,
+        hover = null,
+        mapLayer = "natural",
+        inspectorId = null;
+      let nextId = 1,
+        undoStack = [],
+        changeSerial = 0,
+        savedSerial = -1,
+        welcomed = false;
+      function hash(x, z, seed) {
+        let h =
+          Math.imul(x + 107, 374761393) ^ Math.imul(z + 713, 668265263) ^ seed;
+        h = Math.imul(h ^ (h >>> 13), 1274126177);
+        return ((h ^ (h >>> 16)) >>> 0) / 4294967296;
+      }
+      function seeded(seed) {
+        let s = seed >>> 0;
+        return () => {
+          s += 0x6d2b79f5;
+          let t = s;
+          t = Math.imul(t ^ (t >>> 15), t | 1);
+          t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+          return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+        };
+      }
+      function tile(x, z) {
+        if (x < 0 || z < 0 || x >= SIZE || z >= SIZE) return -1;
+        return terrain[z * SIZE + x];
+      }
+      function generateTerrain(seed) {
+        terrain = new Uint8Array(SIZE * SIZE);
+        scenery = [];
+        for (let z = 0; z < SIZE; z++)
+          for (let x = 0; x < SIZE; x++) {
+            const coast =
+                55 + Math.sin(z * 0.12) * 2 + Math.cos(z * 0.27) * 1.3,
+              lake = ((x - 13) / 10) ** 2 + ((z - 13) / 8) ** 2;
+            const water = x > coast || lake < 1;
+            terrain[z * SIZE + x] = water
+              ? 0
+              : x > coast - 1.6 || lake < 1.32
+                ? 2
+                : 1;
+            if (!water && terrain[z * SIZE + x] === 1) {
+              const h = hash(x, z, seed);
+              if (h < 0.045 && !(x > 25 && x < 52 && z > 25 && z < 47))
+                scenery.push({
+                  x: x + (hash(x + 1, z, seed) - 0.5) * 0.3,
+                  z: z + (hash(x, z + 1, seed) - 0.5) * 0.3,
+                  s: 0.7 + hash(x + 2, z, seed) * 0.7,
+                  type: h < 0.006 ? "rock" : "tree",
+                });
+            }
+          }
+      }
+      function rebuildOccupancy() {
+        occupancy.fill(0);
+        for (const obj of town.objects) {
+          const def = DEFS[obj.type];
+          for (let dz = 0; dz < def.size; dz++)
+            for (let dx = 0; dx < def.size; dx++)
+              occupancy[(obj.z + dz) * SIZE + obj.x + dx] = obj.id;
+        }
+        nextId = town.objects.reduce((n, o) => Math.max(n, o.id + 1), 1);
+      }
+      function objectAt(x, z) {
+        if (x < 0 || z < 0 || x >= SIZE || z >= SIZE) return null;
+        const id = occupancy[z * SIZE + x];
+        return id ? town.objects.find((o) => o.id === id) : null;
+      }
+      function makeTown(mode = "starter", name = "Baytown Bay", seed = 81024) {
+        town = {
+          version: SAVE_VERSION,
+          name: name.trim().slice(0, 32) || "Baytown Bay",
+          seed,
+          mode,
+          money: 30000,
+          objects: [],
+          created: Date.now(),
+          updated: Date.now(),
+          camera: { ...camera },
+        };
+        generateTerrain(seed);
+        nextId = 1;
+        undoStack = [];
+        if (mode === "starter") {
+          const add = (type, x, z, r = 0) => {
+            if (!town.objects.some((o) => o.x === x && o.z === z))
+              town.objects.push({
+                id: nextId++,
+                type,
+                x,
+                z,
+                rotation: r,
+                paid: 0,
+              });
+          };
+          for (let z = 28; z <= 44; z++) add("road", 37, z);
+          for (let x = 30; x <= 51; x++) add("road", x, 36);
+          for (let x = 30; x <= 46; x++) add("road", x, 43);
+          add("cottage", 34, 32);
+          add("family", 38, 32);
+          add("cottage", 34, 38);
+          add("townhouse", 38, 38);
+          add("cafe", 41, 32);
+          add("market", 41, 38);
+          add("park", 33, 44);
+          add("library", 38, 44);
+          add("wind", 45, 30);
+          add("water", 45, 38);
+          add("lighthouse", 51, 30);
+          add("flower", 35, 34);
+          add("flower", 39, 34);
+          add("bench", 42, 42);
+          add("tree", 32, 38);
+          add("tree", 32, 33);
+          add("tree", 42, 44);
+          add("tree", 47, 38);
+          add("tree", 46, 44);
+          add("tree", 35, 44);
+          add("tree", 40, 30);
+          add("tree", 48, 33);
+          add("tree", 31, 31);
+          add("tree", 31, 40);
+          add("tree", 44, 34);
+        }
+        rebuildOccupancy();
+        camera.x =
+          mode === "starter" ? (innerHeight > innerWidth ? 42 : 40) : 38;
+        camera.z = mode === "starter" ? 36 : 35;
+        camera.zoom =
+          innerWidth < 700 ? 36 : innerHeight > innerWidth ? 34 : 28;
+        camera.angle = 0.63;
+        camera.pitch = 0.7;
+        town.camera = { ...camera };
+        selected = null;
+        inspectorId = null;
+        $("inspect").hidden = true;
+        changeSerial++;
+        dirty = true;
+        updateCamera();
+        updateUI();
+      }
+      function tree(x, z, size = 1, tint = 0) {
+        const col = tint === 1 ? [0.47, 0.59, 0.31] : C.leaf;
+        cube(x, 0.03, z, 0.11 * size, 0.8 * size, 0.11 * size, C.trunk);
+        instance(
+          "tree",
+          x,
+          0.35 * size,
+          z,
+          0.93 * size,
+          1.2 * size,
+          0.93 * size,
+          col,
+        );
+        instance(
+          "tree",
+          x - 0.15 * size,
+          0.66 * size,
+          z + 0.1 * size,
+          0.7 * size,
+          0.8 * size,
+          0.7 * size,
+          tint === 1 ? [0.55, 0.65, 0.37] : [0.39, 0.58, 0.36],
+        );
+      }
+      function buildTerrain() {
+        cube(35.5, -0.35, 35.5, 130, 0.25, 130, C.water, 0, 1);
+        for (let z = 0; z < SIZE; z++)
+          for (let x = 0; x < SIZE; x++) {
+            const t = tile(x, z);
+            if (t) {
+              const h = hash(x, z, town.seed),
+                b = (h - 0.5) * 0.035,
+                col =
+                  t === 2
+                    ? C.sand
+                    : [C.grass[0] + b, C.grass[1] + b, C.grass[2] + b];
+              cube(x, -0.13, z, 1, 0.13, 1, col, 0, t === 1 ? 2 : 0);
+            }
+          }
+        for (const s of scenery) {
+          const x = Math.round(s.x),
+            z = Math.round(s.z);
+          if (occupancy[z * SIZE + x]) continue;
+          if (s.type === "tree")
+            tree(s.x, s.z, s.s, hash(x, z, town.seed) > 0.5 ? 1 : 0);
+          else
+            instance(
+              "tree",
+              s.x,
+              0,
+              s.z,
+              s.s,
+              0.45 * s.s,
+              s.s,
+              [0.64, 0.66, 0.52],
+            );
+        }
+        // A small line of hills shelters the northwest shore.
+        for (let i = 0; i < 9; i++) {
+          const x = 3 + i * 3.6,
+            z = 3 + Math.sin(i) * 1.5;
+          if (tile(Math.round(x), Math.round(z)) > 0) {
+            instance(
+              "tree",
+              x,
+              0,
+              z,
+              4.5,
+              2.8 + (i % 3),
+              4.3,
+              [0.46, 0.57, 0.38],
+            );
+            instance("tree", x, 1.5, z, 2.5, 2.6, 2.4, [0.63, 0.67, 0.49]);
+          }
+        }
+      }
+
+      /* 03 · ASSETS — hand-built little places; all graphics live in this file. */
+      const DEFS = {
+        road: {
+          name: "Road",
+          category: "Essentials",
+          cost: 40,
+          size: 1,
+          kind: "road",
+          color: "#899085",
+          description:
+            "A path between little places. Drag across dry land to draw a road.",
+          drag: true,
+        },
+        bridge: {
+          name: "Bridge",
+          category: "Essentials",
+          cost: 160,
+          size: 1,
+          kind: "bridge",
+          color: "#ad8a65",
+          description:
+            "Carry a road over the water. Start at a road or another bridge.",
+          drag: true,
+        },
+        dock: {
+          name: "Dock",
+          category: "Essentials",
+          cost: 100,
+          size: 1,
+          kind: "dock",
+          color: "#b6946d",
+          description:
+            "A wooden walk out over the bay. Start beside land or another dock.",
+          drag: true,
+        },
+        cottage: {
+          name: "Bay cottage",
+          category: "Homes",
+          cost: 600,
+          size: 2,
+          kind: "home",
+          capacity: 4,
+          color: "#e8cf9d",
+          roof: "#ad6f54",
+          height: 0.85,
+          description:
+            "A sunny cottage for four. Leave a little room for a garden.",
+        },
+        family: {
+          name: "Family home",
+          category: "Homes",
+          cost: 1200,
+          size: 2,
+          kind: "home",
+          capacity: 6,
+          color: "#dce2bf",
+          roof: "#7b8e70",
+          height: 1.12,
+          description:
+            "A welcoming home for six, with room for big imaginations.",
+        },
+        townhouse: {
+          name: "Town house",
+          category: "Homes",
+          cost: 1600,
+          size: 2,
+          kind: "home",
+          capacity: 8,
+          color: "#e1b89f",
+          roof: "#8f7969",
+          height: 1.65,
+          description:
+            "Two cozy floors and a little front step. Room for eight.",
+        },
+        apartment: {
+          name: "Apartments",
+          category: "Homes",
+          cost: 2800,
+          size: 2,
+          kind: "apartment",
+          capacity: 16,
+          color: "#d1d8bb",
+          roof: "#77917d",
+          height: 2.8,
+          description: "Sixteen neighbors can call this cheerful corner home.",
+        },
+        villa: {
+          name: "Garden villa",
+          category: "Homes",
+          cost: 2200,
+          size: 3,
+          kind: "home",
+          capacity: 8,
+          color: "#eee1bc",
+          roof: "#b17d61",
+          height: 1.4,
+          description: "An airy home for eight with a garden all around.",
+        },
+        police: {
+          name: "Police station",
+          category: "Emergency",
+          cost: 2400,
+          size: 2,
+          kind: "service",
+          color: "#b8cbd1",
+          roof: "#637d89",
+          height: 1.2,
+          description:
+            "A friendly home base for the people who keep the peace. Service simulation arrives in milestone 2.",
+        },
+        fire: {
+          name: "Fire station",
+          category: "Emergency",
+          cost: 2600,
+          size: 2,
+          kind: "service",
+          color: "#dcb59b",
+          roof: "#9d6451",
+          height: 1.3,
+          description:
+            "A bright red door for brave helpers. Fire protection arrives in milestone 2.",
+        },
+        hospital: {
+          name: "Hospital",
+          category: "Emergency",
+          cost: 4000,
+          size: 3,
+          kind: "hospital",
+          color: "#e8e4cd",
+          roof: "#91aba0",
+          height: 1.8,
+          description:
+            "A place to feel better. Health service simulation arrives in milestone 2.",
+        },
+        coastguard: {
+          name: "Coast guard",
+          category: "Emergency",
+          cost: 2800,
+          size: 2,
+          kind: "service",
+          color: "#e4d5b7",
+          roof: "#7a98a1",
+          height: 1.3,
+          description:
+            "A lookout for the bay. Coastal protection arrives in milestone 2.",
+        },
+        hall: {
+          name: "Town hall",
+          category: "Civic",
+          cost: 3200,
+          size: 3,
+          kind: "hall",
+          color: "#e8d9b4",
+          roof: "#7c9483",
+          height: 1.6,
+          description:
+            "A gathering place for big ideas and little celebrations.",
+        },
+        school: {
+          name: "School",
+          category: "Civic",
+          cost: 2200,
+          size: 3,
+          kind: "service",
+          color: "#e8d6aa",
+          roof: "#af785d",
+          height: 1.2,
+          description:
+            "A school for tomorrow’s town planners. Education arrives in milestone 2.",
+        },
+        library: {
+          name: "Library",
+          category: "Civic",
+          cost: 1800,
+          size: 2,
+          kind: "service",
+          color: "#e3cfb0",
+          roof: "#7e9986",
+          height: 1.2,
+          description: "A thousand adventures, right around the corner.",
+        },
+        post: {
+          name: "Post office",
+          category: "Civic",
+          cost: 1400,
+          size: 2,
+          kind: "service",
+          color: "#c9d8cb",
+          roof: "#a67e65",
+          height: 0.9,
+          description: "Letters, postcards, and good news from far away.",
+        },
+        wind: {
+          name: "Wind turbine",
+          category: "Civic",
+          cost: 1600,
+          size: 2,
+          kind: "wind",
+          color: "#e8e9d6",
+          description:
+            "Catch the sea breeze. Power networks arrive in milestone 2.",
+        },
+        water: {
+          name: "Water tower",
+          category: "Civic",
+          cost: 1800,
+          size: 2,
+          kind: "water",
+          color: "#a7c5c4",
+          description:
+            "A little piece of the skyline. Water networks arrive in milestone 2.",
+        },
+        power: {
+          name: "Power plant",
+          category: "Civic",
+          cost: 3600,
+          size: 3,
+          kind: "factory",
+          color: "#c3c5ae",
+          roof: "#738277",
+          height: 1.3,
+          description:
+            "A sturdy utility building. Power networks arrive in milestone 2.",
+        },
+        cafe: {
+          name: "Corner café",
+          category: "Shops & Work",
+          cost: 1000,
+          size: 2,
+          kind: "shop",
+          color: "#ead5b4",
+          roof: "#9e7560",
+          height: 0.9,
+          description:
+            "Morning sunshine and the smell of something baking. Income arrives in milestone 2.",
+        },
+        market: {
+          name: "Little market",
+          category: "Shops & Work",
+          cost: 1400,
+          size: 2,
+          kind: "shop",
+          color: "#d7dcb6",
+          roof: "#82947a",
+          height: 1.05,
+          description: "Everything a growing town might need, under one roof.",
+        },
+        office: {
+          name: "Office",
+          category: "Shops & Work",
+          cost: 2400,
+          size: 2,
+          kind: "apartment",
+          color: "#c6d6ce",
+          roof: "#6b8d89",
+          height: 2.2,
+          description:
+            "A bright place for work and new ideas. Jobs arrive in milestone 2.",
+        },
+        factory: {
+          name: "Workshop",
+          category: "Shops & Work",
+          cost: 2000,
+          size: 3,
+          kind: "factory",
+          color: "#d2b99a",
+          roof: "#8a8e7b",
+          height: 1.2,
+          description:
+            "A workshop for making useful things. Jobs arrive in milestone 2.",
+        },
+        park: {
+          name: "Pocket park",
+          category: "Parks",
+          cost: 400,
+          size: 2,
+          kind: "park",
+          color: "#8eae71",
+          description: "A shady place to meet, sit, and watch the world go by.",
+        },
+        tree: {
+          name: "Leafy tree",
+          category: "Parks",
+          cost: 40,
+          size: 1,
+          kind: "tree",
+          color: "#78985b",
+          description:
+            "A little shade. A little birdsong. A little more green.",
+        },
+        flower: {
+          name: "Flower bed",
+          category: "Parks",
+          cost: 60,
+          size: 1,
+          kind: "flower",
+          color: "#cba58b",
+          description: "A small patch of color for your favorite corner.",
+        },
+        bench: {
+          name: "Park bench",
+          category: "Parks",
+          cost: 50,
+          size: 1,
+          kind: "bench",
+          color: "#b19570",
+          description: "For slow mornings and very important daydreams.",
+        },
+        harbor: {
+          name: "Harbor house",
+          category: "Coast & Nature",
+          cost: 2800,
+          size: 3,
+          kind: "shop",
+          color: "#dcd2b4",
+          roof: "#758f92",
+          height: 1.2,
+          description:
+            "A little harbor office. Place on land beside a dock. Ships arrive in milestone 3.",
+        },
+        lighthouse: {
+          name: "Lighthouse",
+          category: "Coast & Nature",
+          cost: 2000,
+          size: 2,
+          kind: "lighthouse",
+          color: "#e9e3ca",
+          roof: "#b9785e",
+          description: "A warm welcome at the edge of the bay.",
+        },
+        seawall: {
+          name: "Sea wall",
+          category: "Coast & Nature",
+          cost: 140,
+          size: 1,
+          kind: "seawall",
+          color: "#afb7a1",
+          description:
+            "A strong edge for the shore. Disaster defenses arrive in milestone 4.",
+          drag: true,
+        },
+        mountain: {
+          name: "Mountain",
+          category: "Coast & Nature",
+          cost: 500,
+          size: 3,
+          kind: "mountain",
+          color: "#9da68a",
+          description:
+            "A little bit of wilderness. A backdrop for big adventures.",
+        },
+        remove: {
+          name: "Remove",
+          category: "Essentials",
+          cost: 0,
+          size: 1,
+          kind: "remove",
+          color: "#ba997a",
+          description:
+            "Tap or drag over a built place to remove it. Paid places receive a full refund.",
+          drag: true,
+        },
+      };
+      const CATEGORIES = [
+        "Essentials",
+        "Homes",
+        "Emergency",
+        "Civic",
+        "Shops & Work",
+        "Parks",
+        "Coast & Nature",
+      ];
+      function hex(s) {
+        return [
+          parseInt(s.slice(1, 3), 16) / 255,
+          parseInt(s.slice(3, 5), 16) / 255,
+          parseInt(s.slice(5, 7), 16) / 255,
+        ];
+      }
+      for (const def of Object.values(DEFS)) {
+        def.rgb = hex(def.color);
+        def.roofRGB = hex(def.roof || "#8d987b");
+      }
+      function windows(x, z, w, d, h, angle, stories) {
+        const c = Math.cos(angle),
+          s = Math.sin(angle);
+        for (let level = 0; level < stories; level++)
+          for (let k = -1; k <= 1; k += 2) {
+            const dx = k * w * 0.25,
+              dz = d * 0.505,
+              px = x + c * dx + s * dz,
+              pz = z - s * dx + c * dz;
+            cube(
+              px,
+              0.43 + level * 0.67,
+              pz,
+              0.22,
+              0.29,
+              0.025,
+              C.window,
+              angle,
+            );
+            if (h > 1.2) {
+              const dx2 = w * 0.505,
+                dz2 = k * d * 0.25;
+              cube(
+                x + c * dx2 + s * dz2,
+                0.43 + level * 0.67,
+                z - s * dx2 + c * dz2,
+                0.025,
+                0.29,
+                0.22,
+                C.window,
+                angle,
+              );
+            }
+          }
+      }
+      function building(obj) {
+        const def = DEFS[obj.type],
+          n = def.size,
+          x = obj.x + (n - 1) * 0.5,
+          z = obj.z + (n - 1) * 0.5,
+          angle = (obj.rotation * Math.PI) / 2,
+          rgb = def.rgb,
+          roof = def.roofRGB,
+          k = def.kind,
+          seed = hash(obj.x, obj.z, town.seed);
+        if (k === "road" || k === "bridge" || k === "dock") {
+          const isBridge = k === "bridge",
+            isDock = k === "dock",
+            y = isBridge ? 0.18 : isDock ? 0.12 : 0.025;
+          cube(
+            x,
+            y - 0.025,
+            z,
+            1,
+            0.08,
+            1,
+            isDock || isBridge ? C.wood : C.sidewalk,
+          );
+          cube(
+            x,
+            y + 0.055,
+            z,
+            0.81,
+            0.015,
+            0.81,
+            isDock || isBridge ? [0.7, 0.56, 0.37] : C.road,
+          );
+          if (isDock || isBridge) {
+            for (let j = -3; j <= 3; j++)
+              cube(
+                x,
+                y + 0.074,
+                z + j * 0.12,
+                0.91,
+                0.012,
+                0.022,
+                [0.51, 0.4, 0.27],
+              );
+            cube(x - 0.35, -0.28, z, 0.1, 0.49, 0.1, C.trunk);
+            cube(x + 0.35, -0.28, z, 0.1, 0.49, 0.1, C.trunk);
+          } else {
+            const left = objectAt(obj.x - 1, obj.z),
+              right = objectAt(obj.x + 1, obj.z),
+              up = objectAt(obj.x, obj.z - 1),
+              down = objectAt(obj.x, obj.z + 1),
+              horiz =
+                (left && ["road", "bridge"].includes(left.type)) ||
+                (right && ["road", "bridge"].includes(right.type)),
+              vert =
+                (up && ["road", "bridge"].includes(up.type)) ||
+                (down && ["road", "bridge"].includes(down.type));
+            // Continue asphalt through adjoining tiles; curbs belong at the edges.
+            for (const [neighbor, dx, dz] of [
+              [left, -1, 0],
+              [right, 1, 0],
+              [up, 0, -1],
+              [down, 0, 1],
+            ]) {
+              if (neighbor && ["road", "bridge"].includes(neighbor.type))
+                cube(
+                  x + dx * 0.45,
+                  y + 0.055,
+                  z + dz * 0.45,
+                  dx ? 0.12 : 0.81,
+                  0.015,
+                  dz ? 0.12 : 0.81,
+                  C.road,
+                );
+            }
+            if (horiz)
+              cube(x, y + 0.072, z, 0.38, 0.007, 0.025, [0.84, 0.8, 0.6]);
+            if (vert || !horiz)
+              cube(x, y + 0.073, z, 0.025, 0.007, 0.38, [0.84, 0.8, 0.6]);
+          }
+          return;
+        }
+        cube(
+          x + 0.12,
+          0.004,
+          z + 0.12,
+          n * 0.82,
+          0.012,
+          n * 0.82,
+          [0.45, 0.58, 0.33],
+        );
+        if (k === "tree") {
+          tree(x, z, 0.95, seed > 0.5 ? 1 : 0);
+          return;
+        }
+        if (k === "flower") {
+          cube(x, 0.02, z, 0.8, 0.12, 0.8, [0.58, 0.59, 0.39]);
+          for (let a = -1; a <= 1; a++)
+            for (let b = -1; b <= 1; b++) {
+              cube(
+                x + a * 0.21,
+                0.14,
+                z + b * 0.21,
+                0.06,
+                0.18,
+                0.06,
+                [0.35, 0.52, 0.26],
+              );
+              instance(
+                "tree",
+                x + a * 0.21,
+                0.29,
+                z + b * 0.21,
+                0.16,
+                0.13,
+                0.16,
+                (a + b) % 2 ? [0.85, 0.65, 0.37] : [0.86, 0.61, 0.49],
+              );
+            }
+          return;
+        }
+        if (k === "bench") {
+          cube(x, 0.35, z, 0.65, 0.08, 0.28, C.wood, angle);
+          cube(x, 0.39, z - 0.13, 0.65, 0.32, 0.06, C.wood, angle);
+          cube(x - 0.25, 0.02, z, 0.05, 0.35, 0.24, C.trunk);
+          cube(x + 0.25, 0.02, z, 0.05, 0.35, 0.24, C.trunk);
+          return;
+        }
+        if (k === "park") {
+          cube(x, 0.015, z, 1.83, 0.025, 1.83, [0.64, 0.74, 0.44]);
+          cube(x, 0.05, z, 0.4, 0.02, 1.83, C.sand);
+          tree(x - 0.5, z - 0.45, 0.85);
+          tree(x + 0.58, z + 0.43, 0.6, 1);
+          cube(x + 0.4, 0.32, z - 0.4, 0.63, 0.1, 0.24, C.wood);
+          cube(x + 0.4, 0.39, z - 0.53, 0.63, 0.25, 0.04, C.wood);
+          return;
+        }
+        if (k === "mountain") {
+          instance("tree", x, 0, z, 2.8, 3.2, 2.8, [0.48, 0.56, 0.39]);
+          instance("tree", x, 2.2, z, 0.85, 1.02, 0.85, [0.85, 0.86, 0.73]);
+          instance(
+            "tree",
+            x - 0.7,
+            0,
+            z + 0.5,
+            1.8,
+            1.9,
+            1.8,
+            [0.59, 0.64, 0.45],
+          );
+          return;
+        }
+        if (k === "seawall") {
+          cube(x, 0.02, z, 0.9, 0.6, 0.9, [0.65, 0.68, 0.57]);
+          cube(x, 0.62, z, 1, 0.08, 1, [0.79, 0.78, 0.65]);
+          return;
+        }
+        cube(x, 0.015, z, n * 0.91, 0.055, n * 0.91, [0.73, 0.75, 0.58]);
+        if (k === "wind") {
+          cube(x, 0.06, z, 0.4, 0.15, 0.4, [0.78, 0.79, 0.67]);
+          cube(x, 0.18, z, 0.13, 2.6, 0.13, C.white);
+          cube(x, 2.76, z + 0.08, 0.28, 0.22, 0.45, C.white);
+          instance("rotor", x, 2.84, z + 0.33, 1, 1, 1, C.white);
+          instance("tree", x, 2.74, z + 0.38, 0.25, 0.25, 0.25, C.cream);
+          return;
+        }
+        if (k === "water") {
+          for (const dx of [-0.42, 0.42])
+            for (const dz of [-0.42, 0.42])
+              cube(x + dx, 0.06, z + dz, 0.1, 1.45, 0.1, [0.54, 0.64, 0.58]);
+          cube(x, 1.39, z, 1.22, 0.8, 1.22, rgb);
+          instance("roof", x, 2.18, z, 1.4, 0.42, 1.4, [0.54, 0.69, 0.67]);
+          cube(x, 1.42, z, 1.25, 0.06, 1.25, [0.72, 0.78, 0.68]);
+          return;
+        }
+        if (k === "lighthouse") {
+          cube(x, 0.06, z, 0.85, 2.3, 0.85, C.white);
+          cube(x, 0.9, z, 0.88, 0.35, 0.88, [0.77, 0.48, 0.34]);
+          cube(x, 2.36, z, 1.08, 0.12, 1.08, [0.43, 0.54, 0.49]);
+          cube(x, 2.48, z, 0.72, 0.48, 0.72, [0.82, 0.79, 0.46]);
+          instance("roof", x, 2.96, z, 1.1, 0.45, 1.1, roof);
+          cube(x, 3.38, z, 0.08, 0.18, 0.08, C.trunk);
+          cube(x, 0.06, z + 0.44, 0.27, 0.55, 0.03, C.wood);
+          return;
+        }
+        const w = n * 0.72,
+          d = n * 0.66,
+          h = def.height || 1.2;
+        cube(x, 0.07, z, w, h, d, rgb, angle);
+        const flat = k === "apartment" || k === "hospital" || k === "factory";
+        if (flat) {
+          cube(x, h + 0.07, z, w * 1.06, 0.15, d * 1.06, roof, angle);
+          cube(
+            x + 0.25,
+            h + 0.22,
+            z - 0.25,
+            w * 0.27,
+            0.2,
+            d * 0.33,
+            [0.66, 0.71, 0.63],
+            angle,
+          );
+        } else {
+          instance(
+            "roof",
+            x,
+            h + 0.07,
+            z,
+            w * 1.15,
+            0.54,
+            d * 1.2,
+            roof,
+            angle,
+          );
+          if (k === "home")
+            cube(
+              x - 0.32,
+              h + 0.2,
+              z - 0.15,
+              0.18,
+              0.59,
+              0.2,
+              [0.73, 0.6, 0.45],
+              angle,
+            );
+        }
+        windows(x, z, w, d, h, angle, Math.max(1, Math.floor(h / 0.7)));
+        const frontX = x + Math.sin(angle) * d * 0.51,
+          frontZ = z + Math.cos(angle) * d * 0.51;
+        cube(frontX, 0.08, frontZ, 0.27, 0.57, 0.04, [0.46, 0.48, 0.36], angle);
+        cube(frontX, 0.065, frontZ + 0.17, 0.46, 0.06, 0.35, C.sand, angle);
+        if (k === "shop") {
+          for (let i = 0; i < 7; i++)
+            cube(
+              x - w * 0.43 + i * w * 0.14,
+              0.76,
+              z + d * 0.55,
+              w * 0.14,
+              0.12,
+              0.45,
+              i % 2 ? C.white : [0.48, 0.62, 0.44],
+              angle,
+            );
+          cube(x, 0.15, z + d * 0.53, w * 0.8, 0.5, 0.025, C.window, angle);
+        }
+        if (k === "service") {
+          cube(
+            x,
+            0.3,
+            z + d * 0.515,
+            w * 0.32,
+            0.3,
+            0.028,
+            [0.83, 0.81, 0.59],
+            angle,
+          );
+          if (obj.type === "fire")
+            cube(
+              x,
+              0.08,
+              z + d * 0.52,
+              w * 0.65,
+              0.75,
+              0.03,
+              [0.63, 0.31, 0.24],
+              angle,
+            );
+        }
+        if (k === "hospital") {
+          cube(
+            x,
+            h * 0.6,
+            z + d * 0.52,
+            0.5,
+            0.17,
+            0.04,
+            [0.7, 0.35, 0.29],
+            angle,
+          );
+          cube(
+            x,
+            h * 0.6 - 0.16,
+            z + d * 0.53,
+            0.17,
+            0.5,
+            0.04,
+            [0.7, 0.35, 0.29],
+            angle,
+          );
+        }
+        if (k === "hall") {
+          cube(x, h + 0.61, z, 0.65, 0.5, 0.65, rgb);
+          instance("roof", x, h + 1.11, z, 0.85, 0.44, 0.85, roof);
+          for (const dx of [-0.7, 0, 0.7])
+            cube(x + dx, 0.07, z + d * 0.61, 0.13, h * 0.75, 0.13, C.cream);
+        }
+        if (k === "factory") {
+          cube(
+            x - w * 0.32,
+            h * 0.2,
+            z - d * 0.25,
+            0.28,
+            h + 1,
+            0.28,
+            [0.69, 0.59, 0.47],
+          );
+          cube(
+            x - w * 0.32,
+            h * 1.2 + 1,
+            z - d * 0.25,
+            0.34,
+            0.1,
+            0.34,
+            [0.52, 0.53, 0.44],
+          );
+        }
+        if (k === "home" && n === 3) {
+          tree(x + 0.9, z + 0.9, 0.65, 1);
+          cube(x - 0.8, 0.12, z + 0.9, 0.6, 0.09, 0.4, [0.71, 0.74, 0.48]);
+        }
+      }
+      function rebuildWorld() {
+        for (const key in batches) batches[key].data.length = 0;
+        buildTerrain();
+        for (const obj of town.objects) building(obj);
+        if (mapLayer === "roads") {
+          for (const obj of town.objects) {
+            if (["road", "bridge"].includes(obj.type))
+              cube(obj.x, 0.18, obj.z, 0.65, 0.015, 0.65, [0.88, 0.75, 0.35]);
+          }
+        }
+        if (hover && selected) {
+          const def = DEFS[selected],
+            check = placementCheck(selected, hover.x, hover.z),
+            n = def.size,
+            col = check.ok ? [0.9, 0.87, 0.52] : [0.85, 0.44, 0.31],
+            y = tile(hover.x, hover.z) === 0 ? 0.21 : 0.085;
+          cube(
+            hover.x + (n - 1) / 2,
+            y,
+            hover.z + (n - 1) / 2,
+            n * 0.95,
+            0.03,
+            n * 0.95,
+            col,
+          );
+        }
+        if (inspectorId) {
+          const obj = town.objects.find((o) => o.id === inspectorId);
+          if (obj) {
+            const n = DEFS[obj.type].size;
+            cube(
+              obj.x + (n - 1) / 2,
+              0.08,
+              obj.z + (n - 1) / 2,
+              n,
+              0.025,
+              n,
+              [0.92, 0.87, 0.49],
+            );
+          }
+        }
+        uploadWorld();
+      }
+
+      /* 04 · CITY — placement transactions, drag roads, removal and undo. */
+      function adjacent(type, x, z) {
+        for (const [dx, dz] of [
+          [1, 0],
+          [-1, 0],
+          [0, 1],
+          [0, -1],
+        ]) {
+          const o = objectAt(x + dx, z + dz);
+          if (o && type.includes(o.type)) return true;
+        }
+        return false;
+      }
+      function placementCheck(type, x, z) {
+        const def = DEFS[type];
+        if (
+          !Number.isInteger(x) ||
+          !Number.isInteger(z) ||
+          x < 0 ||
+          z < 0 ||
+          x + def.size > SIZE ||
+          z + def.size > SIZE
+        )
+          return { ok: false, reason: "Stay inside the town map." };
+        if (type === "remove")
+          return objectAt(x, z)
+            ? { ok: true }
+            : { ok: false, reason: "There’s nothing built here to remove." };
+        if (town.objects.length >= MAX_OBJECTS)
+          return {
+            ok: false,
+            reason: "The town is full. Remove a place to make room.",
+          };
+        for (let dz = 0; dz < def.size; dz++)
+          for (let dx = 0; dx < def.size; dx++) {
+            const tx = x + dx,
+              tz = z + dz;
+            if (occupancy[tz * SIZE + tx])
+              return { ok: false, reason: "There’s already something here." };
+            if (["bridge", "dock"].includes(type)) {
+              if (tile(tx, tz) !== 0)
+                return { ok: false, reason: "This belongs over water." };
+            } else if (tile(tx, tz) === 0)
+              return {
+                ok: false,
+                reason: "Find a spot on dry land, or build a bridge.",
+              };
+          }
+        if (type === "bridge" && !adjacent(["road", "bridge"], x, z))
+          return {
+            ok: false,
+            reason: "Start your bridge beside a road or another bridge.",
+          };
+        if (
+          type === "dock" &&
+          !adjacent(["dock"], x, z) &&
+          ![
+            [1, 0],
+            [-1, 0],
+            [0, 1],
+            [0, -1],
+          ].some(([dx, dz]) => tile(x + dx, z + dz) > 0)
+        )
+          return {
+            ok: false,
+            reason: "Start your dock beside the shore or another dock.",
+          };
+        if (town.mode !== "sandbox" && town.money < def.cost)
+          return {
+            ok: false,
+            reason: `Needs ${money(def.cost)}. Your town has ${money(town.money)}.`,
+          };
+        return { ok: true };
+      }
+      function snapshot() {
+        return {
+          objects: town.objects.map((o) => ({ ...o })),
+          money: town.money,
+        };
+      }
+      function beginTransaction() {
+        return snapshot();
+      }
+      function commitTransaction(before, label) {
+        undoStack.push({ ...before, label });
+        if (undoStack.length > 40) undoStack.shift();
+        markChanged();
+      }
+      function markChanged() {
+        changeSerial++;
+        town.updated = Date.now();
+        rebuildOccupancy();
+        dirty = true;
+        updateUI();
+      }
+      function applyPlacement(type, x, z) {
+        const check = placementCheck(type, x, z);
+        if (!check.ok) return check;
+        if (type === "remove") {
+          const obj = objectAt(x, z);
+          town.objects = town.objects.filter((o) => o.id !== obj.id);
+          if (town.mode !== "sandbox") town.money += obj.paid || 0;
+          if (inspectorId === obj.id) {
+            inspectorId = null;
+            $("inspect").hidden = true;
+          }
+          return { ok: true, removed: true };
+        }
+        const def = DEFS[type],
+          paid = town.mode === "sandbox" ? 0 : def.cost;
+        if (nextId > 2147483646) nextId = 1;
+        while (town.objects.some((o) => o.id === nextId)) nextId++;
+        town.objects.push({ id: nextId++, type, x, z, rotation, paid });
+        town.money -= paid;
+        rebuildOccupancy();
+        return { ok: true };
+      }
+      function place(type, x, z) {
+        const before = beginTransaction(),
+          result = applyPlacement(type, x, z);
+        if (result.ok) {
+          commitTransaction(before, DEFS[type].name);
+          playNote(type === "remove" ? 260 : 440);
+          return true;
+        }
+        toast(result.reason);
+        return false;
+      }
+      function roadPath(x0, z0, x1, z1) {
+        const result = [],
+          sx = Math.sign(x1 - x0) || 1,
+          sz = Math.sign(z1 - z0) || 1;
+        let x = x0,
+          z = z0;
+        result.push({ x, z });
+        if (Math.abs(x1 - x0) >= Math.abs(z1 - z0)) {
+          while (x !== x1 && result.length < 145) {
+            x += sx;
+            result.push({ x, z });
+          }
+          while (z !== z1 && result.length < 145) {
+            z += sz;
+            result.push({ x, z });
+          }
+        } else {
+          while (z !== z1 && result.length < 145) {
+            z += sz;
+            result.push({ x, z });
+          }
+          while (x !== x1 && result.length < 145) {
+            x += sx;
+            result.push({ x, z });
+          }
+        }
+        return result;
+      }
+      function drawPath(type, x0, z0, x1, z1) {
+        const before = beginTransaction(),
+          path = roadPath(x0, z0, x1, z1);
+        let count = 0,
+          lastReason = "";
+        for (const p of path) {
+          const old = objectAt(p.x, p.z);
+          if (old && old.type === type) continue;
+          const result = applyPlacement(type, p.x, p.z);
+          if (result.ok) count++;
+          else {
+            lastReason = result.reason;
+            if (type !== "remove") break;
+          }
+        }
+        if (count) {
+          commitTransaction(
+            before,
+            `${count} ${DEFS[type].name.toLowerCase()} tiles`,
+          );
+          toast(
+            type === "remove"
+              ? `${count} places removed. You can undo this.`
+              : `${count} ${DEFS[type].name.toLowerCase()} ${count === 1 ? "tile" : "tiles"} placed.${lastReason ? " " + lastReason : ""}`,
+          );
+          playNote(370);
+        } else if (lastReason) toast(lastReason);
+        return count;
+      }
+      function undo() {
+        const last = undoStack.pop();
+        if (!last) {
+          toast("Nothing to undo yet.");
+          return false;
+        }
+        town.objects = last.objects;
+        town.money = last.money;
+        inspectorId = null;
+        $("inspect").hidden = true;
+        markChanged();
+        toast(`Undid ${last.label.toLowerCase()}.`);
+        playNote(320);
+        return true;
+      }
+      function selectTool(type) {
+        selected = selected === type ? null : type;
+        hover = null;
+        inspectorId = null;
+        $("inspect").hidden = true;
+        dirty = true;
+        renderCatalog();
+        updateHint();
+        $("selection-label").textContent = selected
+          ? `${DEFS[selected].name} · ${DEFS[selected].description.split(".")[0]}.`
+          : "Little things make a town.";
+      }
+      function inspect(x, z) {
+        const obj = objectAt(x, z);
+        if (!obj) {
+          inspectorId = null;
+          $("inspect").hidden = true;
+          dirty = true;
+          return;
+        }
+        inspectorId = obj.id;
+        const d = DEFS[obj.type];
+        $("inspect-title").textContent = d.name;
+        $("inspect-category").textContent = d.category;
+        $("inspect-description").textContent = d.description;
+        $("inspect-info").textContent = d.capacity
+          ? `Space for ${d.capacity} neighbors`
+          : `${d.size} × ${d.size} ${d.size === 1 ? "tile" : "tiles"}`;
+        $("inspect-coordinates").textContent =
+          `On the map: ${obj.x + 1}, ${obj.z + 1}`;
+        $("inspect-remove").textContent = obj.paid
+          ? `Remove · refund ${money(obj.paid)}`
+          : "Remove · starter place";
+        $("inspect").hidden = false;
+        dirty = true;
+      }
+
+      /* 05 · SIM — milestone 1 is a construction sandbox; no pretend economy. */
+      function townStats() {
+        let homes = 0,
+          capacity = 0,
+          places = 0,
+          roads = 0;
+        for (const obj of town.objects) {
+          const d = DEFS[obj.type];
+          if (d.capacity) {
+            homes++;
+            capacity += d.capacity;
+          }
+          if (["road", "bridge", "dock"].includes(obj.type)) roads++;
+          else places++;
+        }
+        return { homes, capacity, places, roads };
+      }
+      const GOALS = [
+        {
+          title: "Make yourself<br>at home.",
+          description:
+            "Every great town starts small. Give three homes a place by the bay.",
+          key: "homes",
+          target: 3,
+          unit: "homes",
+        },
+        {
+          title: "A place for<br>everything.",
+          description:
+            "A shady park, a little library, a favorite corner. Build ten places you love.",
+          key: "places",
+          target: 10,
+          unit: "places",
+        },
+        {
+          title: "All roads lead<br>to your town.",
+          description:
+            "Connect your little world. Lay thirty road, bridge, or dock tiles.",
+          key: "roads",
+          target: 30,
+          unit: "path tiles",
+        },
+      ];
+      // Living-world simulation, disasters and interiors are later milestones.
+      /* 06 · DISASTERS — opt-in only; not enabled or simulated in milestone 1. */
+      /* 07 · INTERIOR — home interiors and decorating arrive in milestone 5. */
+
+      /* 08 · UI — inline icons, progressive thumbnails, touch and keyboard. */
+      const ICONS = {
+        save: '<path d="M5 3h12l4 4v14H3V3h2zm2 0v7h10V3M7 21v-7h10v7"/>',
+        help: '<circle cx="12" cy="12" r="9"/><path d="M9.5 9a2.5 2.5 0 115 0c0 2-2.5 2-2.5 4m0 3h.01"/>',
+        menu: '<path d="M4 6h16M4 12h16M4 18h16"/>',
+        plus: '<path d="M12 5v14M5 12h14"/>',
+        minus: '<path d="M5 12h14"/>',
+        rotate: '<path d="M4 11a8 8 0 111 6M4 4v7h7"/>',
+        home: '<path d="M4 9V4h5m6 0h5v5m0 6v5h-5m-6 0H4v-5M9 12h6m-3-3v6"/>',
+        layers:
+          '<path d="M12 3L2 8l10 5 10-5-10-5zM2 12l10 5 10-5M2 16l10 5 10-5"/>',
+        undo: '<path d="M8 7l-5 5 5 5M3 12h11a6 6 0 016 6"/>',
+        hand: '<path d="M7 12V6a2 2 0 014 0v5-7a2 2 0 014 0v7-5a2 2 0 014 0v6-2a2 2 0 014 0v5c0 4-3 7-7 7h-3c-2 0-3-1-4-3l-4-6a2 2 0 013-2l2 2"/>',
+        town: '<path d="M3 21V10l6-5 6 5v11M15 21V5l3-2 3 2v16M7 21v-6h4v6M17 9h2m-2 4h2"/>',
+        leaf: '<path d="M4 20c0-9 1-16 16-16 0 15-7 16-12 13m-4 3L16 8"/>',
+        infinity:
+          '<path d="M12 12c-2-4-4-6-7-4s-2 7 1 8 7-7 11-8 7 5 3 8-6-1-8-4"/>',
+      };
+      function icon(name) {
+        return `<svg viewBox="0 0 24 24" aria-hidden="true">${ICONS[name] || ICONS.town}</svg>`;
+      }
+      for (const [id, name] of [
+        ["save-button", "save"],
+        ["help-button", "help"],
+        ["menu-button", "menu"],
+        ["zoom-in", "plus"],
+        ["zoom-out", "minus"],
+        ["rotate", "rotate"],
+        ["home-view", "home"],
+        ["view-button", "layers"],
+        ["undo", "undo"],
+        ["turn-building", "rotate"],
+      ])
+        $(id).innerHTML =
+          icon(name) + (id === "undo" ? "<span>Undo</span>" : "");
+      $("hint-icon").innerHTML = icon("hand");
+      function thumbSVG(type) {
+        const d = DEFS[type],
+          k = d.kind,
+          c = d.color,
+          r = d.roof || "#82927b";
+        let shape = "";
+        if (["road", "bridge", "dock", "seawall"].includes(k)) {
+          shape = `<path d="M8 40l34-18 28 15-34 19z" fill="${c}"/><path d="M17 42l27-14M27 48l27-14" stroke="#ece5c9" stroke-width="2"/>`;
+        } else if (k === "tree" || k === "park") {
+          shape =
+            '<path d="M37 49V28" stroke="#8d7750" stroke-width="3"/><path d="M37 5L21 35l16 7 16-7z" fill="#7c9e61"/><path d="M37 5v37l16-7z" fill="#5b8151"/>';
+        } else if (k === "remove") {
+          shape =
+            '<path d="M22 46l26-29M39 11l17 15" stroke="#ad7d55" stroke-width="7" stroke-linecap="round"/>';
+        } else if (k === "wind") {
+          shape =
+            '<path d="M40 52V17M40 17L29 6m11 11 16-5M40 17l-5 17" stroke="#a3b3a0" stroke-width="3"/><circle cx="40" cy="17" r="3" fill="#e5d8b4"/>';
+        } else if (k === "flower") {
+          shape =
+            '<path d="M15 41l25-13 25 13-25 13z" fill="#a8b780"/>' +
+            [24, 35, 46, 53]
+              .map(
+                (x, i) =>
+                  `<circle cx="${x}" cy="${34 - (i % 2) * 9}" r="5" fill="${i % 2 ? "#d7b067" : "#c98d79"}"/>`,
+              )
+              .join("");
+        } else {
+          const h = k === "apartment" ? 30 : 20;
+          shape = `<path d="M17 46V${46 - h}l23-12 23 12v${h}L40 58z" fill="${c}"/><path d="M40 ${34 - h}v24l23-12V${46 - h}z" fill="#283d3020"/><path d="M13 ${47 - h}l27-19 27 19-27-10z" fill="${r}"/><path d="M24 ${48 - h}v8m8-12v8m14-3v8m9-13v8" stroke="#6f8f85" stroke-width="4"/>`;
+          if (k === "lighthouse" || k === "water")
+            shape = `<path d="M28 49V16l13-6 13 6v33l-13 6z" fill="${c}"/><path d="M25 17L41 5l16 12-16 7z" fill="${r}"/><path d="M28 29l13 6 13-6v7l-13 6-13-6z" fill="#bf8a6c"/>`;
+        }
+        return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 80 64"><ellipse cx="40" cy="52" rx="27" ry="9" fill="#34482b0c"/>${shape}</svg>`;
+      }
+      const thumbs = new Map();
+      let thumbQueue = [],
+        thumbRunning = false;
+      function queueThumb(type) {
+        if (thumbs.has(type) || thumbQueue.includes(type)) return;
+        thumbQueue.push(type);
+        if (!thumbRunning) runThumbQueue();
+      }
+      function runThumbQueue() {
+        if (!thumbQueue.length) {
+          thumbRunning = false;
+          return;
+        }
+        thumbRunning = true;
+        const type = thumbQueue.shift();
+        const run = () => {
+          const svg = thumbSVG(type),
+            img = new Image();
+          img.onload = () => {
+            try {
+              const c = document.createElement("canvas");
+              c.width = 160;
+              c.height = 128;
+              c.getContext("2d").drawImage(img, 0, 0, 160, 128);
+              thumbs.set(type, c.toDataURL("image/png"));
+              const el = document.querySelector(`[data-tool="${type}"] .thumb`);
+              if (el) {
+                const small = new Image();
+                small.alt = "";
+                small.src = thumbs.get(type);
+                el.replaceChildren(small);
+              }
+            } catch (_) {}
+            runThumbQueue();
+          };
+          img.onerror = runThumbQueue;
+          img.src =
+            "data:image/svg+xml;charset=utf-8," + encodeURIComponent(svg);
+        };
+        if (window.requestIdleCallback)
+          requestIdleCallback(run, { timeout: 500 });
+        else setTimeout(run, 50);
+      }
+      function renderCategories() {
+        const nav = document.querySelector(".categories");
+        nav.innerHTML = "";
+        for (const cat of CATEGORIES) {
+          const b = document.createElement("button");
+          b.className = "category";
+          b.textContent = cat;
+          b.setAttribute("role", "tab");
+          b.setAttribute("aria-selected", String(cat === category));
+          b.addEventListener("click", () => {
+            category = cat;
+            renderCategories();
+            renderCatalog();
+          });
+          nav.appendChild(b);
+        }
+      }
+      function renderCatalog() {
+        const el = $("catalog"),
+          scroll = el.scrollLeft;
+        el.innerHTML = "";
+        const types =
+          category === "Essentials"
+            ? ["road", "bridge", "dock", "cottage", "park", "tree", "remove"]
+            : Object.keys(DEFS).filter((k) => DEFS[k].category === category);
+        for (let i = 0; i < types.length; i++) {
+          const type = types[i],
+            d = DEFS[type],
+            b = document.createElement("button"),
+            affordable = town.mode === "sandbox" || town.money >= d.cost;
+          b.className = "card";
+          b.dataset.tool = type;
+          b.setAttribute("aria-pressed", String(type === selected));
+          b.setAttribute(
+            "aria-label",
+            `${d.name}, ${affordable ? money(d.cost) : "needs " + money(d.cost)}${!affordable ? ", cannot afford yet" : ""}`,
+          );
+          b.innerHTML = `<span class="card-key">${String(i + 1).padStart(2, "0")}</span><i class="selected-dot"></i><span class="thumb">${thumbs.has(type) ? `<img alt="" src="${thumbs.get(type)}">` : thumbSVG(type)}</span><strong>${d.name}</strong><span class="price${affordable ? "" : " unaffordable"}">${type === "remove" ? "Full refund" : town.mode === "sandbox" ? "Free to build" : (affordable ? "" : "Needs ") + money(d.cost)}${d.drag && type !== "remove" ? " / tile" : ""}</span>`;
+          b.addEventListener("click", () => {
+            if (!affordable) {
+              toast(
+                `Needs ${money(d.cost)}. Try a smaller place or remove one for a refund.`,
+              );
+              return;
+            }
+            selectTool(type);
+          });
+          el.appendChild(b);
+          queueThumb(type);
+        }
+        el.scrollLeft = scroll;
+      }
+      function updateUI() {
+        if (!town) return;
+        const s = townStats();
+        $("funds").textContent =
+          town.mode === "sandbox" ? "Unlimited" : money(town.money);
+        $("population").innerHTML = s.capacity + " <small>neighbors</small>";
+        $("building-count").innerHTML = s.places + " <small>places</small>";
+        $("town-label").textContent = town.name;
+        $("undo").disabled = !undoStack.length;
+        const goal = GOALS.find((g) => s[g.key] < g.target);
+        if (goal) {
+          const count = Math.min(s[goal.key], goal.target);
+          $("goal-title").innerHTML = goal.title;
+          $("goal-description").textContent = goal.description;
+          $("goal-progress").style.width = (count / goal.target) * 100 + "%";
+          $("goal-count").textContent =
+            `${count} of ${goal.target} ${goal.unit}`;
+          $("goal-reward").textContent = "Your next chapter";
+        } else {
+          $("goal-title").innerHTML = "A town with<br>your own story.";
+          $("goal-description").textContent =
+            "The first chapter is yours. Keep building, find a favorite view, and make a little room for what comes next.";
+          $("goal-progress").style.width = "100%";
+          $("goal-count").textContent = "First steps complete";
+          $("goal-reward").textContent = "Keep dreaming";
+        }
+        renderCatalog();
+      }
+      function updateHint() {
+        $("turn-building").hidden = !selected || !!DEFS[selected].drag;
+        if (!selected) {
+          $("hint-text").textContent =
+            "Drag to explore · pinch or scroll to zoom · tap a place to look closer";
+          return;
+        }
+        const d = DEFS[selected];
+        $("hint-text").textContent =
+          selected === "remove"
+            ? "Tap a built place to remove it · paid places get a full refund"
+            : d.drag
+              ? `Drag to draw ${d.name.toLowerCase()} tiles · drag with two fingers to move the map`
+              : `Tap an open spot for your ${d.name.toLowerCase()} · two fingers to move · use ↻ to turn`;
+      }
+      let toastTimer;
+      function toast(message) {
+        $("toast").textContent = message;
+        $("toast").classList.add("show");
+        clearTimeout(toastTimer);
+        toastTimer = setTimeout(
+          () => $("toast").classList.remove("show"),
+          3600,
+        );
+      }
+      let audioCtx = null,
+        sound = false;
+      function unlockAudio() {
+        if (!sound) return;
+        try {
+          if (!audioCtx)
+            audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+          if (audioCtx.state === "suspended") audioCtx.resume().catch(() => {});
+        } catch (_) {
+          sound = false;
+        }
+      }
+      function playNote(f) {
+        if (!sound || !audioCtx || audioCtx.state !== "running") return;
+        const osc = audioCtx.createOscillator(),
+          gain = audioCtx.createGain();
+        osc.type = "sine";
+        osc.frequency.value = f;
+        gain.gain.setValueAtTime(0.035, audioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(
+          0.001,
+          audioCtx.currentTime + 0.13,
+        );
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc.start();
+        osc.stop(audioCtx.currentTime + 0.14);
+        osc.onended = () => {
+          osc.disconnect();
+          gain.disconnect();
+        };
+      }
+      document.addEventListener("pointerdown", unlockAudio, { passive: true });
+      let modalReturn = null,
+        modalEscape = null;
+      function openDialog(html, onClose = null) {
+        modalReturn = document.activeElement;
+        modalEscape = onClose;
+        $("dialog").innerHTML = html;
+        $("modal").hidden = false;
+        const close = $("dialog").querySelector(".close-dialog");
+        if (close)
+          close.addEventListener("click", () => {
+            closeDialog();
+            if (onClose) onClose();
+          });
+        const first = $("dialog").querySelector("button,input,select");
+        if (first) first.focus();
+      }
+      function closeDialog() {
+        $("modal").hidden = true;
+        $("dialog").innerHTML = "";
+        modalEscape = null;
+        if (!welcomed) {
+          if (unprotectedSaves.length)
+            showUnreadableSave(unprotectedSaves[0].raw);
+          else showWelcome();
+          return;
+        }
+        if (modalReturn && modalReturn.isConnected) modalReturn.focus();
+      }
+      function dialogHeader(title) {
+        return `<div class="dialog-header"><h2 id="dialog-title">${title}</h2><button class="close-dialog" aria-label="Close dialog">${icon("plus").replace("M12 5v14M5 12h14", "M6 6l12 12M18 6L6 18")}</button></div>`;
+      }
+      function showWelcome(isNew = false) {
+        let mode = "starter";
+        openDialog(
+          `<div class="welcome"><div class="welcome-art">${thumbSVG("cottage")}${thumbSVG("lighthouse")}${thumbSVG("tree")}</div><div class="eyebrow">Welcome to your little corner of the coast</div><h2 id="dialog-title">Let's make<br>somewhere lovely.</h2><p>A road by the water. A home under the trees.<br>A whole little world, built your way.</p><label for="town-name">What should we call your town?</label><input id="town-name" maxlength="32" value="Baytown Bay" autocomplete="off"><div class="mode-options"><button class="mode-option" data-mode="starter" aria-pressed="true">${icon("town")}<span><strong>A little head start</strong><small>A seaside village, ready to make your own</small></span></button><button class="mode-option" data-mode="empty" aria-pressed="false">${icon("leaf")}<span><strong>A blank canvas</strong><small>Just the coast, the trees, and $30,000</small></span></button><button class="mode-option" data-mode="sandbox" aria-pressed="false">${icon("infinity")}<span><strong>Big imagination</strong><small>Unlimited funds. Build as you please.</small></span></button></div><button class="action" id="begin-town">Let's build a town <span aria-hidden="true">↗</span></button>${isNew ? '<button class="action secondary" id="cancel-new">Back to my town</button>' : ""}<div class="feature-note">Chapter 1: roads, places, and a town that stays saved.<br>Economy, living neighbors, and adventures come in later chapters.</div></div>`,
+        );
+        for (const b of $("dialog").querySelectorAll("[data-mode]"))
+          b.addEventListener("click", () => {
+            mode = b.dataset.mode;
+            for (const other of $("dialog").querySelectorAll("[data-mode]"))
+              other.setAttribute("aria-pressed", String(other === b));
+          });
+        $("begin-town").addEventListener("click", async () => {
+          if (unprotectedSaves.length) {
+            showUnreadableSave(unprotectedSaves[0].raw);
+            return;
+          }
+          const name = $("town-name").value;
+          if (isNew) {
+            const backup = await saveKey("backup", town);
+            if (!backup) {
+              toast(
+                "Could not back up this town. Export it before starting another.",
+              );
+              return;
+            }
+          }
+          makeTown(mode, name);
+          welcomed = true;
+          closeDialog();
+          await saveKey("auto", town);
+          toast("Welcome home. What will you build first?");
+        });
+        if (isNew) $("cancel-new").addEventListener("click", closeDialog);
+      }
+      function showHelp() {
+        openDialog(
+          `${dialogHeader("A little town planner’s guide")}<p>There’s no hurry here. Choose a place, find a little space, and make the bay your own.</p><div class="help-grid"><div><strong>Look around</strong>Drag the map with one finger when nothing is selected. With a tool selected, use two fingers. Pinch or scroll to zoom.</div><div><strong>Build a place</strong>Pick a card, then tap a clear spot. Drag to draw roads, bridges, or docks. Tap the same card to put your tool away.</div><div><strong>Change your mind</strong>Undo brings back the last change. Remove refunds the full price you paid. Starter places have no refund.</div><div><strong>Keep your town</strong>It saves as you build. Use the save button for three extra slots and a file you can keep somewhere safe.</div></div><h3>A few handy keys</h3><p>Arrow keys / WASD: move · + / −: zoom · Q / E: turn view · R: turn building · Escape: put tool away · ⌘/Ctrl Z: undo · ⌘/Ctrl S: save.</p><div class="feature-note">This is milestone 1. “Room for” means home capacity, not a live population. Utilities, income, living neighbors, disasters, and home interiors are planned in later milestones. Missing power or water never damages anything.</div>`,
+        );
+      }
+      function showSettings() {
+        openDialog(
+          `${dialogHeader("Your little corner")}<p>A few ways to make yourself comfortable.</p><div class="setting-row"><span>Graphics</span><select id="quality"><option value="auto">Balanced</option><option value="low">Easy on battery</option><option value="high">Extra crisp</option></select></div><div class="setting-row"><span>Gentle building sounds</span><button class="action secondary" id="sound">${sound ? "On" : "Off"}</button></div><div class="setting-row"><span>Motion</span><span style="color:var(--muted);font-size:12px">${reducedMotion ? "Reduced · follows device" : "Gentle water shimmer"}</span></div><div class="setting-row"><span>Disasters</span><span style="color:var(--muted);font-size:12px">Off · later chapter</span></div><div class="actions" style="margin-top:22px"><button class="action secondary" id="settings-help">How to play</button><button class="action secondary" id="new-town">Another town</button></div><div class="feature-note">Starting another town keeps this one in a recovery backup. Named save slots are kept too. Export a file for a lasting copy.</div>`,
+        );
+        $("quality").value = quality;
+        $("quality").addEventListener("change", (e) => {
+          quality = e.target.value;
+          resize();
+          localSet("baytown:settings", JSON.stringify({ quality, sound }));
+        });
+        $("sound").addEventListener("click", () => {
+          sound = !sound;
+          unlockAudio();
+          $("sound").textContent = sound ? "On" : "Off";
+          playNote(520);
+          localSet("baytown:settings", JSON.stringify({ quality, sound }));
+        });
+        $("settings-help").addEventListener("click", showHelp);
+        $("new-town").addEventListener("click", () => showWelcome(true));
+      }
+      function showLayers() {
+        openDialog(
+          `${dialogHeader("A different point of view")}<p>Find your way around the bay.</p><div class="view-modes"><button data-layer="natural">Natural</button><button data-layer="grid">Tile grid</button><button data-layer="roads">Roads</button></div><div class="feature-note">Power, water, and service maps arrive with their working networks in milestone 2.</div>`,
+        );
+        for (const b of $("dialog").querySelectorAll("[data-layer]")) {
+          if (b.dataset.layer === mapLayer) {
+            b.style.background = "var(--green)";
+            b.style.color = "var(--paper)";
+          }
+          b.addEventListener("click", () => {
+            mapLayer = b.dataset.layer;
+            dirty = true;
+            closeDialog();
+            toast(`${b.textContent} view`);
+          });
+        }
+      }
+
+      /* 09 · MAIN — versioned persistence, input, lifecycle and debug hooks. */
+      const migrations = { 1: (s) => s };
+      let dbPromise = null,
+        storageWarning = false,
+        saving = false,
+        lastSaveTime = 0,
+        saveQueue = Promise.resolve();
+      let unprotectedSaves = [];
+      function localGet(key) {
+        try {
+          return localStorage.getItem(key);
+        } catch (_) {
+          return null;
+        }
+      }
+      function localSet(key, value) {
+        try {
+          localStorage.setItem(key, value);
+          return true;
+        } catch (_) {
+          return false;
+        }
+      }
+      function database() {
+        if (!dbPromise)
+          dbPromise = new Promise((resolve, reject) => {
+            const request = indexedDB.open("baytown-builder", 1);
+            request.onupgradeneeded = () => {
+              if (!request.result.objectStoreNames.contains("saves"))
+                request.result.createObjectStore("saves");
+            };
+            request.onsuccess = () => {
+              request.result.onversionchange = () => {
+                request.result.close();
+                dbPromise = null;
+              };
+              resolve(request.result);
+            };
+            request.onerror = () => reject(request.error);
+            request.onblocked = () =>
+              reject(Error("Save storage is busy in another tab."));
+          }).catch(() => null);
+        return dbPromise;
+      }
+      async function dbGet(key) {
+        const db = await database();
+        if (!db) return null;
+        return new Promise((resolve) => {
+          try {
+            const request = db
+              .transaction("saves", "readonly")
+              .objectStore("saves")
+              .get(key);
+            request.onsuccess = () => resolve(request.result || null);
+            request.onerror = () => resolve(null);
+          } catch (_) {
+            resolve(null);
+          }
+        });
+      }
+      async function dbSet(key, value) {
+        const db = await database();
+        if (!db) return false;
+        return new Promise((resolve) => {
+          try {
+            const tx = db.transaction("saves", "readwrite");
+            tx.objectStore("saves").put(value, key);
+            tx.oncomplete = () => resolve(true);
+            tx.onerror = () => resolve(false);
+            tx.onabort = () => resolve(false);
+          } catch (_) {
+            resolve(false);
+          }
+        });
+      }
+      async function dbKeys() {
+        const db = await database();
+        if (!db) return [];
+        return new Promise((resolve) => {
+          try {
+            const request = db
+              .transaction("saves", "readonly")
+              .objectStore("saves")
+              .getAllKeys();
+            request.onsuccess = () => resolve(request.result);
+            request.onerror = () => resolve([]);
+          } catch (_) {
+            resolve([]);
+          }
+        });
+      }
+      async function preserveUnreadable(entries) {
+        const failed = [];
+        const existing = await preservedFiles();
+        for (let i = 0; i < entries.length; i++) {
+          if (existing.some((file) => file.raw === entries[i].raw)) continue;
+          const entry = entries[i],
+            key = `recovered-${Date.now()}-${i}-${Math.random().toString(36).slice(2, 8)}`;
+          const localOK = localSet("baytown:" + key, entry.raw);
+          const dbOK = await dbSet(key, entry.raw);
+          if (!localOK && !dbOK) failed.push(entry);
+        }
+        unprotectedSaves = failed;
+        return !failed.length;
+      }
+      function downloadRaw(raw, name) {
+        const url = URL.createObjectURL(
+          new Blob([raw], { type: "application/json" }),
+        );
+        const link = document.createElement("a");
+        link.href = url;
+        link.download = name;
+        link.click();
+        setTimeout(() => URL.revokeObjectURL(url), 10000);
+      }
+      async function preservedFiles() {
+        const keys = new Set(
+          (await dbKeys()).filter(
+            (k) => typeof k === "string" && k.startsWith("recovered-"),
+          ),
+        );
+        try {
+          for (let i = 0; i < localStorage.length; i++) {
+            const key = localStorage.key(i);
+            if (key.startsWith("baytown:recovered-")) keys.add(key.slice(8));
+          }
+        } catch (_) {}
+        const files = [];
+        for (const key of keys) {
+          const raw = localGet("baytown:" + key) || (await dbGet(key));
+          if (raw) files.push({ key, raw });
+        }
+        return files;
+      }
+      function serialize(state = town) {
+        return JSON.stringify({
+          ...state,
+          version: SAVE_VERSION,
+          camera: { ...camera },
+          updated: Date.now(),
+        });
+      }
+      function validateSave(raw) {
+        let s =
+          typeof raw === "string" ? JSON.parse(raw) : structuredClone(raw);
+        if (!s || typeof s !== "object" || Array.isArray(s))
+          throw Error("This file is not a Baytown town.");
+        if (
+          !Number.isInteger(s.version) ||
+          s.version < 1 ||
+          s.version > SAVE_VERSION
+        )
+          throw Error(
+            "This town uses a different save version. Keep the file and open it in a matching or newer Baytown.",
+          );
+        while (s.version < SAVE_VERSION) {
+          const migration = migrations[s.version + 1];
+          if (!migration) throw Error("A save upgrade is missing.");
+          s = migration(s);
+          s.version++;
+        }
+        if (
+          typeof s.name !== "string" ||
+          !s.name.trim() ||
+          s.name.length > 32 ||
+          !Number.isSafeInteger(s.seed) ||
+          s.seed < 0 ||
+          s.seed > 4294967295 ||
+          !["starter", "empty", "sandbox"].includes(s.mode) ||
+          !Number.isFinite(s.money) ||
+          s.money < 0 ||
+          s.money > 1e12 ||
+          !Array.isArray(s.objects) ||
+          s.objects.length > MAX_OBJECTS
+        )
+          throw Error(
+            "Some town information is missing or out of range. Your current town has not changed.",
+          );
+        const ids = new Set(),
+          used = new Uint8Array(SIZE * SIZE);
+        for (const o of s.objects) {
+          if (
+            !o ||
+            !Object.hasOwn(DEFS, o.type) ||
+            o.type === "remove" ||
+            !Number.isSafeInteger(o.id) ||
+            o.id < 1 ||
+            o.id > 2147483646 ||
+            ids.has(o.id) ||
+            !Number.isInteger(o.x) ||
+            !Number.isInteger(o.z) ||
+            !Number.isInteger(o.rotation) ||
+            o.rotation < 0 ||
+            o.rotation > 3 ||
+            !Number.isFinite(o.paid) ||
+            o.paid < 0 ||
+            o.paid > DEFS[o.type].cost
+          )
+            throw Error(
+              "A saved place is invalid. Your current town has not changed.",
+            );
+          const d = DEFS[o.type];
+          if (o.x < 0 || o.z < 0 || o.x + d.size > SIZE || o.z + d.size > SIZE)
+            throw Error("A saved place is outside the map.");
+          for (let dz = 0; dz < d.size; dz++)
+            for (let dx = 0; dx < d.size; dx++) {
+              const ix = (o.z + dz) * SIZE + o.x + dx;
+              if (used[ix]) throw Error("Two saved places overlap.");
+              used[ix] = 1;
+            }
+          ids.add(o.id);
+        }
+        if (s.camera) {
+          const c = s.camera;
+          if (
+            !["x", "z", "zoom", "angle", "pitch"].every((k) =>
+              Number.isFinite(c[k]),
+            ) ||
+            c.x < -10 ||
+            c.x > 82 ||
+            c.z < -10 ||
+            c.z > 82 ||
+            c.zoom < 10 ||
+            c.zoom > 80 ||
+            c.pitch < 0.3 ||
+            c.pitch > 1.3
+          )
+            throw Error("The saved view is invalid.");
+        }
+        if (!Number.isFinite(s.updated)) s.updated = Date.now();
+        if (!Number.isFinite(s.created)) s.created = s.updated;
+        return s;
+      }
+      async function loadKey(key) {
+        const local = localGet("baytown:" + key),
+          db = await dbGet(key),
+          valid = [];
+        for (const raw of [local, db])
+          if (raw)
+            try {
+              valid.push(validateSave(raw));
+            } catch (_) {}
+        valid.sort((a, b) => b.updated - a.updated);
+        return valid[0] || null;
+      }
+      async function saveKey(key, state = town) {
+        if (!welcomed || unprotectedSaves.length) {
+          toast("Open a saved town or keep your original file first.");
+          return false;
+        }
+        const raw = serialize(state),
+          serial = changeSerial;
+        const task = async () => {
+          saving = true;
+          $("save-status").textContent = "Saving your little world…";
+          const localOK = localSet("baytown:" + key, raw),
+            dbOK = await dbSet(key, raw);
+          saving = false;
+          if (localOK || dbOK) {
+            if (key === "auto") {
+              savedSerial = serial;
+              lastSaveTime = Date.now();
+            }
+            $("save-status").textContent =
+              localOK && dbOK
+                ? "Saved · on this device"
+                : "Saved · export a backup too";
+            return true;
+          }
+          $("save-status").textContent = "Storage full · export your town";
+          if (!storageWarning) {
+            storageWarning = true;
+            toast(
+              "Device storage is unavailable. Export your town to keep it safe.",
+            );
+          }
+          return false;
+        };
+        const result = saveQueue.then(task, task);
+        saveQueue = result.catch(() => false);
+        return result;
+      }
+      function maybeAutosave() {
+        if (welcomed && town && changeSerial !== savedSerial && !saving)
+          saveKey("auto");
+      }
+      async function applySave(state, backup = true) {
+        const valid = validateSave(state);
+        if (
+          unprotectedSaves.length &&
+          !(await preserveUnreadable(unprotectedSaves))
+        )
+          throw Error(
+            "Keep the original save file before opening another town.",
+          );
+        if (backup && town && welcomed && !(await saveKey("backup", town)))
+          throw Error(
+            "Could not back up your current town. Export it before loading another.",
+          );
+        town = valid;
+        generateTerrain(town.seed);
+        rebuildOccupancy();
+        if (town.camera) Object.assign(camera, town.camera);
+        else
+          Object.assign(camera, {
+            x: 36,
+            z: 35,
+            zoom: 29,
+            angle: 0.63,
+            pitch: 0.7,
+          });
+        undoStack = [];
+        selected = null;
+        hover = null;
+        inspectorId = null;
+        $("inspect").hidden = true;
+        welcomed = true;
+        changeSerial++;
+        dirty = true;
+        updateCamera();
+        updateUI();
+        updateHint();
+        await saveKey("auto");
+        return true;
+      }
+      function exportTown() {
+        const blob = new Blob([serialize()], { type: "application/json" }),
+          url = URL.createObjectURL(blob),
+          link = document.createElement("a");
+        link.href = url;
+        link.download =
+          town.name.replace(/[^a-z0-9-]/gi, "-").toLowerCase() +
+          ".baytown.json";
+        link.click();
+        setTimeout(() => URL.revokeObjectURL(url), 10000);
+        toast("A little world, ready to keep.");
+      }
+      async function showSaves() {
+        openDialog(
+          `${dialogHeader("Keep a little world")}<p>Your town autosaves on this device. Keep a file too—browser storage can be cleared.</p><div id="save-slots"><p>Opening your town notebook…</p></div><div id="preserved-files"></div><div class="actions" style="margin-top:18px"><button class="action" id="export-town">Export file</button><button class="action secondary" id="import-town">Import file</button></div><input type="file" accept=".json,.baytown,application/json" id="import-input" hidden><div class="feature-note" id="storage-note">Three named slots, an autosave, and a recovery backup. Importing or loading first backs up the town you have open.</div>`,
+        );
+        $("export-town").disabled = !welcomed;
+        $("export-town").addEventListener("click", exportTown);
+        $("import-town").addEventListener("click", () =>
+          $("import-input").click(),
+        );
+        $("import-input").addEventListener("change", async (e) => {
+          const file = e.target.files[0];
+          if (!file) return;
+          if (file.size > 2000000) {
+            toast("That file is too large for a Baytown save.");
+            return;
+          }
+          try {
+            const valid = validateSave(await file.text());
+            await applySave(valid);
+            closeDialog();
+            toast("Welcome back to " + town.name + ".");
+          } catch (error) {
+            toast(error.message);
+          }
+        });
+        const keys = ["slot1", "slot2", "slot3", "backup"],
+          states = await Promise.all(keys.map(loadKey));
+        if (!$("save-slots")) return;
+        $("save-slots").innerHTML = "";
+        for (let i = 0; i < keys.length; i++) {
+          const state = states[i],
+            row = document.createElement("div");
+          row.className = "save-row";
+          const info = document.createElement("div");
+          info.className = "save-info";
+          const strong = document.createElement("strong");
+          strong.textContent =
+            (i < 3 ? "Slot " + (i + 1) : "Recovery backup") +
+            (state ? " · " + state.name : " · A blank page");
+          const small = document.createElement("small");
+          small.textContent = state
+            ? new Date(state.updated).toLocaleString() +
+              " · " +
+              state.objects.length +
+              " pieces of a town"
+            : i < 3
+              ? "Save a favorite version of your town."
+              : "Kept before loading or starting another town.";
+          info.append(strong, small);
+          row.append(info);
+          const actions = document.createElement("div");
+          actions.className = "actions";
+          if (i < 3) {
+            const save = document.createElement("button");
+            save.className = "action secondary";
+            save.disabled = !welcomed;
+            save.textContent = state ? "Update slot" : "Save here";
+            save.addEventListener("click", () => {
+              if (state)
+                showConfirm(
+                  `Update slot ${i + 1}?`,
+                  "Your open town will replace this named save. Other slots and the open town stay safe.",
+                  async () => {
+                    if (await saveKey(keys[i])) {
+                      toast("Saved to slot " + (i + 1) + ".");
+                      showSaves();
+                    }
+                  },
+                );
+              else
+                saveKey(keys[i]).then((ok) => {
+                  if (ok) showSaves();
+                });
+            });
+            actions.append(save);
+          }
+          if (state) {
+            const load = document.createElement("button");
+            load.className = "action";
+            load.textContent = "Open town";
+            load.addEventListener("click", async () => {
+              try {
+                await applySave(state);
+                closeDialog();
+                toast("Welcome back to " + town.name + ".");
+              } catch (e) {
+                toast(e.message);
+              }
+            });
+            actions.append(load);
+          }
+          row.append(actions);
+          $("save-slots").append(row);
+        }
+        const preserved = await preservedFiles();
+        if ($("preserved-files") && preserved.length) {
+          const title = document.createElement("h3");
+          title.textContent = "Kept original files";
+          $("preserved-files").append(title);
+          for (let i = 0; i < preserved.length; i++) {
+            const button = document.createElement("button");
+            button.className = "action secondary";
+            button.style.marginBottom = "8px";
+            button.textContent = `Export preserved file ${i + 1}`;
+            button.addEventListener("click", () =>
+              downloadRaw(preserved[i].raw, preserved[i].key + ".json"),
+            );
+            $("preserved-files").append(button);
+          }
+        }
+        if (navigator.storage && navigator.storage.persist) {
+          try {
+            const persisted = await navigator.storage.persist();
+            const el = $("storage-note");
+            if (el && persisted)
+              el.textContent += " This browser granted persistent storage.";
+          } catch (_) {}
+        }
+      }
+      function showConfirm(title, message, yes) {
+        openDialog(
+          `${dialogHeader(title)}<p id="confirm-message"></p><div class="actions"><button class="action secondary" id="confirm-no">Keep it</button><button class="action" id="confirm-yes">Update save</button></div>`,
+        );
+        $("confirm-message").textContent = message;
+        $("confirm-no").addEventListener("click", showSaves);
+        $("confirm-yes").addEventListener("click", yes);
+      }
+      const pointers = new Map();
+      let gesture = null,
+        multiGesture = false,
+        lastPinch = 0,
+        lastPinchX = 0,
+        lastPinchY = 0,
+        spaceDown = false;
+      function pointerMap(e) {
+        const w = screenToWorld(e.clientX, e.clientY);
+        return { x: Math.floor(w.x + 0.5), z: Math.floor(w.z + 0.5) };
+      }
+      canvas.addEventListener("pointerdown", (e) => {
+        if (!$("modal").hidden || contextLost || !welcomed) return;
+        canvas.focus({ preventScroll: true });
+        canvas.setPointerCapture(e.pointerId);
+        pointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
+        if (pointers.size === 2) {
+          multiGesture = true;
+          gesture = null;
+          const a = [...pointers.values()];
+          lastPinch = Math.hypot(a[0].x - a[1].x, a[0].y - a[1].y);
+          lastPinchX = (a[0].x + a[1].x) / 2;
+          lastPinchY = (a[0].y + a[1].y) / 2;
+          hover = null;
+          dirty = true;
+          return;
+        }
+        if (pointers.size > 1) return;
+        multiGesture = false;
+        const p = pointerMap(e),
+          pan = !selected || e.button === 1 || e.button === 2 || spaceDown;
+        gesture = {
+          startX: e.clientX,
+          startY: e.clientY,
+          lastX: e.clientX,
+          lastY: e.clientY,
+          startTile: p,
+          endTile: p,
+          pan,
+          moved: false,
+          tool: pan ? null : selected,
+        };
+        hover = pan ? null : p;
+        dirty = true;
+      });
+      function panCamera(dx, dy) {
+        const a = screenToWorld(innerWidth / 2, innerHeight / 2),
+          b = screenToWorld(innerWidth / 2 + dx, innerHeight / 2 + dy);
+        camera.x = clamp(camera.x + a.x - b.x, -5, 77);
+        camera.z = clamp(camera.z + a.z - b.z, -5, 77);
+        updateCamera();
+      }
+      canvas.addEventListener("pointermove", (e) => {
+        if (!$("modal").hidden || contextLost || !welcomed) return;
+        if (pointers.has(e.pointerId))
+          pointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
+        if (pointers.size >= 2) {
+          const a = [...pointers.values()],
+            distance = Math.hypot(a[0].x - a[1].x, a[0].y - a[1].y),
+            cx = (a[0].x + a[1].x) / 2,
+            cy = (a[0].y + a[1].y) / 2;
+          if (lastPinch > 0 && distance > 0)
+            camera.zoom = clamp((camera.zoom * lastPinch) / distance, 10, 80);
+          panCamera(cx - lastPinchX, cy - lastPinchY);
+          lastPinch = distance;
+          lastPinchX = cx;
+          lastPinchY = cy;
+          updateCamera();
+          return;
+        }
+        if (multiGesture) return;
+        if (gesture) {
+          const dx = e.clientX - gesture.lastX,
+            dy = e.clientY - gesture.lastY;
+          if (
+            Math.hypot(e.clientX - gesture.startX, e.clientY - gesture.startY) >
+            7
+          )
+            gesture.moved = true;
+          if (gesture.pan && gesture.moved) panCamera(dx, dy);
+          gesture.lastX = e.clientX;
+          gesture.lastY = e.clientY;
+          gesture.endTile = pointerMap(e);
+          if (gesture.tool) {
+            hover = gesture.endTile;
+            dirty = true;
+          }
+        } else if (e.pointerType === "mouse" && selected) {
+          const p = pointerMap(e);
+          if (!hover || hover.x !== p.x || hover.z !== p.z) {
+            hover = p;
+            dirty = true;
+          }
+        }
+      });
+      canvas.addEventListener("pointerup", (e) => {
+        pointers.delete(e.pointerId);
+        if (multiGesture) {
+          if (pointers.size === 0) {
+            multiGesture = false;
+            gesture = null;
+            markCameraChanged();
+          }
+          return;
+        }
+        if (!gesture) return;
+        const g = gesture;
+        gesture = null;
+        if (g.pan) {
+          if (!g.moved) {
+            const p = pointerMap(e);
+            inspect(p.x, p.z);
+          } else markCameraChanged();
+        } else if (g.tool) {
+          if (DEFS[g.tool].drag && g.moved)
+            drawPath(
+              g.tool,
+              g.startTile.x,
+              g.startTile.z,
+              g.endTile.x,
+              g.endTile.z,
+            );
+          else if (!g.moved || DEFS[g.tool].drag)
+            place(g.tool, g.endTile.x, g.endTile.z);
+        }
+        hover = e.pointerType === "mouse" ? pointerMap(e) : null;
+        dirty = true;
+      });
+      canvas.addEventListener("pointercancel", (e) => {
+        pointers.delete(e.pointerId);
+        gesture = null;
+        hover = null;
+        if (!pointers.size) multiGesture = false;
+        dirty = true;
+      });
+      canvas.addEventListener("lostpointercapture", (e) => {
+        pointers.delete(e.pointerId);
+        if (!pointers.size) {
+          gesture = null;
+          multiGesture = false;
+        }
+      });
+      canvas.addEventListener("pointerleave", () => {
+        if (!gesture) {
+          hover = null;
+          dirty = true;
+        }
+      });
+      canvas.addEventListener("contextmenu", (e) => e.preventDefault());
+      canvas.addEventListener(
+        "wheel",
+        (e) => {
+          e.preventDefault();
+          if (!$("modal").hidden) return;
+          const before = screenToWorld(e.clientX, e.clientY);
+          camera.zoom = clamp(camera.zoom * Math.exp(e.deltaY * 0.001), 10, 80);
+          updateCamera();
+          const after = screenToWorld(e.clientX, e.clientY);
+          camera.x = clamp(camera.x + before.x - after.x, -5, 77);
+          camera.z = clamp(camera.z + before.z - after.z, -5, 77);
+          updateCamera();
+          markCameraChanged();
+        },
+        { passive: false },
+      );
+      function markCameraChanged() {
+        town.camera = { ...camera };
+        changeSerial++;
+      }
+      function zoom(factor) {
+        camera.zoom = clamp(camera.zoom * factor, 10, 80);
+        updateCamera();
+        markCameraChanged();
+      }
+      function rotateView(delta) {
+        camera.angle = (camera.angle + delta) % TAU;
+        updateCamera();
+        markCameraChanged();
+      }
+      document.addEventListener("keydown", (e) => {
+        if (!$("modal").hidden) {
+          if (e.key === "Escape") {
+            if ($("keep-old-save")) return;
+            if ($("dialog").querySelector(".welcome") && !$("cancel-new"))
+              return;
+            const onClose = modalEscape;
+            closeDialog();
+            if (onClose) onClose();
+          }
+          if (e.key === "Tab") {
+            const focusable = [
+              ...$("dialog").querySelectorAll(
+                "button,input:not([hidden]),select",
+              ),
+            ].filter((el) => !el.disabled && el.offsetParent !== null);
+            const first = focusable[0],
+              last = focusable[focusable.length - 1];
+            if (!first) return;
+            if (e.shiftKey && document.activeElement === first) {
+              e.preventDefault();
+              last.focus();
+            } else if (!e.shiftKey && document.activeElement === last) {
+              e.preventDefault();
+              first.focus();
+            }
+          }
+          return;
+        }
+        if (["INPUT", "SELECT", "TEXTAREA"].includes(e.target.tagName)) return;
+        const key = e.key.toLowerCase();
+        if ((e.ctrlKey || e.metaKey) && key === "z") {
+          e.preventDefault();
+          undo();
+          return;
+        }
+        if ((e.ctrlKey || e.metaKey) && key === "s") {
+          e.preventDefault();
+          saveKey("auto").then((ok) => {
+            if (ok) toast("Your town is saved.");
+          });
+          return;
+        }
+        if (
+          e.code === "Space" &&
+          (e.target === canvas || e.target === document.body)
+        ) {
+          spaceDown = true;
+          e.preventDefault();
+        }
+        if (key === "escape") {
+          selected = null;
+          hover = null;
+          inspectorId = null;
+          $("inspect").hidden = true;
+          dirty = true;
+          renderCatalog();
+          updateHint();
+        }
+        if (key === "r" && selected) {
+          rotation = (rotation + 1) % 4;
+          toast("Turned the building.");
+          dirty = true;
+        }
+        if (key === "q") rotateView(-Math.PI / 4);
+        if (key === "e") rotateView(Math.PI / 4);
+        if (key === "+" || key === "=") zoom(0.85);
+        if (key === "-") zoom(1.17);
+        const move =
+          key === "arrowleft" || key === "a"
+            ? [-45, 0]
+            : key === "arrowright" || key === "d"
+              ? [45, 0]
+              : key === "arrowup" || key === "w"
+                ? [0, -45]
+                : key === "arrowdown" || key === "s"
+                  ? [0, 45]
+                  : null;
+        if (move) {
+          e.preventDefault();
+          panCamera(-move[0], -move[1]);
+          markCameraChanged();
+        }
+      });
+      document.addEventListener("keyup", (e) => {
+        if (e.code === "Space") spaceDown = false;
+      });
+      window.addEventListener("blur", () => {
+        spaceDown = false;
+        pointers.clear();
+        gesture = null;
+        multiGesture = false;
+      });
+      $("turn-building").addEventListener("click", () => {
+        rotation = (rotation + 1) % 4;
+        toast("Turned the building.");
+        dirty = true;
+      });
+      $("zoom-in").addEventListener("click", () => zoom(0.82));
+      $("zoom-out").addEventListener("click", () => zoom(1.22));
+      $("rotate").addEventListener("click", () => rotateView(Math.PI / 4));
+      $("home-view").addEventListener("click", () => {
+        camera.x = innerHeight > innerWidth ? 42 : 40;
+        camera.z = 36;
+        camera.zoom =
+          innerWidth < 700 ? 36 : innerHeight > innerWidth ? 34 : 28;
+        camera.angle = 0.63;
+        updateCamera();
+        markCameraChanged();
+        toast("Back to the heart of town.");
+      });
+      $("view-button").addEventListener("click", showLayers);
+      $("undo").addEventListener("click", undo);
+      $("save-button").addEventListener("click", showSaves);
+      $("help-button").addEventListener("click", showHelp);
+      $("guide-button").addEventListener("click", showHelp);
+      $("menu-button").addEventListener("click", showSettings);
+      $("close-inspect").addEventListener("click", () => {
+        inspectorId = null;
+        $("inspect").hidden = true;
+        dirty = true;
+      });
+      $("inspect-remove").addEventListener("click", () => {
+        const obj = town.objects.find((o) => o.id === inspectorId);
+        if (obj) place("remove", obj.x, obj.z);
+      });
+      window.addEventListener("resize", resize);
+      window.addEventListener("pagehide", () => {
+        if (town && welcomed && !unprotectedSaves.length) {
+          const raw = serialize();
+          localSet("baytown:auto", raw);
+          dbSet("auto", raw);
+        }
+      });
+      document.addEventListener("visibilitychange", () => {
+        active = !document.hidden;
+        if (!active) maybeAutosave();
+        else resize();
+      });
+      // A readable debug handle for the real browser suite and later milestones.
+      window.__baytown = {
+        get state() {
+          return town;
+        },
+        get camera() {
+          return camera;
+        },
+        get terrain() {
+          return terrain;
+        },
+        get selected() {
+          return selected;
+        },
+        get error() {
+          return rendererError;
+        },
+        get saveVersion() {
+          return SAVE_VERSION;
+        },
+        defs: DEFS,
+        stats: townStats,
+        place,
+        drawPath,
+        undo,
+        selectTool,
+        makeTown,
+        screenToWorld,
+        worldToScreen,
+        placementCheck,
+        serialize,
+        validateSave,
+        loadKey,
+        saveKey,
+        applySave,
+        getGL: () => gl,
+        getInstances: () =>
+          Object.values(batches).reduce((n, b) => n + b.count, 0),
+        flush: () => {
+          if (dirty) {
+            rebuildWorld();
+            dirty = false;
+          }
+        },
+        setView: (x, z, zoomValue = 20) => {
+          Object.assign(camera, { x, z, zoom: zoomValue });
+          updateCamera();
+        },
+        getReady: () => welcomed && !contextLost,
+      };
+      function showUnreadableSave(raw) {
+        openDialog(
+          `${dialogHeader("Keep this little world safe")}<p>The existing autosave cannot be opened by this version. It has not been replaced. Keep a copy before starting another town, or open a named save from your notebook.</p><div class="actions"><button class="action" id="keep-old-save">Keep existing file</button><button class="action secondary" id="recover-slot">Open notebook</button></div>`,
+        );
+        // Closing this message must not silently replace an unreadable town.
+        $("dialog").querySelector(".close-dialog").hidden = true;
+        $("keep-old-save").addEventListener("click", () => {
+          downloadRaw(raw, "baytown-original-save.json");
+          unprotectedSaves = unprotectedSaves.filter(
+            (entry) => entry.raw !== raw,
+          );
+          if (unprotectedSaves.length)
+            showUnreadableSave(unprotectedSaves[0].raw);
+          else showWelcome();
+        });
+        $("recover-slot").addEventListener("click", showSaves);
+      }
+      async function start() {
+        try {
+          initGL();
+          renderCategories();
+          const settings = localGet("baytown:settings");
+          if (settings)
+            try {
+              const s = JSON.parse(settings);
+              if (["auto", "low", "high"].includes(s.quality))
+                quality = s.quality;
+              sound = s.sound === true;
+            } catch (_) {}
+          makeTown();
+          resize();
+          frame = requestAnimationFrame(render);
+          const mirrors = [localGet("baytown:auto"), await dbGet("auto")];
+          const unreadable = [];
+          for (const raw of mirrors) {
+            if (raw)
+              try {
+                validateSave(raw);
+              } catch (_) {
+                if (!unreadable.some((entry) => entry.raw === raw))
+                  unreadable.push({ raw });
+              }
+          }
+          if (unreadable.length) await preserveUnreadable(unreadable);
+          const saved = await loadKey("auto");
+          if (saved && !unprotectedSaves.length) {
+            await applySave(saved, false);
+            toast(
+              unreadable.length
+                ? "Welcome back. An unreadable save copy was kept in your notebook."
+                : "Welcome back. The bay missed you.",
+            );
+          } else {
+            if (unreadable.length) showUnreadableSave(unreadable[0].raw);
+            else showWelcome();
+          }
+          updateHint();
+        } catch (e) {
+          fatal(e.message);
+        }
+      }
+      start();
+    </script>
+  </body>
+</html>
