@@ -1360,6 +1360,355 @@
           scroll-behavior: auto !important;
         }
       }
+
+      .town-tools {
+        position: absolute;
+        right: 22px;
+        top: calc(104px + var(--safe-top));
+        display: flex;
+        gap: 5px;
+        align-items: center;
+        z-index: 3;
+        background: var(--paper);
+        box-shadow: var(--shadow);
+        border: 1px solid #fff8;
+        border-radius: 14px;
+        padding: 0 3px;
+      }
+      @media (max-width: 800px) {
+        .brand .eyebrow {
+          display: none;
+        }
+        .brand {
+          flex-shrink: 0;
+        }
+      }
+      .card[aria-disabled="true"] {
+        opacity: 0.6;
+      }
+      .card .thumb svg {
+        stroke: none;
+      }
+      .town-tools button svg {
+        width: 17px;
+        height: 17px;
+        vertical-align: middle;
+      }
+      .compass {
+        top: calc(174px + var(--safe-top));
+      }
+      .town-tools button {
+        border: 0;
+        background: transparent;
+        border-radius: 10px;
+        color: var(--green);
+        font-size: 12px;
+        font-weight: 650;
+        min-width: 52px;
+        padding: 0 12px;
+      }
+      .town-tools #budget-button {
+        font-size: 12px;
+        border-right: 1px solid var(--line);
+        border-radius: 0;
+        min-width: 108px;
+      }
+      .town-tools #pause-sim[aria-pressed="true"] {
+        background: #e4ebd8;
+      }
+      .town-tools .spending {
+        color: #a17144;
+      }
+      #utility-bubbles {
+        position: absolute;
+        inset: 0;
+        pointer-events: none;
+        z-index: 1;
+        overflow: hidden;
+      }
+      .utility-bubble {
+        position: absolute;
+        left: -13px;
+        top: -13px;
+        background: #faf7e9;
+        border: 1px solid #e1c185;
+        border-radius: 9px;
+        padding: 5px 7px;
+        color: #a87835;
+        font-weight: 750;
+        font-size: 10px;
+        box-shadow: 0 3px 8px #3e563024;
+        white-space: nowrap;
+      }
+      .utility-bubble:after {
+        content: "";
+        position: absolute;
+        bottom: -4px;
+        left: calc(50% - 3px);
+        width: 6px;
+        height: 6px;
+        background: #faf7e9;
+        transform: rotate(45deg);
+        border-right: 1px solid #e1c185;
+        border-bottom: 1px solid #e1c185;
+      }
+      #utility-key {
+        position: absolute;
+        right: 24px;
+        bottom: calc(226px + var(--safe-bottom));
+        background: #faf8f0df;
+        border-radius: 9px;
+        color: #8c7545;
+        padding: 9px 12px;
+        font-size: 9px;
+        pointer-events: none;
+      }
+      #layer-legend {
+        position: absolute;
+        right: 88px;
+        top: calc(177px + var(--safe-top));
+        background: #faf8f0ed;
+        border-radius: 14px;
+        padding: 14px 16px;
+        box-shadow: var(--shadow);
+        font-size: 10px;
+        color: var(--muted);
+        z-index: 2;
+        max-width: 200px;
+        pointer-events: none;
+      }
+      #layer-legend strong {
+        display: block;
+        color: var(--green);
+        font-size: 12px;
+        margin-bottom: 8px;
+      }
+      #layer-legend span {
+        display: block;
+        line-height: 1.8;
+      }
+      #layer-legend small {
+        display: block;
+        margin-top: 8px;
+        font-size: 9px;
+      }
+      .goal-claim {
+        width: 100%;
+        margin-top: 12px;
+        min-height: 52px;
+        font-size: 11px;
+      }
+      .journal #funds-warning {
+        color: #986b36;
+        background: #f1e7d1;
+        border-color: #e4d5b2;
+        line-height: 1.5;
+      }
+      .journal-illustration {
+        height: 28px;
+        margin-top: 7px;
+      }
+      .journal-illustration i {
+        transform: scaleY(0.75);
+        transform-origin: bottom;
+      }
+      .journal .progress {
+        margin-top: 10px;
+      }
+      .inspect {
+        max-height: calc(100dvh - 410px - var(--safe-top) - var(--safe-bottom));
+        overflow-y: auto;
+      }
+      .inspect-details {
+        font-size: 10px;
+        line-height: 1.6;
+      }
+      .inspect-details > div {
+        display: flex;
+        justify-content: space-between;
+        gap: 8px;
+        border-bottom: 1px solid var(--line);
+        padding: 6px 0;
+      }
+      .inspect-details span {
+        color: var(--muted);
+      }
+      .inspect-details strong {
+        font-weight: 600;
+        text-align: right;
+      }
+      .inspect .growth-note {
+        font-size: 10px;
+        line-height: 1.6;
+        margin: 8px 0;
+      }
+      .inspect #inspect-coordinates {
+        font-size: 9px;
+        margin-top: 10px;
+      }
+      .goal-row {
+        padding: 15px;
+        border: 1px solid var(--line);
+        border-radius: 13px;
+        margin-bottom: 10px;
+      }
+      .goal-row strong {
+        font-size: 13px;
+      }
+      .goal-row p {
+        font-size: 11px;
+        margin: 6px 0;
+      }
+      .goal-row small {
+        font-size: 10px;
+        display: block;
+        color: var(--muted);
+        margin-bottom: 9px;
+      }
+      .goal-row button {
+        width: 100%;
+      }
+      .goal-row button:disabled {
+        opacity: 0.55;
+      }
+      .view-modes {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+      }
+      .view-modes button[aria-pressed="true"] {
+        background: var(--green);
+        color: var(--paper);
+      }
+      .budget-total {
+        background: #e9efde;
+        border-radius: 15px;
+        padding: 20px;
+      }
+      .budget-total h3 {
+        font-size: 40px;
+        margin: 7px 0;
+      }
+      .budget-total > span:last-child {
+        font-size: 11px;
+        color: var(--muted);
+      }
+      .budget-lines {
+        font-size: 12px;
+      }
+      .budget-lines > div {
+        display: flex;
+        justify-content: space-between;
+        gap: 15px;
+        padding: 11px 0;
+        border-bottom: 1px solid var(--line);
+      }
+      .budget-lines span {
+        color: var(--muted);
+      }
+      .budget-lines strong {
+        font-variant-numeric: tabular-nums;
+        font-weight: 600;
+      }
+      .budget-lines .budget-net {
+        color: var(--green);
+        font-size: 15px;
+        padding-top: 16px;
+      }
+      .budget-chart {
+        width: 100%;
+        height: 80px;
+        margin-top: 15px;
+      }
+      .dialog details {
+        font-size: 11px;
+        color: var(--muted);
+        margin-top: 16px;
+      }
+      .dialog summary {
+        min-height: 52px;
+        display: flex;
+        align-items: center;
+        cursor: pointer;
+      }
+      .network-list {
+        max-height: 180px;
+        overflow: auto;
+      }
+      .network-list p {
+        font-size: 10px;
+        margin: 5px 0;
+        padding: 8px;
+        border-radius: 8px;
+        background: #eef1e5;
+      }
+      @media (max-width: 900px) {
+        .town-tools {
+          right: 16px;
+          top: calc(98px + var(--safe-top));
+        }
+        .town-tools button {
+          padding: 0 8px;
+        }
+        #utility-key {
+          right: 17px;
+          bottom: calc(216px + var(--safe-bottom));
+          font-size: 8px;
+        }
+        #layer-legend {
+          right: 78px;
+        }
+        .inspect {
+          max-height: calc(100dvh - 390px);
+        }
+      }
+      @media (max-width: 700px) {
+        .town-tools {
+          right: 10px;
+          top: calc(104px + var(--safe-top));
+        }
+        .day-pill {
+          max-width: 95vw;
+        }
+        .journal {
+          top: calc(172px + var(--safe-top));
+        }
+        .town-tools #budget-button {
+          min-width: 100px;
+        }
+        .town-tools button {
+          min-width: 52px;
+        }
+        #utility-key {
+          display: none;
+        }
+        #layer-legend {
+          top: calc(175px + var(--safe-top));
+          right: 72px;
+          max-width: 170px;
+          font-size: 9px;
+        }
+        .inspect {
+          top: calc(175px + var(--safe-top));
+          max-height: calc(100dvh - 400px);
+        }
+      }
+      @media (max-height: 650px) {
+        .town-tools {
+          top: calc(95px + var(--safe-top));
+        }
+        .journal {
+          top: calc(112px + var(--safe-top));
+        }
+        .journal .goal-claim {
+          margin-top: 8px;
+        }
+        .inspect {
+          max-height: calc(100dvh - 290px);
+        }
+        #utility-key {
+          display: none;
+        }
+      }
     </style>
   </head>
   <body>
@@ -1396,14 +1745,14 @@
             ><svg viewBox="0 0 20 20">
               <circle cx="10" cy="6" r="3" />
               <path d="M4 17v-2a6 6 0 0112 0v2" /></svg
-            >Room for</span
+            >Neighbors</span
           ><strong id="population">0 <small>neighbors</small></strong>
         </div>
         <div class="stat">
           <span class="stat-label"
             ><svg viewBox="0 0 20 20">
               <path d="M3 17V7l7-5 7 5v10zM8 17v-6h4v6" /></svg
-            >Built</span
+            >Town mood</span
           ><strong id="building-count">0 <small>places</small></strong>
         </div>
       </div>
@@ -1429,7 +1778,18 @@
     </header>
     <div class="day-pill">
       <i class="sun"></i><strong id="town-label">Baytown Bay</strong
-      ><span>·</span><span>Founder's edition · Milestone 1</span>
+      ><span>·</span><span id="day-label">Day 1 · a bright beginning</span>
+    </div>
+    <div class="town-tools" aria-label="Town time and budget">
+      <button id="budget-button" aria-label="Town budget">+$0 / day</button
+      ><button id="pause-sim" aria-label="Pause town" aria-pressed="false">
+        Ⅱ</button
+      ><button id="speed-sim" aria-label="Change town speed">1×</button>
+    </div>
+    <div id="utility-bubbles" aria-hidden="true"></div>
+    <div id="layer-legend" hidden></div>
+    <div id="utility-key" hidden>
+      P · power &nbsp; W · water &nbsp; ↔ · road
     </div>
     <aside class="journal" aria-label="Town guide">
       <div class="journal-heading">
@@ -1450,8 +1810,12 @@
         <span id="goal-count">0 of 3 homes</span
         ><span id="goal-reward">Your first chapter</span>
       </div>
+      <button class="action goal-claim" id="goal-claim" hidden>
+        Collect grant
+      </button>
+      <button class="tiny-button" id="funds-warning" hidden></button>
       <button class="tiny-button" id="guide-button">
-        <span>A note from the town planner</span
+        <span>Your town’s little goals</span
         ><svg viewBox="0 0 20 20"><path d="M4 10h12m-5-5 5 5-5 5" /></svg>
       </button>
     </aside>
@@ -1516,6 +1880,7 @@
       <h2 id="inspect-title"></h2>
       <p id="inspect-description"></p>
       <div class="pill" id="inspect-info"></div>
+      <div id="inspect-details" class="inspect-details"></div>
       <p id="inspect-coordinates"></p>
       <button class="action secondary" id="inspect-remove">
         Remove & refund
@@ -1595,7 +1960,12 @@
       const TAU = Math.PI * 2,
         clamp = (x, a, b) => Math.max(a, Math.min(b, x)),
         lerp = (a, b, t) => a + (b - a) * t;
-      const money = (n) => "$" + Math.round(n).toLocaleString("en-US");
+      const money = (n) =>
+        "$" +
+        n.toLocaleString("en-US", {
+          minimumFractionDigits: Number.isInteger(n) ? 0 : 2,
+          maximumFractionDigits: 2,
+        });
       const reducedMotion = matchMedia(
         "(prefers-reduced-motion: reduce)",
       ).matches;
@@ -1891,6 +2261,7 @@ void main(){vec3 light=normalize(vec3(-.55,1.,.45));float sun=max(0.,dot(normali
         projection[15] = 1;
         multiply(vp, projection, view);
         invert(inverse, vp);
+        updateBubblePositions();
         $("compass-needle").style.transform =
           `rotate(${(Math.atan2(Math.sin(a), Math.cos(a) * Math.sin(p)) * 180) / Math.PI}deg)`;
       }
@@ -1995,6 +2366,7 @@ void main(){vec3 light=normalize(vec3(-.55,1.,.45));float sun=max(0.,dot(normali
       }
       function render(time) {
         frame = requestAnimationFrame(render);
+        advanceClock(time);
         if (!active || contextLost || !gl) return;
         if (quality === "low" && time - lastTime < 32) return;
         lastTime = time;
@@ -2041,7 +2413,7 @@ void main(){vec3 light=normalize(vec3(-.55,1.,.45));float sun=max(0.,dot(normali
 
       /* 02 · WORLD — deterministic terrain regenerated from a seed. */
       const SIZE = 72,
-        SAVE_VERSION = 1,
+        SAVE_VERSION = 2,
         MAX_OBJECTS = 5000;
       let terrain = new Uint8Array(SIZE * SIZE),
         scenery = [],
@@ -2156,6 +2528,8 @@ void main(){vec3 light=normalize(vec3(-.55,1.,.45));float sun=max(0.,dot(normali
           add("cafe", 41, 32);
           add("market", 41, 38);
           add("park", 33, 44);
+          add("park", 33, 34);
+          add("park", 40, 40);
           add("library", 38, 44);
           add("wind", 45, 30);
           add("water", 45, 38);
@@ -2175,6 +2549,46 @@ void main(){vec3 light=normalize(vec3(-.55,1.,.45));float sun=max(0.,dot(normali
           add("tree", 31, 40);
           add("tree", 44, 34);
         }
+        // New villages start connected. Existing saves keep their exact layout.
+        if (mode === "starter") {
+          const links = [
+            [36, 32],
+            [36, 33],
+            [36, 38],
+            [36, 39],
+            [41, 34],
+            [41, 35],
+            [41, 37],
+            [46, 32],
+            [46, 33],
+            [46, 34],
+            [46, 35],
+            [46, 37],
+            [51, 32],
+            [51, 33],
+            [51, 34],
+            [51, 35],
+          ];
+          for (const [x, z] of links)
+            if (
+              !town.objects.some(
+                (o) =>
+                  x >= o.x &&
+                  x < o.x + DEFS[o.type].size &&
+                  z >= o.z &&
+                  z < o.z + DEFS[o.type].size,
+              )
+            )
+              town.objects.push({
+                id: nextId++,
+                type: "road",
+                x,
+                z,
+                rotation: 0,
+                paid: 0,
+              });
+        }
+        initializeEconomy(town);
         rebuildOccupancy();
         camera.x =
           mode === "starter" ? (innerHeight > innerWidth ? 42 : 40) : 38;
@@ -2189,6 +2603,8 @@ void main(){vec3 light=normalize(vec3(-.55,1.,.45));float sun=max(0.,dot(normali
         $("inspect").hidden = true;
         changeSerial++;
         dirty = true;
+        refreshSimulation();
+        simLastSecond = -1;
         updateCamera();
         updateUI();
       }
@@ -2377,7 +2793,7 @@ void main(){vec3 light=normalize(vec3(-.55,1.,.45));float sun=max(0.,dot(normali
           roof: "#637d89",
           height: 1.2,
           description:
-            "A friendly home base for the people who keep the peace. Service simulation arrives in milestone 2.",
+            "A friendly home base for the people who keep the peace. Service reach: 10 tiles; a staffed station lifts happiness.",
         },
         fire: {
           name: "Fire station",
@@ -2389,7 +2805,7 @@ void main(){vec3 light=normalize(vec3(-.55,1.,.45));float sun=max(0.,dot(normali
           roof: "#9d6451",
           height: 1.3,
           description:
-            "A bright red door for brave helpers. Fire protection arrives in milestone 2.",
+            "A bright red door for brave helpers. A staffed station lifts happiness within 10 tiles. Disaster protection arrives in milestone 4.",
         },
         hospital: {
           name: "Hospital",
@@ -2401,7 +2817,7 @@ void main(){vec3 light=normalize(vec3(-.55,1.,.45));float sun=max(0.,dot(normali
           roof: "#91aba0",
           height: 1.8,
           description:
-            "A place to feel better. Health service simulation arrives in milestone 2.",
+            "A place to feel better. A staffed hospital lifts happiness within 12 tiles.",
         },
         coastguard: {
           name: "Coast guard",
@@ -2413,7 +2829,7 @@ void main(){vec3 light=normalize(vec3(-.55,1.,.45));float sun=max(0.,dot(normali
           roof: "#7a98a1",
           height: 1.3,
           description:
-            "A lookout for the bay. Coastal protection arrives in milestone 2.",
+            "A lookout for the bay. A staffed station lifts happiness within 10 tiles. Disaster protection arrives in milestone 4.",
         },
         hall: {
           name: "Town hall",
@@ -2437,7 +2853,7 @@ void main(){vec3 light=normalize(vec3(-.55,1.,.45));float sun=max(0.,dot(normali
           roof: "#af785d",
           height: 1.2,
           description:
-            "A school for tomorrow’s town planners. Education arrives in milestone 2.",
+            "A school for tomorrow’s town planners. A staffed school lifts happiness within 10 tiles.",
         },
         library: {
           name: "Library",
@@ -2469,7 +2885,7 @@ void main(){vec3 light=normalize(vec3(-.55,1.,.45));float sun=max(0.,dot(normali
           kind: "wind",
           color: "#e8e9d6",
           description:
-            "Catch the sea breeze. Power networks arrive in milestone 2.",
+            "Catch the sea breeze. Share power along roads: 80 units from a turbine, 300 from a plant.",
         },
         water: {
           name: "Water tower",
@@ -2479,7 +2895,7 @@ void main(){vec3 light=normalize(vec3(-.55,1.,.45));float sun=max(0.,dot(normali
           kind: "water",
           color: "#a7c5c4",
           description:
-            "A little piece of the skyline. Water networks arrive in milestone 2.",
+            "A little piece of the skyline. Share 160 units of water along connected roads.",
         },
         power: {
           name: "Power plant",
@@ -2491,7 +2907,7 @@ void main(){vec3 light=normalize(vec3(-.55,1.,.45));float sun=max(0.,dot(normali
           roof: "#738277",
           height: 1.3,
           description:
-            "A sturdy utility building. Power networks arrive in milestone 2.",
+            "A sturdy utility building. Share power along roads: 80 units from a turbine, 300 from a plant.",
         },
         cafe: {
           name: "Corner café",
@@ -2503,7 +2919,7 @@ void main(){vec3 light=normalize(vec3(-.55,1.,.45));float sun=max(0.,dot(normali
           roof: "#9e7560",
           height: 0.9,
           description:
-            "Morning sunshine and the smell of something baking. Income arrives in milestone 2.",
+            "Morning sunshine and the smell of something baking. Earn from local road-connected customers when people are at work.",
         },
         market: {
           name: "Little market",
@@ -2526,7 +2942,7 @@ void main(){vec3 light=normalize(vec3(-.55,1.,.45));float sun=max(0.,dot(normali
           roof: "#6b8d89",
           height: 2.2,
           description:
-            "A bright place for work and new ideas. Jobs arrive in milestone 2.",
+            "A bright place for work and new ideas. Jobs are filled by adults who live on the same road network.",
         },
         factory: {
           name: "Workshop",
@@ -2538,7 +2954,7 @@ void main(){vec3 light=normalize(vec3(-.55,1.,.45));float sun=max(0.,dot(normali
           roof: "#8a8e7b",
           height: 1.2,
           description:
-            "A workshop for making useful things. Jobs arrive in milestone 2.",
+            "A workshop for making useful things. Jobs are filled by adults who live on the same road network.",
         },
         park: {
           name: "Pocket park",
@@ -2873,7 +3289,8 @@ void main(){vec3 light=normalize(vec3(-.55,1.,.45));float sun=max(0.,dot(normali
         }
         const w = n * 0.72,
           d = n * 0.66,
-          h = def.height || 1.2;
+          h =
+            (def.height || 1.2) + (def.capacity && obj.level === 2 ? 0.65 : 0);
         cube(x, 0.07, z, w, h, d, rgb, angle);
         const flat = k === "apartment" || k === "hospital" || k === "factory";
         if (flat) {
@@ -3011,6 +3428,7 @@ void main(){vec3 light=normalize(vec3(-.55,1.,.45));float sun=max(0.,dot(normali
         for (const key in batches) batches[key].data.length = 0;
         buildTerrain();
         for (const obj of town.objects) building(obj);
+        drawSimulationLayers();
         if (mapLayer === "roads") {
           for (const obj of town.objects) {
             if (["road", "bridge"].includes(obj.type))
@@ -3135,7 +3553,14 @@ void main(){vec3 light=normalize(vec3(-.55,1.,.45));float sun=max(0.,dot(normali
         return snapshot();
       }
       function commitTransaction(before, label) {
-        undoStack.push({ ...before, label });
+        const oldIDs = new Set(before.objects.map((o) => o.id)),
+          newIDs = new Set(town.objects.map((o) => o.id));
+        undoStack.push({
+          label,
+          added: town.objects.filter((o) => !oldIDs.has(o.id)).map((o) => o.id),
+          removed: before.objects.filter((o) => !newIDs.has(o.id)),
+          moneyDelta: cents(town.money - before.money),
+        });
         if (undoStack.length > 40) undoStack.shift();
         markChanged();
       }
@@ -3143,8 +3568,10 @@ void main(){vec3 light=normalize(vec3(-.55,1.,.45));float sun=max(0.,dot(normali
         changeSerial++;
         town.updated = Date.now();
         rebuildOccupancy();
+        refreshSimulation();
         dirty = true;
         updateUI();
+        if (inspectorId) updateInspector();
       }
       function applyPlacement(type, x, z) {
         const check = placementCheck(type, x, z);
@@ -3163,7 +3590,14 @@ void main(){vec3 light=normalize(vec3(-.55,1.,.45));float sun=max(0.,dot(normali
           paid = town.mode === "sandbox" ? 0 : def.cost;
         if (nextId > 2147483646) nextId = 1;
         while (town.objects.some((o) => o.id === nextId)) nextId++;
-        town.objects.push({ id: nextId++, type, x, z, rotation, paid });
+        const object = { id: nextId++, type, x, z, rotation, paid };
+        if (def.capacity)
+          Object.assign(object, {
+            residents: Math.ceil(def.capacity / 2),
+            level: 1,
+            growth: 0,
+          });
+        town.objects.push(object);
         town.money -= paid;
         rebuildOccupancy();
         return { ok: true };
@@ -3237,17 +3671,29 @@ void main(){vec3 light=normalize(vec3(-.55,1.,.45));float sun=max(0.,dot(normali
         return count;
       }
       function undo() {
-        const last = undoStack.pop();
+        const last = undoStack[undoStack.length - 1];
         if (!last) {
           toast("Nothing to undo yet.");
           return false;
         }
-        town.objects = last.objects;
-        town.money = last.money;
+        if (town.mode !== "sandbox" && town.money - last.moneyDelta < 0) {
+          toast(
+            "This undo needs " +
+              money(last.moneyDelta) +
+              ". Earn a little more first.",
+          );
+          return false;
+        }
+        undoStack.pop();
+        const added = new Set(last.added);
+        town.objects = town.objects.filter((o) => !added.has(o.id));
+        for (const obj of last.removed) town.objects.push({ ...obj });
+        if (town.mode !== "sandbox")
+          town.money = cents(Math.min(1e12, town.money - last.moneyDelta));
         inspectorId = null;
         $("inspect").hidden = true;
         markChanged();
-        toast(`Undid ${last.label.toLowerCase()}.`);
+        toast("Undid " + last.label.toLowerCase() + ".");
         playNote(320);
         return true;
       }
@@ -3285,54 +3731,917 @@ void main(){vec3 light=normalize(vec3(-.55,1.,.45));float sun=max(0.,dot(normali
           ? `Remove · refund ${money(obj.paid)}`
           : "Remove · starter place";
         $("inspect").hidden = false;
+        updateInspector();
         dirty = true;
       }
 
-      /* 05 · SIM — milestone 1 is a construction sandbox; no pretend economy. */
-      function townStats() {
-        let homes = 0,
-          capacity = 0,
-          places = 0,
-          roads = 0;
-        for (const obj of town.objects) {
-          const d = DEFS[obj.type];
-          if (d.capacity) {
-            homes++;
-            capacity += d.capacity;
-          }
-          if (["road", "bridge", "dock"].includes(obj.type)) roads++;
-          else places++;
-        }
-        return { homes, capacity, places, roads };
-      }
+      /* 05 · SIM — deterministic road networks, utilities and a gentle economy. */
+      /* SIMULATION_CORE_START — also exercised directly by the seeded tests. */
+      const SIM_RULES = Object.freeze({
+        daySeconds: 60,
+        residentIncome: 8,
+        workerShare: 0.5,
+        customerIncome: 2,
+        shopRange: 10,
+        shopCustomers: 40,
+        growthHappiness: 75,
+        moveDays: 2,
+        upgradeDays: 5,
+      });
+      const ECONOMY = {
+        road: { upkeep: 0.05 },
+        bridge: { upkeep: 0.15 },
+        dock: { upkeep: 0.1 },
+        seawall: { upkeep: 0.1 },
+        cottage: { upkeep: 2 },
+        family: { upkeep: 4 },
+        townhouse: { upkeep: 6 },
+        apartment: { upkeep: 12 },
+        villa: { upkeep: 8 },
+        wind: { upkeep: 4, power: 80 },
+        power: { upkeep: 16, power: 300, nuisance: 8, nuisanceRadius: 8 },
+        water: { upkeep: 4, water: 160 },
+        cafe: { upkeep: 8, jobs: 4, retail: true, demand: 2 },
+        market: { upkeep: 10, jobs: 6, retail: true, demand: 2 },
+        office: { upkeep: 12, jobs: 10, wageIncome: 12, demand: 4 },
+        factory: {
+          upkeep: 16,
+          jobs: 12,
+          wageIncome: 16,
+          demand: 6,
+          nuisance: 12,
+          nuisanceRadius: 8,
+        },
+        harbor: { upkeep: 10, jobs: 6, retail: true, demand: 2 },
+        police: { upkeep: 10, jobs: 4, radius: 10, bonus: 6, demand: 2 },
+        fire: { upkeep: 10, jobs: 4, radius: 10, bonus: 6, demand: 2 },
+        hospital: { upkeep: 16, jobs: 8, radius: 12, bonus: 10, demand: 2 },
+        coastguard: { upkeep: 10, jobs: 4, radius: 10, bonus: 4, demand: 2 },
+        hall: { upkeep: 8, jobs: 4, radius: 12, bonus: 4, demand: 2 },
+        school: { upkeep: 10, jobs: 6, radius: 10, bonus: 8, demand: 2 },
+        library: { upkeep: 6, jobs: 2, radius: 10, bonus: 8, demand: 2 },
+        post: { upkeep: 5, jobs: 2, radius: 8, bonus: 3, demand: 2 },
+        park: { upkeep: 2, radius: 6, bonus: 10 },
+        tree: { upkeep: 0, radius: 2, bonus: 1 },
+        flower: { upkeep: 0.1, radius: 2, bonus: 1 },
+        bench: { upkeep: 0.05, radius: 2, bonus: 1 },
+        lighthouse: { upkeep: 2, radius: 8, bonus: 2 },
+        mountain: { upkeep: 0 },
+      };
       const GOALS = [
         {
-          title: "Make yourself<br>at home.",
-          description:
-            "Every great town starts small. Give three homes a place by the bay.",
+          id: "homes",
+          tier: 1,
+          title: "Make yourself at home.",
+          description: "Give three homes a place by the bay.",
           key: "homes",
           target: 3,
           unit: "homes",
+          reward: 300,
         },
         {
-          title: "A place for<br>everything.",
+          id: "places",
+          tier: 1,
+          title: "A place for everything.",
           description:
-            "A shady park, a little library, a favorite corner. Build ten places you love.",
+            "Build ten places you love, from little trees to a favorite café.",
           key: "places",
           target: 10,
           unit: "places",
+          reward: 500,
         },
         {
-          title: "All roads lead<br>to your town.",
-          description:
-            "Connect your little world. Lay thirty road, bridge, or dock tiles.",
+          id: "paths",
+          tier: 1,
+          title: "A town, connected.",
+          description: "Lay thirty road, bridge, or dock tiles.",
           key: "roads",
           target: 30,
           unit: "path tiles",
+          reward: 500,
+        },
+        {
+          id: "utilities",
+          tier: 2,
+          title: "A little everyday magic.",
+          description: "Bring full power and water to three homes along roads.",
+          key: "suppliedHomes",
+          target: 3,
+          unit: "supplied homes",
+          reward: 600,
+        },
+        {
+          id: "neighbors",
+          tier: 2,
+          title: "Room for more stories.",
+          description:
+            "Welcome thirty neighbors. Happy homes grow when both utilities are ready.",
+          key: "population",
+          target: 30,
+          unit: "neighbors",
+          reward: 1000,
+        },
+        {
+          id: "balance",
+          tier: 2,
+          title: "A bright tomorrow.",
+          description:
+            "Keep happiness at 80 or more and earn more than upkeep for three days in a row.",
+          key: "thrivingDays",
+          target: 3,
+          unit: "thriving days",
+          reward: 1500,
         },
       ];
+      const cents = (n) => Math.round((n + Number.EPSILON) * 100) / 100;
+      function initializeEconomy(state, migrate = false, defs = DEFS) {
+        Object.assign(state, {
+          day: 1,
+          dayProgress: 0,
+          speed: 1,
+          simPaused: false,
+          claimedGoals: [],
+          profitableDays: 0,
+          thrivingDays: 0,
+          history: [],
+          lastBudget: null,
+        });
+        if (Array.isArray(state.objects))
+          for (const o of state.objects) {
+            if (o && Object.hasOwn(defs, o.type) && defs[o.type].capacity) {
+              o.residents = Math.ceil(defs[o.type].capacity / 2);
+              o.level = 1;
+              o.growth = 0;
+            }
+          }
+        return state;
+      }
+      function homeCapacity(obj, defs = DEFS) {
+        return defs[obj.type].capacity * (obj.level || 1);
+      }
+      function analyzeCity(state, defs = DEFS) {
+        const width = 72,
+          count = width * width,
+          roads = new Int32Array(count),
+          roadNetwork = new Int32Array(count),
+          queue = new Int32Array(count);
+        roadNetwork.fill(-1);
+        const records = Object.create(null),
+          networks = [],
+          homes = [],
+          workplaces = [],
+          amenities = [],
+          nuisances = [];
+        const summary = {
+          homes: 0,
+          capacity: 0,
+          population: 0,
+          places: 0,
+          roads: 0,
+          adults: 0,
+          staff: 0,
+          jobs: 0,
+          income: 0,
+          homeIncome: 0,
+          shopIncome: 0,
+          workIncome: 0,
+          upkeep: 0,
+          net: 0,
+          happiness: 60,
+          suppliedHomes: 0,
+          powerSupply: 0,
+          waterSupply: 0,
+          demand: 0,
+          unserved: 0,
+          customers: 0,
+        };
+        const neighbors = (ix, fn) => {
+          const x = ix % width;
+          if (x > 0) fn(ix - 1);
+          if (x < width - 1) fn(ix + 1);
+          if (ix >= width) fn(ix - width);
+          if (ix < count - width) fn(ix + width);
+        };
+        for (const o of state.objects)
+          if (o.type === "road" || o.type === "bridge")
+            roads[o.z * width + o.x] = o.id;
+        for (let start = 0; start < count; start++)
+          if (roads[start] && roadNetwork[start] === -1) {
+            const net = {
+              id: networks.length,
+              tiles: [],
+              powerSupply: 0,
+              waterSupply: 0,
+              demand: 0,
+              population: 0,
+              adults: 0,
+              staff: 0,
+              jobs: 0,
+            };
+            let head = 0,
+              tail = 0;
+            queue[tail++] = start;
+            roadNetwork[start] = net.id;
+            while (head < tail) {
+              const ix = queue[head++];
+              net.tiles.push(ix);
+              neighbors(ix, (next) => {
+                if (roads[next] && roadNetwork[next] === -1) {
+                  roadNetwork[next] = net.id;
+                  queue[tail++] = next;
+                }
+              });
+            }
+            networks.push(net);
+          }
+        for (const o of state.objects) {
+          const d = defs[o.type],
+            e = ECONOMY[o.type] || {},
+            n = d.size;
+          const access = [];
+          const add = (x, z) => {
+            if (
+              x >= 0 &&
+              z >= 0 &&
+              x < width &&
+              z < width &&
+              roads[z * width + x] &&
+              !access.includes(z * width + x)
+            )
+              access.push(z * width + x);
+          };
+          for (let k = 0; k < n; k++) {
+            add(o.x + k, o.z - 1);
+            add(o.x + k, o.z + n);
+            add(o.x - 1, o.z + k);
+            add(o.x + n, o.z + k);
+          }
+          if (o.type === "road" || o.type === "bridge")
+            access.push(o.z * width + o.x);
+          const nets = [...new Set(access.map((ix) => roadNetwork[ix]))].sort(
+            (a, b) => a - b,
+          );
+          const record = {
+            id: o.id,
+            type: o.type,
+            x: o.x + (n - 1) / 2,
+            z: o.z + (n - 1) / 2,
+            network: nets[0] ?? -1,
+            connections: nets,
+            access,
+            road: access.length > 0,
+            power: 0,
+            water: 0,
+            efficiency: 1,
+            staff: 0,
+            jobs: e.jobs || 0,
+            customers: 0,
+            income: 0,
+            upkeep: e.upkeep || 0,
+            happiness: 60,
+            services: [],
+            nuisance: 0,
+            demand: d.capacity ? o.residents : e.demand || 0,
+            strength: 1,
+          };
+          records[o.id] = record;
+          if (d.capacity) {
+            homes.push(o);
+            summary.homes++;
+            summary.capacity += homeCapacity(o, defs);
+            summary.population += o.residents;
+          }
+          if (["road", "bridge", "dock"].includes(o.type)) summary.roads++;
+          else summary.places++;
+          summary.upkeep += record.upkeep;
+          if (nets.length) {
+            for (const ni of nets) {
+              networks[ni].powerSupply += (e.power || 0) / nets.length;
+              networks[ni].waterSupply += (e.water || 0) / nets.length;
+            }
+          }
+          if (e.jobs) workplaces.push(record);
+          if (e.bonus) amenities.push(record);
+          if (e.nuisance) nuisances.push(record);
+        }
+        // Resolve consumers only after every source is known. A new, isolated
+        // road against the other wall must not disconnect a working utility link.
+        for (const o of state.objects) {
+          const r = records[o.id];
+          if (!r.connections.length) continue;
+          let bestScore = -1;
+          for (const index of r.connections) {
+            const n = networks[index],
+              demand = Math.max(1, n.demand + r.demand);
+            const power = Math.min(1, n.powerSupply / demand),
+              water = Math.min(1, n.waterSupply / demand);
+            const score = 4 * Math.min(power, water) + power + water;
+            if (score > bestScore) {
+              bestScore = score;
+              r.network = index;
+            }
+          }
+          const network = networks[r.network];
+          network.demand += r.demand;
+          if (defs[o.type].capacity) network.population += o.residents;
+        }
+        summary.adults = Math.floor(summary.population * SIM_RULES.workerShare);
+        const orderedWork = workplaces.sort((a, b) => a.id - b.id);
+        for (const net of networks) {
+          net.adults = Math.floor(net.population * SIM_RULES.workerShare);
+          const jobs = orderedWork.filter((r) => r.network === net.id);
+          net.jobs = jobs.reduce((n, r) => n + r.jobs, 0);
+          let remaining = Math.min(net.adults, net.jobs);
+          while (remaining > 0)
+            for (const r of jobs)
+              if (r.staff < r.jobs && remaining > 0) {
+                r.staff++;
+                remaining--;
+              }
+          net.staff = jobs.reduce((n, r) => n + r.staff, 0);
+          summary.staff += net.staff;
+          summary.powerSupply += net.powerSupply;
+          summary.waterSupply += net.waterSupply;
+          summary.demand += net.demand;
+          net.power = net.demand
+            ? Math.min(1, net.powerSupply / net.demand)
+            : net.powerSupply > 0
+              ? 1
+              : 0;
+          net.water = net.demand
+            ? Math.min(1, net.waterSupply / net.demand)
+            : net.waterSupply > 0
+              ? 1
+              : 0;
+        }
+        summary.jobs = workplaces.reduce((n, r) => n + r.jobs, 0);
+        for (const o of state.objects) {
+          const r = records[o.id],
+            e = ECONOMY[o.type] || {};
+          if (r.network >= 0) {
+            const net = networks[r.network];
+            r.power = net.power;
+            r.water = net.water;
+          }
+          const needsUtilities = !!(defs[o.type].capacity || e.demand);
+          r.efficiency =
+            needsUtilities &&
+            (!r.road || r.power < 1 - 1e-9 || r.water < 1 - 1e-9)
+              ? 0.5
+              : 1;
+          r.strength = r.efficiency * (r.jobs ? r.staff / r.jobs : 1);
+          if (needsUtilities && r.efficiency < 1) summary.unserved++;
+          if (
+            defs[o.type].capacity &&
+            r.road &&
+            r.power >= 1 - 1e-9 &&
+            r.water >= 1 - 1e-9
+          )
+            summary.suppliedHomes++;
+        }
+        // Shop reach follows roads, not straight-line distance through unrelated blocks.
+        const shops = orderedWork.filter(
+          (r) => ECONOMY[r.type].retail && r.road && r.staff > 0,
+        );
+        const homeAccess = new Map();
+        for (const o of homes) {
+          const r = records[o.id];
+          for (const ix of r.access)
+            if (roadNetwork[ix] === r.network) {
+              if (!homeAccess.has(ix)) homeAccess.set(ix, []);
+              homeAccess.get(ix).push(o.id);
+            }
+        }
+        const reachable = new Map(homes.map((o) => [o.id, []]));
+        for (const shop of shops) {
+          const distances = new Int16Array(count);
+          distances.fill(-1);
+          let head = 0,
+            tail = 0;
+          for (const ix of shop.access)
+            if (roadNetwork[ix] === shop.network) {
+              distances[ix] = 0;
+              queue[tail++] = ix;
+            }
+          const seenHomes = new Set();
+          while (head < tail) {
+            const ix = queue[head++];
+            for (const id of homeAccess.get(ix) || []) seenHomes.add(id);
+            if (distances[ix] >= SIM_RULES.shopRange) continue;
+            neighbors(ix, (next) => {
+              if (roads[next] && distances[next] === -1) {
+                distances[next] = distances[ix] + 1;
+                queue[tail++] = next;
+              }
+            });
+          }
+          for (const id of seenHomes) reachable.get(id).push(shop);
+        }
+        for (const home of homes) {
+          const options = reachable.get(home.id);
+          for (let person = 0; person < home.residents; person++) {
+            let best = null;
+            for (const shop of options)
+              if (
+                shop.customers < SIM_RULES.shopCustomers &&
+                (!best || shop.customers < best.customers)
+              )
+                best = shop;
+            if (best) best.customers++;
+            else break;
+          }
+        }
+        let weightedHappiness = 0;
+        for (const home of homes) {
+          const r = records[home.id],
+            bonuses = new Map();
+          for (const amenity of amenities) {
+            const e = ECONOMY[amenity.type];
+            if (Math.hypot(r.x - amenity.x, r.z - amenity.z) <= e.radius) {
+              const bonus = e.bonus * amenity.strength;
+              if (bonus > (bonuses.get(amenity.type) || 0))
+                bonuses.set(amenity.type, bonus);
+            }
+          }
+          for (const [type, bonus] of bonuses) {
+            r.services.push({ type, bonus: cents(bonus) });
+          }
+          for (const nuisance of nuisances) {
+            const e = ECONOMY[nuisance.type];
+            if (
+              Math.hypot(r.x - nuisance.x, r.z - nuisance.z) <= e.nuisanceRadius
+            )
+              r.nuisance += e.nuisance;
+          }
+          r.nuisance = Math.min(24, r.nuisance);
+          let happiness =
+            60 + [...bonuses.values()].reduce((a, b) => a + b, 0) - r.nuisance;
+          if (!r.road) happiness -= 6;
+          if (r.power < 1 - 1e-9) happiness -= 8;
+          if (r.water < 1 - 1e-9) happiness -= 8;
+          const net = networks[r.network];
+          if (net && net.adults && net.staff === net.adults) happiness += 4;
+          r.happiness = Math.round(Math.max(0, Math.min(100, happiness)));
+          weightedHappiness += r.happiness * home.residents;
+          r.income = cents(
+            home.residents * SIM_RULES.residentIncome * r.efficiency,
+          );
+          summary.homeIncome += r.income;
+        }
+        for (const r of orderedWork) {
+          const e = ECONOMY[r.type];
+          r.income = cents(
+            e.retail
+              ? r.customers * SIM_RULES.customerIncome * r.strength
+              : r.staff * (e.wageIncome || 0) * r.efficiency,
+          );
+          if (e.retail) {
+            summary.shopIncome += r.income;
+            summary.customers += r.customers;
+          } else summary.workIncome += r.income;
+        }
+        summary.happiness = summary.population
+          ? Math.round(weightedHappiness / summary.population)
+          : 60;
+        for (const key of [
+          "homeIncome",
+          "shopIncome",
+          "workIncome",
+          "upkeep",
+          "powerSupply",
+          "waterSupply",
+        ])
+          summary[key] = cents(summary[key]);
+        summary.income = cents(
+          summary.homeIncome + summary.shopIncome + summary.workIncome,
+        );
+        summary.net = cents(summary.income - summary.upkeep);
+        summary.daysLeft =
+          summary.net < 0 ? Math.floor(state.money / -summary.net) : null;
+        return { summary, records, networks, roadNetwork };
+      }
+      function stepEconomy(state, defs = DEFS) {
+        const before = analyzeCity(state, defs),
+          s = before.summary;
+        const unpaid =
+          state.mode === "sandbox"
+            ? 0
+            : cents(Math.max(0, -(state.money + s.net)));
+        if (state.mode !== "sandbox")
+          state.money = Math.min(1e12, cents(Math.max(0, state.money + s.net)));
+        state.day++;
+        state.profitableDays = s.net > 0 ? state.profitableDays + 1 : 0;
+        state.thrivingDays =
+          s.net > 0 && s.happiness >= 80 ? state.thrivingDays + 1 : 0;
+        let moveIns = 0,
+          upgrades = 0;
+        for (const o of state.objects)
+          if (defs[o.type].capacity) {
+            const r = before.records[o.id];
+            if (o.level === 2 && o.residents === homeCapacity(o, defs)) {
+              o.growth = 0;
+              continue;
+            }
+            if (
+              r.happiness >= SIM_RULES.growthHappiness &&
+              r.efficiency === 1 &&
+              r.road
+            ) {
+              o.growth++;
+              if (
+                o.residents < homeCapacity(o, defs) &&
+                o.growth >= SIM_RULES.moveDays
+              ) {
+                o.residents++;
+                moveIns++;
+                o.growth = 0;
+              } else if (
+                o.residents === homeCapacity(o, defs) &&
+                o.level === 1 &&
+                o.growth >= SIM_RULES.upgradeDays
+              ) {
+                o.level = 2;
+                o.growth = 0;
+                upgrades++;
+              }
+            } else o.growth = 0;
+          }
+        state.lastBudget = {
+          day: state.day - 1,
+          income: s.income,
+          homeIncome: s.homeIncome,
+          shopIncome: s.shopIncome,
+          workIncome: s.workIncome,
+          upkeep: s.upkeep,
+          net: s.net,
+          unpaid,
+          population: s.population,
+          happiness: s.happiness,
+          moveIns,
+          upgrades,
+        };
+        state.history.push({ ...state.lastBudget, money: state.money });
+        if (state.history.length > 60) state.history.shift();
+        return analyzeCity(state, defs);
+      }
+      function goalProgress(state, summary) {
+        const tier2 = GOALS.filter((g) => g.tier === 1).every((g) =>
+          state.claimedGoals.includes(g.id),
+        );
+        return GOALS.map((g) => ({
+          ...g,
+          value: g.key === "thrivingDays" ? state.thrivingDays : summary[g.key],
+          claimed: state.claimedGoals.includes(g.id),
+          locked: g.tier === 2 && !tier2,
+        }));
+      }
+      /* SIMULATION_CORE_END */
+      let simView = null,
+        simLastTime = 0,
+        simLastSecond = -1,
+        bubbleRecords = [],
+        bubbleSlots = [];
+      function refreshSimulation() {
+        if (!town) return;
+        simView = analyzeCity(town);
+        rebuildBubbles();
+      }
+      function townStats() {
+        return simView ? { ...simView.summary } : analyzeCity(town).summary;
+      }
+      function advanceDays(days = 1) {
+        for (let i = 0; i < days; i++) simView = stepEconomy(town);
+        town.updated = Date.now();
+        changeSerial++;
+        dirty = true;
+        rebuildBubbles();
+        updateUI();
+        if (inspectorId) updateInspector();
+        return townStats();
+      }
+      function advanceClock(time) {
+        const elapsed = simLastTime
+          ? Math.min((time - simLastTime) / 1000, 0.25)
+          : 0;
+        simLastTime = time;
+        if (
+          !town ||
+          !welcomed ||
+          town.simPaused ||
+          !$("modal").hidden ||
+          !active ||
+          contextLost
+        )
+          return;
+        town.dayProgress += (elapsed * town.speed) / SIM_RULES.daySeconds;
+        if (town.dayProgress >= 1) {
+          town.dayProgress -= 1;
+          advanceDays();
+        }
+        const second = Math.floor(town.dayProgress * 60);
+        if (second !== simLastSecond) {
+          simLastSecond = second;
+          changeSerial++;
+          updateClock();
+        }
+      }
+      function updateClock() {
+        if (!town) return;
+        $("day-label").textContent =
+          `Day ${town.day} · ${town.simPaused ? "taking a little break" : Math.max(1, Math.ceil(60 * (1 - town.dayProgress))) + "s to tomorrow"}`;
+        $("pause-sim").setAttribute("aria-pressed", String(town.simPaused));
+        $("pause-sim").setAttribute(
+          "aria-label",
+          town.simPaused ? "Resume town" : "Pause town",
+        );
+        $("pause-sim").innerHTML = town.simPaused
+          ? '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5l11 7-11 7z" fill="currentColor"/></svg>'
+          : '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5v14M16 5v14" stroke="currentColor" stroke-width="3"/></svg>';
+        $("speed-sim").textContent = town.speed + "×";
+      }
+      function claimGoal(id) {
+        const g = goalProgress(town, simView.summary).find((g) => g.id === id);
+        if (!g || g.claimed || g.locked || g.value < g.target) return false;
+        town.claimedGoals.push(g.id);
+        if (town.mode !== "sandbox")
+          town.money = Math.min(1e12, town.money + g.reward);
+        simView.summary.daysLeft =
+          simView.summary.net < 0
+            ? Math.floor(town.money / -simView.summary.net)
+            : null;
+        changeSerial++;
+        updateUI();
+        toast(
+          `${g.title} ${town.mode === "sandbox" ? "A new chapter!" : money(g.reward) + " added to town funds."}`,
+        );
+        return true;
+      }
+
+      function updateInspector() {
+        if (!inspectorId || !simView) return;
+        const obj = town.objects.find((o) => o.id === inspectorId);
+        if (!obj) return;
+        const d = DEFS[obj.type],
+          e = ECONOMY[obj.type] || {},
+          r = simView.records[obj.id];
+        $("inspect-info").textContent = d.capacity
+          ? `${obj.residents} of ${homeCapacity(obj)} neighbors · level ${obj.level}`
+          : `${d.size} × ${d.size} ${d.size === 1 ? "tile" : "tiles"}`;
+        const utilityText = (v) =>
+          v >= 1 - 1e-9
+            ? "Ready"
+            : v > 0
+              ? Math.round(v * 100) + "% · supply is short"
+              : "Not connected";
+        let html = "";
+        if (d.capacity || e.demand) {
+          html += `<div><span>Road access</span><strong>${r.road ? "Connected" : "Needs a road"}</strong></div><div><span>Power</span><strong>${utilityText(r.power)}</strong></div><div><span>Water</span><strong>${utilityText(r.water)}</strong></div><div><span>Utility strength</span><strong>${Math.round(r.efficiency * 100)}%</strong></div>`;
+        }
+        if (d.capacity) {
+          html += `<div><span>Happiness</span><strong>${r.happiness}%</strong></div><div><span>Daily income</span><strong>${money(r.income)}</strong></div><p class="growth-note">${r.efficiency < 1 ? "Power and water along roads will help this home grow." : r.happiness < 75 ? "A nearby park or staffed service can lift happiness to 75." : obj.level === 2 && obj.residents === homeCapacity(obj) ? "All settled in. This home is full and happy." : obj.residents < homeCapacity(obj) ? `A new neighbor in ${2 - obj.growth} happy ${2 - obj.growth === 1 ? "day" : "days"}.` : `A new floor in ${5 - obj.growth} happy ${5 - obj.growth === 1 ? "day" : "days"}.`}</p>`;
+          if (r.services.length)
+            html += `<p class="growth-note">Nearby care: ${r.services.map((s) => DEFS[s.type].name + " +" + s.bonus).join(" · ")}${r.nuisance ? " · Nearby industry −" + r.nuisance : ""}</p>`;
+        }
+        if (r.jobs)
+          html += `<div><span>People at work</span><strong>${r.staff} / ${r.jobs}</strong></div>`;
+        if (e.retail)
+          html += `<div><span>Local customers</span><strong>${r.customers} / 40</strong></div><div><span>Daily income</span><strong>${money(r.income)}</strong></div>`;
+        else if (e.wageIncome)
+          html += `<div><span>Daily income</span><strong>${money(r.income)}</strong></div>`;
+        if (e.power || e.water)
+          html += `<div><span>${e.power ? "Power" : "Water"} capacity</span><strong>${e.power || e.water} units</strong></div><p class="growth-note">${r.road ? "Shared along touching road networks." : "Build a road against the edge to share this supply."}</p>`;
+        if (e.radius)
+          html += `<div><span>Reach</span><strong>${e.radius} tiles</strong></div><div><span>Happiness lift</span><strong>+${cents(e.bonus * r.strength)} / +${e.bonus}</strong></div>`;
+        html += `<div><span>Daily upkeep</span><strong>${money(r.upkeep)}</strong></div>`;
+        $("inspect-details").innerHTML = html;
+      }
+      function rebuildBubbles() {
+        if (!simView || !$("utility-bubbles")) return;
+        const container = $("utility-bubbles");
+        container.replaceChildren();
+        bubbleRecords = [];
+        bubbleSlots = [];
+        const candidates = town.objects
+          .filter((o) => {
+            const d = DEFS[o.type],
+              e = ECONOMY[o.type] || {},
+              r = simView.records[o.id];
+            return (d.capacity || e.demand) && r.efficiency < 1;
+          })
+          .sort((a, b) => {
+            const ar = simView.records[a.id],
+              br = simView.records[b.id];
+            return (
+              (ar.x - camera.x) ** 2 +
+              (ar.z - camera.z) ** 2 -
+              ((br.x - camera.x) ** 2 + (br.z - camera.z) ** 2)
+            );
+          })
+          .slice(0, 24);
+        for (const o of candidates) {
+          const r = simView.records[o.id],
+            span = document.createElement("span");
+          span.className = "utility-bubble";
+          span.textContent = !r.road
+            ? "↔"
+            : r.power < 1 - 1e-9 && r.water < 1 - 1e-9
+              ? "P · W"
+              : r.power < 1 - 1e-9
+                ? "P"
+                : "W";
+          span.title = !r.road
+            ? "Needs a road"
+            : "Needs " +
+              (r.power < 1 - 1e-9 ? "power " : "") +
+              (r.water < 1 - 1e-9 ? "water" : "");
+          container.append(span);
+          bubbleRecords.push({
+            x: r.x,
+            z: r.z,
+            y: (DEFS[o.type].height || 1.1) + (o.level === 2 ? 0.65 : 0) + 0.95,
+          });
+          bubbleSlots.push(span);
+        }
+        updateBubblePositions();
+      }
+      function updateBubblePositions() {
+        for (let i = 0; i < bubbleSlots.length; i++) {
+          const b = bubbleRecords[i],
+            x =
+              ((vp[0] * b.x + vp[4] * b.y + vp[8] * b.z + vp[12] + 1) *
+                innerWidth) /
+              2,
+            y =
+              ((1 - (vp[1] * b.x + vp[5] * b.y + vp[9] * b.z + vp[13])) *
+                innerHeight) /
+              2;
+          const visible =
+            x > 15 && x < innerWidth - 15 && y > 160 && y < innerHeight - 230;
+          bubbleSlots[i].hidden = !visible;
+          if (visible)
+            bubbleSlots[i].style.transform =
+              `translate(${Math.round(x)}px,${Math.round(y)}px)`;
+        }
+      }
+      function drawServiceRing(x, z, radius, color) {
+        const segments = 64;
+        for (let i = 0; i < segments; i++) {
+          const a = (i * TAU) / segments;
+          cube(
+            x + Math.cos(a) * radius,
+            0.09,
+            z + Math.sin(a) * radius,
+            0.055,
+            0.018,
+            ((TAU * radius) / segments) * 0.65,
+            color,
+            -a,
+          );
+        }
+      }
+      function drawSimulationLayers() {
+        if (!simView) return;
+        if (mapLayer === "power" || mapLayer === "water") {
+          const key = mapLayer;
+          for (const net of simView.networks) {
+            const value = net[key],
+              col =
+                value >= 1 - 1e-9
+                  ? key === "power"
+                    ? [0.83, 0.73, 0.32]
+                    : [0.32, 0.66, 0.77]
+                  : value > 0
+                    ? [0.83, 0.59, 0.32]
+                    : [0.69, 0.49, 0.42];
+            for (const ix of net.tiles)
+              cube(ix % 72, 0.12, Math.floor(ix / 72), 0.76, 0.015, 0.76, col);
+          }
+          for (const o of town.objects) {
+            const r = simView.records[o.id],
+              e = ECONOMY[o.type] || {},
+              d = DEFS[o.type];
+            if (d.capacity || e.demand) {
+              const col =
+                r[key] >= 1 - 1e-9 ? [0.61, 0.79, 0.44] : [0.84, 0.57, 0.36];
+              cube(r.x, 0.085, r.z, d.size * 0.97, 0.025, d.size * 0.97, col);
+            }
+          }
+        }
+        if (mapLayer === "services") {
+          for (const o of town.objects) {
+            const r = simView.records[o.id];
+            if (DEFS[o.type].capacity)
+              cube(
+                r.x,
+                0.085,
+                r.z,
+                DEFS[o.type].size,
+                0.025,
+                DEFS[o.type].size,
+                r.happiness >= 80
+                  ? [0.47, 0.73, 0.43]
+                  : r.happiness >= 60
+                    ? [0.8, 0.76, 0.38]
+                    : [0.83, 0.53, 0.35],
+              );
+          }
+          let rings = 0;
+          for (const o of town.objects) {
+            const e = ECONOMY[o.type] || {};
+            if (e.radius && e.bonus >= 3 && rings++ < 80) {
+              const r = simView.records[o.id];
+              drawServiceRing(r.x, r.z, e.radius, [0.53, 0.72, 0.53]);
+            }
+          }
+        }
+        const source = inspectorId
+          ? town.objects.find((o) => o.id === inspectorId)
+          : null;
+        if (mapLayer !== "services" && source && ECONOMY[source.type]?.radius) {
+          const r = simView.records[source.id];
+          drawServiceRing(
+            r.x,
+            r.z,
+            ECONOMY[source.type].radius,
+            [0.81, 0.8, 0.41],
+          );
+        }
+        if (hover && selected && ECONOMY[selected]?.radius) {
+          const n = DEFS[selected].size;
+          drawServiceRing(
+            hover.x + (n - 1) / 2,
+            hover.z + (n - 1) / 2,
+            ECONOMY[selected].radius,
+            [0.8, 0.8, 0.46],
+          );
+        }
+      }
+      function updateJournal() {
+        const list = goalProgress(town, simView.summary),
+          goal = list.find((g) => !g.claimed && !g.locked);
+        $("goal-claim").hidden = !goal || goal.value < goal.target;
+        if (goal) {
+          $("goal-title").textContent = goal.title;
+          $("goal-description").textContent = goal.description;
+          $("goal-progress").style.width =
+            Math.min(1, goal.value / goal.target) * 100 + "%";
+          $("goal-count").textContent =
+            `${Math.min(goal.value, goal.target)} of ${goal.target} ${goal.unit}`;
+          $("goal-reward").textContent = money(goal.reward) + " grant";
+          $("goal-claim").dataset.goal = goal.id;
+          $("goal-claim").textContent = "Collect " + money(goal.reward);
+          document.querySelector(".journal-heading .eyebrow").textContent =
+            goal.tier === 1 ? "First little steps" : "A thriving little town";
+        } else {
+          $("goal-title").textContent = "A town with its own story.";
+          $("goal-description").textContent =
+            "Both chapters complete. Keep building a place you love.";
+          $("goal-progress").style.width = "100%";
+          $("goal-count").textContent = "Six goals complete";
+          $("goal-reward").textContent = "Keep dreaming";
+        }
+      }
+      function showGoals() {
+        const list = goalProgress(town, simView.summary);
+        openDialog(
+          `${dialogHeader("Little steps. Big stories.")}<p>Build at your own pace. Each grant is yours to collect once, and stays collected when you save.</p>${[
+            1, 2,
+          ]
+            .map(
+              (tier) =>
+                `<h3>${tier === 1 ? "01 · First little steps" : "02 · A thriving town"}</h3>${list
+                  .filter((g) => g.tier === tier)
+                  .map(
+                    (g) =>
+                      `<div class="goal-row"><strong>${g.title}</strong><p>${g.description}</p><small>${g.claimed ? "Grant collected" : g.locked ? "Finish the first chapter to unlock" : Math.min(g.value, g.target) + " / " + g.target + " " + g.unit}</small><button class="action secondary" data-claim="${g.id}" ${g.claimed || g.locked || g.value < g.target ? "disabled" : ""}>${g.claimed ? "Complete" : g.locked ? "Next chapter" : "Collect " + money(g.reward)}</button></div>`,
+                  )
+                  .join("")}`,
+            )
+            .join("")}`,
+        );
+        for (const b of $("dialog").querySelectorAll("[data-claim]"))
+          b.addEventListener("click", () => {
+            if (claimGoal(b.dataset.claim)) showGoals();
+          });
+      }
+      function showBudget() {
+        const s = simView.summary,
+          last = town.lastBudget;
+        const signed = (n) => (n >= 0 ? "+" : "−") + money(Math.abs(n));
+        let chart = "";
+        if (town.history.length > 1) {
+          const values = town.history.map((h) => h.money),
+            min = Math.min(...values),
+            max = Math.max(...values),
+            range = Math.max(1, max - min);
+          chart = `<svg class="budget-chart" viewBox="0 0 360 80" role="img" aria-label="Town funds over the last ${values.length} days"><path d="M0 77H360" stroke="#d5deca" fill="none"/><polyline points="${values.map((v, i) => `${(i / (values.length - 1)) * 360},${72 - ((v - min) / range) * 64}`).join(" ")}" fill="none" stroke="#648b5e" stroke-width="2"/></svg>`;
+        }
+        openDialog(
+          `${dialogHeader("A little room to grow")}<div class="budget-total"><span class="eyebrow">Town funds · day ${town.day}</span><h3>${town.mode === "sandbox" ? "Unlimited" : money(town.money)}</h3><span>${s.net >= 0 ? "A little more for tomorrow." : "Let’s find a comfortable balance."}</span></div>${chart}<h3>Next day estimate</h3><div class="budget-lines"><div><span>Homes · ${s.population} neighbors</span><strong>+${money(s.homeIncome)}</strong></div><div><span>Shops · ${s.customers} local customers</span><strong>+${money(s.shopIncome)}</strong></div><div><span>Offices & workshops</span><strong>+${money(s.workIncome)}</strong></div><div><span>Daily care & upkeep</span><strong>−${money(s.upkeep)}</strong></div><div class="budget-net"><span>Daily balance</span><strong>${signed(s.net)}</strong></div></div><p>${s.net < 0 ? (s.daysLeft <= 5 ? `Funds cover about ${s.daysLeft} more ${s.daysLeft === 1 ? "day" : "days"} at this pace. A few homes, better utility links, or fewer costly places can help.` : "Your town uses a little of its savings each day. More connected homes and local customers can help.") : s.population ? "Income covers upkeep. A comfortable place to start." : "Homes bring neighbors, and neighbors bring a little daily income."} If funds run out, buildings and progress stay safe. Unpaid upkeep is forgiven, with no debt.</p><h3>Everyday connections</h3><div class="budget-lines"><div><span>Power capacity / demand</span><strong>${s.powerSupply} / ${s.demand}</strong></div><div><span>Water capacity / demand</span><strong>${s.waterSupply} / ${s.demand}</strong></div><div><span>People at work / adults</span><strong>${s.staff} / ${s.adults}</strong></div><div><span>Available jobs</span><strong>${s.jobs}</strong></div><div><span>Town happiness</span><strong>${s.happiness}%</strong></div></div><p>Power and water follow connected roads and bridges. Each separate road network must have its own supply. Capacity shared by two networks is split between them.</p>${simView.networks.length ? `<details><summary>See ${simView.networks.length} road ${simView.networks.length === 1 ? "network" : "networks"}</summary><div class="network-list">${simView.networks.map((n, i) => `<p>Network ${i + 1}: ${n.tiles.length} road tiles · ${n.population} neighbors<br>Power ${cents(n.powerSupply)} / ${n.demand} · water ${cents(n.waterSupply)} / ${n.demand}</p>`).join("")}</div></details>` : ""}${last ? `<h3>Yesterday · day ${last.day}</h3><p>Income ${money(last.income)} · upkeep ${money(last.upkeep)} · balance ${signed(last.net)}${last.unpaid ? " · " + money(last.unpaid) + " upkeep forgiven" : ""}.<br>${last.moveIns} new ${last.moveIns === 1 ? "neighbor" : "neighbors"} · ${last.upgrades} ${last.upgrades === 1 ? "home" : "homes"} grew a new floor.</p>` : ""}<div class="feature-note">Homes earn $8 per neighbor/day at full strength. Either missing utility makes a place run at half strength, never a quarter. Shops earn $2 per customer, scaled by staffing and utility strength. One neighbor shops once per day, within 10 road tiles. More detail is in each place’s card.</div>`,
+        );
+      }
       // Living-world simulation, disasters and interiors are later milestones.
-      /* 06 · DISASTERS — opt-in only; not enabled or simulated in milestone 1. */
+      /* 06 · DISASTERS — opt-in only; not enabled or simulated in milestone 2. */
       /* 07 · INTERIOR — home interiors and decorating arrive in milestone 5. */
 
       /* 08 · UI — inline icons, progressive thumbnails, touch and keyboard. */
@@ -3480,6 +4789,14 @@ void main(){vec3 light=normalize(vec3(-.55,1.,.45));float sun=max(0.,dot(normali
             affordable = town.mode === "sandbox" || town.money >= d.cost;
           b.className = "card";
           b.dataset.tool = type;
+          const operating = ECONOMY[type] || {};
+          b.title =
+            d.description +
+            (operating.upkeep
+              ? " Daily upkeep " + money(operating.upkeep) + "."
+              : "") +
+            (operating.radius ? " Reach " + operating.radius + " tiles." : "");
+          b.setAttribute("aria-disabled", String(!affordable));
           b.setAttribute("aria-pressed", String(type === selected));
           b.setAttribute(
             "aria-label",
@@ -3501,31 +4818,26 @@ void main(){vec3 light=normalize(vec3(-.55,1.,.45));float sun=max(0.,dot(normali
         el.scrollLeft = scroll;
       }
       function updateUI() {
-        if (!town) return;
-        const s = townStats();
+        if (!town || !simView) return;
+        const s = simView.summary;
         $("funds").textContent =
           town.mode === "sandbox" ? "Unlimited" : money(town.money);
-        $("population").innerHTML = s.capacity + " <small>neighbors</small>";
-        $("building-count").innerHTML = s.places + " <small>places</small>";
+        $("population").innerHTML = s.population + " <small>neighbors</small>";
+        $("building-count").innerHTML = s.happiness + "% <small>happy</small>";
         $("town-label").textContent = town.name;
         $("undo").disabled = !undoStack.length;
-        const goal = GOALS.find((g) => s[g.key] < g.target);
-        if (goal) {
-          const count = Math.min(s[goal.key], goal.target);
-          $("goal-title").innerHTML = goal.title;
-          $("goal-description").textContent = goal.description;
-          $("goal-progress").style.width = (count / goal.target) * 100 + "%";
-          $("goal-count").textContent =
-            `${count} of ${goal.target} ${goal.unit}`;
-          $("goal-reward").textContent = "Your next chapter";
-        } else {
-          $("goal-title").innerHTML = "A town with<br>your own story.";
-          $("goal-description").textContent =
-            "The first chapter is yours. Keep building, find a favorite view, and make a little room for what comes next.";
-          $("goal-progress").style.width = "100%";
-          $("goal-count").textContent = "First steps complete";
-          $("goal-reward").textContent = "Keep dreaming";
-        }
+        const signed = (s.net >= 0 ? "+" : "−") + money(Math.abs(s.net));
+        $("budget-button").textContent = signed + " / day";
+        $("budget-button").classList.toggle("spending", s.net < 0);
+        const warning = town.mode !== "sandbox" && s.net < 0 && s.daysLeft <= 5;
+        $("funds-warning").hidden = !warning;
+        $("funds-warning").textContent =
+          town.money === 0
+            ? "Let’s find a little balance."
+            : `A budget check · ${s.daysLeft} days of funds`;
+        $("utility-key").hidden = !s.unserved;
+        updateJournal();
+        updateClock();
         renderCatalog();
       }
       function updateHint() {
@@ -3620,7 +4932,7 @@ void main(){vec3 light=normalize(vec3(-.55,1.,.45));float sun=max(0.,dot(normali
       function showWelcome(isNew = false) {
         let mode = "starter";
         openDialog(
-          `<div class="welcome"><div class="welcome-art">${thumbSVG("cottage")}${thumbSVG("lighthouse")}${thumbSVG("tree")}</div><div class="eyebrow">Welcome to your little corner of the coast</div><h2 id="dialog-title">Let's make<br>somewhere lovely.</h2><p>A road by the water. A home under the trees.<br>A whole little world, built your way.</p><label for="town-name">What should we call your town?</label><input id="town-name" maxlength="32" value="Baytown Bay" autocomplete="off"><div class="mode-options"><button class="mode-option" data-mode="starter" aria-pressed="true">${icon("town")}<span><strong>A little head start</strong><small>A seaside village, ready to make your own</small></span></button><button class="mode-option" data-mode="empty" aria-pressed="false">${icon("leaf")}<span><strong>A blank canvas</strong><small>Just the coast, the trees, and $30,000</small></span></button><button class="mode-option" data-mode="sandbox" aria-pressed="false">${icon("infinity")}<span><strong>Big imagination</strong><small>Unlimited funds. Build as you please.</small></span></button></div><button class="action" id="begin-town">Let's build a town <span aria-hidden="true">↗</span></button>${isNew ? '<button class="action secondary" id="cancel-new">Back to my town</button>' : ""}<div class="feature-note">Chapter 1: roads, places, and a town that stays saved.<br>Economy, living neighbors, and adventures come in later chapters.</div></div>`,
+          `<div class="welcome"><div class="welcome-art">${thumbSVG("cottage")}${thumbSVG("lighthouse")}${thumbSVG("tree")}</div><div class="eyebrow">Welcome to your little corner of the coast</div><h2 id="dialog-title">Let's make<br>somewhere lovely.</h2><p>A road by the water. A home under the trees.<br>A whole little world, built your way.</p><label for="town-name">What should we call your town?</label><input id="town-name" maxlength="32" value="Baytown Bay" autocomplete="off"><div class="mode-options"><button class="mode-option" data-mode="starter" aria-pressed="true">${icon("town")}<span><strong>A little head start</strong><small>A seaside village, ready to make your own</small></span></button><button class="mode-option" data-mode="empty" aria-pressed="false">${icon("leaf")}<span><strong>A blank canvas</strong><small>Just the coast, the trees, and $30,000</small></span></button><button class="mode-option" data-mode="sandbox" aria-pressed="false">${icon("infinity")}<span><strong>Big imagination</strong><small>Unlimited funds. Build as you please.</small></span></button></div><button class="action" id="begin-town">Let's build a town <span aria-hidden="true">↗</span></button>${isNew ? '<button class="action secondary" id="cancel-new">Back to my town</button>' : ""}<div class="feature-note">Chapter 2: a little town that grows.<br>Roads carry power and water. Happy homes welcome new neighbors.</div></div>`,
         );
         for (const b of $("dialog").querySelectorAll("[data-mode]"))
           b.addEventListener("click", () => {
@@ -3653,7 +4965,7 @@ void main(){vec3 light=normalize(vec3(-.55,1.,.45));float sun=max(0.,dot(normali
       }
       function showHelp() {
         openDialog(
-          `${dialogHeader("A little town planner’s guide")}<p>There’s no hurry here. Choose a place, find a little space, and make the bay your own.</p><div class="help-grid"><div><strong>Look around</strong>Drag the map with one finger when nothing is selected. With a tool selected, use two fingers. Pinch or scroll to zoom.</div><div><strong>Build a place</strong>Pick a card, then tap a clear spot. Drag to draw roads, bridges, or docks. Tap the same card to put your tool away.</div><div><strong>Change your mind</strong>Undo brings back the last change. Remove refunds the full price you paid. Starter places have no refund.</div><div><strong>Keep your town</strong>It saves as you build. Use the save button for three extra slots and a file you can keep somewhere safe.</div></div><h3>A few handy keys</h3><p>Arrow keys / WASD: move · + / −: zoom · Q / E: turn view · R: turn building · Escape: put tool away · ⌘/Ctrl Z: undo · ⌘/Ctrl S: save.</p><div class="feature-note">This is milestone 1. “Room for” means home capacity, not a live population. Utilities, income, living neighbors, disasters, and home interiors are planned in later milestones. Missing power or water never damages anything.</div>`,
+          `${dialogHeader("A little town planner’s guide")}<p>There’s no hurry here. Choose a place, find a little space, and make the bay your own.</p><div class="help-grid"><div><strong>Look around</strong>Drag the map with one finger when nothing is selected. With a tool selected, use two fingers. Pinch or scroll to zoom.</div><div><strong>Build a place</strong>Pick a card, then tap a clear spot. Drag to draw roads, bridges, or docks. Tap the same card to put your tool away.</div><div><strong>Change your mind</strong>Undo brings back the last change. Remove refunds the full price you paid. Starter places have no refund.</div><div><strong>Keep your town</strong>It saves as you build. Use the save button for three extra slots and a file you can keep somewhere safe.</div></div><h3>A few handy keys</h3><p>Arrow keys / WASD: move · + / −: zoom · Q / E: turn view · R: turn building · Escape: put tool away · ⌘/Ctrl Z: undo · ⌘/Ctrl S: save.</p><div class="feature-note">This is milestone 2. Homes earn $8 per neighbor each day. Power and water follow roads. Both utilities and 75 happiness help homes grow. Shops need nearby road-connected customers and people at work. Use the map layers and town budget to see why places work. Missing power or water only makes a place run at half strength. Time pauses while a notebook is open or you leave the game. Living people, vehicles, disasters, and interiors come in later chapters.</div>`,
         );
       }
       function showSettings() {
@@ -3676,26 +4988,36 @@ void main(){vec3 light=normalize(vec3(-.55,1.,.45));float sun=max(0.,dot(normali
         $("settings-help").addEventListener("click", showHelp);
         $("new-town").addEventListener("click", () => showWelcome(true));
       }
+      function setLayer(layer) {
+        if (
+          !["natural", "grid", "roads", "power", "water", "services"].includes(
+            layer,
+          )
+        )
+          return;
+        mapLayer = layer;
+        dirty = true;
+        const legend = $("layer-legend");
+        legend.hidden = !["power", "water", "services"].includes(layer);
+        legend.innerHTML =
+          layer === "services"
+            ? "<strong>Room to feel at home</strong><span>Green · happiness 80–100</span><span>Gold · happiness 60–79</span><span>Clay · happiness below 60</span><small>Rings show service reach.</small>"
+            : `<strong>${layer === "power" ? "Power" : "Water"} along roads</strong><span>Bright · full supply</span><span>Gold · capacity is short</span><span>Clay · no supply</span><small>Tap a place for the reason.</small>`;
+      }
       function showLayers() {
         openDialog(
-          `${dialogHeader("A different point of view")}<p>Find your way around the bay.</p><div class="view-modes"><button data-layer="natural">Natural</button><button data-layer="grid">Tile grid</button><button data-layer="roads">Roads</button></div><div class="feature-note">Power, water, and service maps arrive with their working networks in milestone 2.</div>`,
+          `${dialogHeader("A different point of view")}<p>See how your little town fits together.</p><div class="view-modes">${["natural", "grid", "roads", "power", "water", "services"].map((layer) => `<button data-layer="${layer}" aria-pressed="${layer === mapLayer}">${layer === "grid" ? "Tile grid" : layer[0].toUpperCase() + layer.slice(1)}</button>`).join("")}</div><div class="feature-note">Roads and bridges carry power and water. Docks are walks by the water, not utility lines. A short supply makes places run at half strength; it never damages them. Services lift happiness inside their rings, scaled by staffing.</div>`,
         );
-        for (const b of $("dialog").querySelectorAll("[data-layer]")) {
-          if (b.dataset.layer === mapLayer) {
-            b.style.background = "var(--green)";
-            b.style.color = "var(--paper)";
-          }
+        for (const b of $("dialog").querySelectorAll("[data-layer]"))
           b.addEventListener("click", () => {
-            mapLayer = b.dataset.layer;
-            dirty = true;
+            setLayer(b.dataset.layer);
             closeDialog();
-            toast(`${b.textContent} view`);
+            toast(b.textContent + " view");
           });
-        }
       }
 
       /* 09 · MAIN — versioned persistence, input, lifecycle and debug hooks. */
-      const migrations = { 1: (s) => s };
+      const migrations = { 1: (s) => s, 2: (s) => initializeEconomy(s, true) };
       let dbPromise = null,
         storageWarning = false,
         saving = false,
@@ -3872,6 +5194,65 @@ void main(){vec3 light=normalize(vec3(-.55,1.,.45));float sun=max(0.,dot(normali
           throw Error(
             "Some town information is missing or out of range. Your current town has not changed.",
           );
+        if (
+          !Number.isSafeInteger(s.day) ||
+          s.day < 1 ||
+          s.day > 1000000000 ||
+          !Number.isFinite(s.dayProgress) ||
+          s.dayProgress < 0 ||
+          s.dayProgress >= 1 ||
+          ![1, 3].includes(s.speed) ||
+          typeof s.simPaused !== "boolean" ||
+          !Array.isArray(s.claimedGoals) ||
+          s.claimedGoals.some((id) => !GOALS.some((g) => g.id === id)) ||
+          new Set(s.claimedGoals).size !== s.claimedGoals.length ||
+          !Number.isSafeInteger(s.profitableDays) ||
+          s.profitableDays < 0 ||
+          s.profitableDays > s.day ||
+          !Number.isSafeInteger(s.thrivingDays) ||
+          s.thrivingDays < 0 ||
+          s.thrivingDays > s.day ||
+          !Array.isArray(s.history) ||
+          s.history.length > 60
+        )
+          throw Error("The saved town calendar or goals are invalid.");
+        const validReport = (r) =>
+          r &&
+          [
+            "day",
+            "income",
+            "homeIncome",
+            "shopIncome",
+            "workIncome",
+            "upkeep",
+            "net",
+            "unpaid",
+            "population",
+            "happiness",
+            "moveIns",
+            "upgrades",
+          ].every((k) => Number.isFinite(r[k])) &&
+          r.day >= 1 &&
+          r.day < s.day &&
+          r.income >= 0 &&
+          r.upkeep >= 0 &&
+          r.unpaid >= 0 &&
+          r.population >= 0 &&
+          r.happiness >= 0 &&
+          r.happiness <= 100 &&
+          r.moveIns >= 0 &&
+          r.upgrades >= 0;
+        if (
+          (s.lastBudget !== null && !validReport(s.lastBudget)) ||
+          s.history.some(
+            (r) =>
+              !validReport(r) ||
+              !Number.isFinite(r.money) ||
+              r.money < 0 ||
+              r.money > 1e12,
+          )
+        )
+          throw Error("The saved budget history is invalid.");
         const ids = new Set(),
           used = new Uint8Array(SIZE * SIZE);
         for (const o of s.objects) {
@@ -3896,6 +5277,17 @@ void main(){vec3 light=normalize(vec3(-.55,1.,.45));float sun=max(0.,dot(normali
               "A saved place is invalid. Your current town has not changed.",
             );
           const d = DEFS[o.type];
+          if (
+            d.capacity &&
+            (![1, 2].includes(o.level) ||
+              !Number.isInteger(o.residents) ||
+              o.residents < 0 ||
+              o.residents > d.capacity * o.level ||
+              !Number.isInteger(o.growth) ||
+              o.growth < 0 ||
+              o.growth >= 5)
+          )
+            throw Error("A saved home has invalid growth information.");
           if (o.x < 0 || o.z < 0 || o.x + d.size > SIZE || o.z + d.size > SIZE)
             throw Error("A saved place is outside the map.");
           for (let dz = 0; dz < d.size; dz++)
@@ -4013,6 +5405,8 @@ void main(){vec3 light=normalize(vec3(-.55,1.,.45));float sun=max(0.,dot(normali
         welcomed = true;
         changeSerial++;
         dirty = true;
+        refreshSimulation();
+        simLastSecond = -1;
         updateCamera();
         updateUI();
         updateHint();
@@ -4452,7 +5846,22 @@ void main(){vec3 light=normalize(vec3(-.55,1.,.45));float sun=max(0.,dot(normali
       $("undo").addEventListener("click", undo);
       $("save-button").addEventListener("click", showSaves);
       $("help-button").addEventListener("click", showHelp);
-      $("guide-button").addEventListener("click", showHelp);
+      $("guide-button").addEventListener("click", showGoals);
+      $("goal-claim").addEventListener("click", () =>
+        claimGoal($("goal-claim").dataset.goal),
+      );
+      $("budget-button").addEventListener("click", showBudget);
+      $("funds-warning").addEventListener("click", showBudget);
+      $("pause-sim").addEventListener("click", () => {
+        town.simPaused = !town.simPaused;
+        changeSerial++;
+        updateClock();
+      });
+      $("speed-sim").addEventListener("click", () => {
+        town.speed = town.speed === 1 ? 3 : 1;
+        changeSerial++;
+        updateClock();
+      });
       $("menu-button").addEventListener("click", showSettings);
       $("close-inspect").addEventListener("click", () => {
         inspectorId = null;
@@ -4498,6 +5907,22 @@ void main(){vec3 light=normalize(vec3(-.55,1.,.45));float sun=max(0.,dot(normali
         },
         defs: DEFS,
         stats: townStats,
+        analyzeCity,
+        stepEconomy,
+        advanceDays,
+        claimGoal,
+        goalProgress,
+        setLayer,
+        rules: SIM_RULES,
+        economy: ECONOMY,
+        get simulation() {
+          return simView;
+        },
+        setPaused: (value) => {
+          town.simPaused = !!value;
+          changeSerial++;
+          updateClock();
+        },
         place,
         drawPath,
         undo,

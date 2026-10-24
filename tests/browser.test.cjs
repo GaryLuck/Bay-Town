@@ -10,6 +10,7 @@ const { chromium } = require("playwright");
 const root = path.resolve(__dirname, "..");
 const screenshots = path.join(root, "screenshots");
 const fixture = require("./fixtures/v1.json");
+const fixtureV2 = require("./fixtures/v2.json");
 const launch = {
   headless: true,
   args: [
@@ -51,7 +52,7 @@ async function dragTiles(page, x0, z0, x1, z1) {
 }
 
 test(
-  "Baytown milestone 1 — real browser acceptance suite",
+  "Baytown milestones 1–2 — real browser acceptance suite",
   { timeout: 180000 },
   async (t) => {
     await mkdir(screenshots, { recursive: true });
@@ -344,7 +345,7 @@ test(
               await readFile(await download.path(), "utf8"),
             );
             assert.deepEqual(exported.objects, before.objects);
-            assert.equal(exported.version, 1);
+            assert.equal(exported.version, 2);
             await page.locator("#import-input").setInputFiles({
               name: "broken.json",
               mimeType: "application/json",
@@ -364,7 +365,10 @@ test(
               () => __baytown.state.name === "First little town",
             );
             await page.locator("#modal").waitFor({ state: "hidden" });
-            assert.deepEqual((await state(page)).objects, fixture.objects);
+            assert.deepEqual(
+              (await state(page)).objects,
+              (await api(page, "validateSave", fixture)).objects,
+            );
             const recovery = await api(page, "loadKey", "backup");
             assert.deepEqual(recovery.objects, before.objects);
           },
@@ -493,7 +497,7 @@ test(
               }, sample);
               assert.equal(rejected, true);
             }
-            assert.equal((await api(page, "validateSave", fixture)).version, 1);
+            assert.equal((await api(page, "validateSave", fixture)).version, 2);
             const edgeID = {
               ...fixture,
               objects: [{ ...fixture.objects[0], id: 2147483646 }],
@@ -506,6 +510,317 @@ test(
               await state(page),
             );
             assert.equal(stillValid.objects.length, 2);
+          },
+        );
+
+        await t.test(
+          "v1 migration preserves the town and v2 preserves the calendar, grown homes and goals",
+          async () => {
+            const migrated = await api(page, "validateSave", fixture);
+            assert.equal(migrated.version, 2);
+            assert.equal(migrated.money, fixture.money);
+            assert.deepEqual(
+              migrated.objects.map(({ id, type, x, z, rotation, paid }) => ({
+                id,
+                type,
+                x,
+                z,
+                rotation,
+                paid,
+              })),
+              fixture.objects,
+            );
+            assert.equal(migrated.objects[1].residents, 2);
+            assert.equal(migrated.day, 1);
+            await api(page, "applySave", fixtureV2);
+            const loaded = await state(page);
+            for (const key of [
+              "day",
+              "dayProgress",
+              "speed",
+              "simPaused",
+              "claimedGoals",
+              "objects",
+            ])
+              assert.deepEqual(loaded[key], fixtureV2[key]);
+            await page.reload();
+            await page.waitForFunction(() => __baytown.getReady());
+            assert.equal((await state(page)).objects[1].level, 2);
+            assert.equal((await state(page)).objects[1].residents, 5);
+            assert.equal((await state(page)).day, 8);
+            for (const bad of [
+              { ...fixtureV2, day: 0 },
+              { ...fixtureV2, claimedGoals: ["homes", "homes"] },
+              { ...fixtureV2, claimedGoals: ["not-a-goal"] },
+              { ...fixtureV2, dayProgress: 2 },
+              {
+                ...fixtureV2,
+                objects: [
+                  fixtureV2.objects[0],
+                  { ...fixtureV2.objects[1], residents: 9 },
+                ],
+              },
+            ]) {
+              assert.equal(
+                await page.evaluate((s) => {
+                  try {
+                    __baytown.validateSave(s);
+                    return false;
+                  } catch (_) {
+                    return true;
+                  }
+                }, bad),
+                true,
+              );
+            }
+          },
+        );
+        await t.test(
+          "real clock advances, pause holds, notebooks stop time and speed is saved",
+          async () => {
+            await api(page, "makeTown", "starter", "Clock Bay", 81024);
+            await api(page, "setPaused", false);
+            const first = await state(page);
+            await page.waitForTimeout(450);
+            assert.ok((await state(page)).dayProgress > first.dayProgress);
+            await page
+              .getByRole("button", { name: "Pause town", exact: true })
+              .click();
+            const paused = await state(page);
+            await page.waitForTimeout(250);
+            assert.equal((await state(page)).dayProgress, paused.dayProgress);
+            await page
+              .getByRole("button", { name: "Change town speed", exact: true })
+              .click();
+            assert.equal((await state(page)).speed, 3);
+            await page
+              .getByRole("button", { name: "Resume town", exact: true })
+              .click();
+            await page
+              .getByRole("button", { name: "Town budget", exact: true })
+              .click();
+            const notebook = await state(page);
+            await page.waitForTimeout(250);
+            assert.equal((await state(page)).dayProgress, notebook.dayProgress);
+            assert.match(
+              await page.locator("#dialog").innerText(),
+              /Next day estimate/,
+            );
+            assert.match(
+              await page.locator("#dialog").innerText(),
+              /Power capacity \/ demand/,
+            );
+            await page.screenshot({
+              path: path.join(screenshots, `budget-ipad-${name}.png`),
+            });
+            await page.getByRole("button", { name: "Close dialog" }).click();
+            await api(page, "setPaused", true);
+          },
+        );
+        await t.test(
+          "utility layers, service rings, status bubbles and live place details",
+          async () => {
+            await api(page, "makeTown", "starter", "Connected Bay", 81024);
+            await api(page, "setPaused", true);
+            await api(page, "setView", 38, 36, 24);
+            const stats = await api(page, "stats");
+            assert.equal(stats.suppliedHomes, 4);
+            assert.equal(stats.powerSupply, 80);
+            assert.equal(stats.waterSupply, 160);
+            assert.ok(stats.net > 0);
+            for (const layer of ["Power", "Water", "Services"]) {
+              await page
+                .getByRole("button", { name: "Map layers", exact: true })
+                .click();
+              await page
+                .getByRole("button", { name: layer, exact: true })
+                .click();
+              assert.equal(
+                await page.locator("#layer-legend").isVisible(),
+                true,
+              );
+              await page.waitForTimeout(120);
+            }
+            await page.screenshot({
+              path: path.join(screenshots, `services-ipad-${name}.png`),
+            });
+            await clickTile(page, 38, 32);
+            await page.locator("#inspect").waitFor({ state: "visible" });
+            const details = await page.locator("#inspect-details").innerText();
+            assert.match(details, /Road access\s+Connected/);
+            assert.match(details, /Power\s+Ready/);
+            assert.match(details, /Water\s+Ready/);
+            assert.match(details, /Happiness/);
+            assert.match(details, /Daily upkeep/);
+            await page
+              .getByRole("button", { name: "Close place details" })
+              .click();
+            await api(page, "setLayer", "natural");
+            await api(page, "applySave", fixtureV2);
+            await api(page, "setView", 38, 36, 24);
+            await page.waitForFunction(() =>
+              document
+                .querySelector("#utility-bubbles")
+                .textContent.includes("P · W"),
+            );
+            await clickTile(page, 37, 36);
+            assert.match(
+              await page.locator("#inspect-details").innerText(),
+              /Utility strength\s+50%/,
+            );
+            await page
+              .getByRole("button", { name: "Close place details" })
+              .click();
+          },
+        );
+        await t.test(
+          "construction undo preserves elapsed income and home growth",
+          async () => {
+            await api(page, "makeTown", "starter", "Growing Bay", 81024);
+            await api(page, "setPaused", true);
+            assert.equal(await api(page, "place", "cottage", 27, 32), true);
+            await api(page, "advanceDays", 10);
+            const after = await state(page);
+            assert.ok(after.objects.some((o) => o.level === 2));
+            const added = after.objects.find(
+                (o) => o.type === "cottage" && o.x === 27,
+              ),
+              grown = after.objects.filter((o) => o.id !== added.id);
+            await api(page, "undo");
+            const undone = await state(page);
+            assert.equal(undone.day, after.day);
+            assert.equal(
+              undone.money,
+              Math.round((after.money + 600) * 100) / 100,
+            );
+            assert.deepEqual(undone.objects, grown);
+          },
+        );
+        await t.test(
+          "both goal tiers unlock in order, grant once and survive a reload",
+          async () => {
+            await api(page, "makeTown", "starter", "Goal Bay", 81024);
+            await api(page, "setPaused", true);
+            const before = await state(page);
+            assert.equal(await api(page, "claimGoal", "utilities"), false);
+            await page
+              .getByRole("button", { name: "Collect $300", exact: true })
+              .click();
+            await page
+              .getByRole("button", { name: "Collect $500", exact: true })
+              .click();
+            await page
+              .getByRole("button", { name: "Collect $500", exact: true })
+              .click();
+            await page
+              .getByRole("button", { name: "Collect $600", exact: true })
+              .click();
+            assert.equal((await state(page)).money, before.money + 1900);
+            assert.equal(await api(page, "claimGoal", "homes"), false);
+            await page
+              .getByRole("button", {
+                name: "Your town’s little goals",
+                exact: false,
+              })
+              .click();
+            assert.equal(
+              await page
+                .getByRole("button", { name: "Complete", exact: true })
+                .count(),
+              4,
+            );
+            await page.getByRole("button", { name: "Close dialog" }).click();
+            await api(page, "saveKey", "auto");
+            await page.reload();
+            await page.waitForFunction(() => __baytown.getReady());
+            assert.deepEqual((await state(page)).claimedGoals, [
+              "homes",
+              "places",
+              "paths",
+              "utilities",
+            ]);
+            assert.equal(await api(page, "claimGoal", "homes"), false);
+          },
+        );
+        await t.test(
+          "collecting a grant immediately refreshes the budget warning",
+          async () => {
+            await api(page, "makeTown", "starter", "Grant Bay", 81024);
+            const low = await state(page);
+            low.money = 1;
+            low.simPaused = true;
+            for (let i = 0; i < 3; i++)
+              low.objects.push({
+                id: 1000 + i,
+                type: "hospital",
+                x: 20 + i * 4,
+                z: 20,
+                rotation: 0,
+                paid: 0,
+              });
+            await api(page, "applySave", low);
+            assert.equal(
+              await page.locator("#funds-warning").isVisible(),
+              true,
+            );
+            assert.equal(await api(page, "claimGoal", "homes"), true);
+            assert.ok((await api(page, "stats")).daysLeft > 5);
+            assert.equal(
+              await page.locator("#funds-warning").isVisible(),
+              false,
+            );
+          },
+        );
+        await t.test(
+          "early budget warning and sixty-day simulation never destroy progress",
+          async () => {
+            const limited = {
+              ...fixture,
+              money: 1,
+              objects: [
+                { id: 1, type: "hospital", x: 20, z: 20, rotation: 0, paid: 0 },
+              ],
+            };
+            await api(page, "applySave", limited);
+            await api(page, "setPaused", true);
+            await page.locator("#funds-warning").waitFor({ state: "visible" });
+            await page.locator("#funds-warning").click();
+            assert.match(
+              await page.locator("#dialog").innerText(),
+              /Unpaid upkeep is forgiven/,
+            );
+            await page.getByRole("button", { name: "Close dialog" }).click();
+            await api(page, "advanceDays", 60);
+            const insolvent = await state(page);
+            assert.equal(insolvent.money, 0);
+            assert.equal(insolvent.objects.length, 1);
+            assert.equal(insolvent.day, 61);
+            assert.ok(insolvent.lastBudget.unpaid > 0);
+            await api(
+              page,
+              "makeTown",
+              "starter",
+              "Sixty Days by the Bay",
+              81024,
+            );
+            await api(page, "setPaused", true);
+            const initial = await state(page);
+            await api(page, "advanceDays", 60);
+            const matured = await state(page),
+              stats = await api(page, "stats");
+            assert.equal(matured.day, 61);
+            assert.equal(matured.history.length, 60);
+            assert.ok(matured.money > initial.money);
+            assert.ok(stats.population > 11);
+            assert.ok(matured.objects.some((o) => o.level === 2));
+            assert.equal(matured.objects.length, initial.objects.length);
+            assert.equal((await api(page, "validateSave", matured)).version, 2);
+            assert.equal(
+              await page.evaluate(
+                () => document.documentElement.scrollWidth > innerWidth,
+              ),
+              false,
+            );
           },
         );
 
@@ -678,7 +993,10 @@ test(
             );
             await page.reload();
             await page.waitForFunction(() => __baytown.getReady());
-            assert.deepEqual((await state(page)).objects, fixture.objects);
+            assert.deepEqual(
+              (await state(page)).objects,
+              (await api(page, "validateSave", fixture)).objects,
+            );
             await page
               .getByRole("button", { name: "Save and load", exact: true })
               .click();
