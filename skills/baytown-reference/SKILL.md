@@ -3,13 +3,13 @@ name: baytown-reference
 description: Baytown Builder numbers, runtime data model, save format, milestones, and browser readiness checks. Read before changing simulation or persistence.
 ---
 
-# Baytown reference · milestone 3
+# Baytown reference · milestone 4
 
 The canonical game is `../../index.html`, relative to this directory. It is a single offline HTML file, with WebGL2, inline CSS/JS/SVG, and no runtime library. Use the existing isolated checkout; do not create a worktree unless requested. Read `../../REQUIREMENTS.md` before extending a milestone. Approval is required before each next milestone.
 
 ## Scope and numbers
 
-Milestones 1–3 implement construction, persistence, utility networks, budgets, workers, customers, happiness, home growth, two tiers of goals, and a seeded living world with traffic, walkers, pets, harbor ships and day/night lighting. Moving figures illustrate the household population and have no independent income effect or saved identities. Milestones 4–6 (disasters, interiors, personal features) remain unimplemented. Disasters are off. New starter towns include extra free links and two extra parks; v1 migration preserves the old layout exactly.
+Milestones 1–3 implement construction, persistence, utility networks, budgets, workers, customers, happiness, home growth, two tiers of goals, and a seeded living world with traffic, walkers, pets, harbor ships and day/night lighting. Moving figures illustrate the household population and have no independent income effect or saved identities. Milestone 4 adds opt-in staged disasters, repair sites, defenses and mountain dynamite. Milestones 5–6 (interiors and personal features) remain unimplemented. Disasters default off. New starter towns include extra free links and two extra parks; v1 migration preserves the old layout exactly.
 
 | Rule                       | Value                                                                              |
 | -------------------------- | ---------------------------------------------------------------------------------- |
@@ -40,15 +40,15 @@ Milestones 1–3 implement construction, persistence, utility networks, budgets,
 | Park / tree / flower bed / bench           |            400 / 40 / 60 / 50 | 2 / 1 / 1 / 1 tiles square |
 | Harbor house / lighthouse / mountain       |           2,800 / 2,000 / 500 | 3 / 2 / 3 tiles square     |
 
-All footprints are square in this milestone. `R` or the touch turn button rotates visual orientation, not footprint size. Bridges require water and an adjacent road/bridge. Docks require water and an adjacent land tile/dock. Regular places require dry land. Placement stops a drag at the first blocked/unaffordable tile; already matching road tiles are skipped. Removal may continue across empty tiles.
+All footprints are square. `R` or the touch turn button rotates visual orientation, not footprint size. Bridges require water and an adjacent road/bridge. Docks require water and an adjacent land tile/dock. Regular places require dry land. Placement stops a drag at the first blocked/unaffordable tile; already matching road tiles are skipped. Removal may continue across empty tiles.
 
-## Data model and save version 2
+## Data model and save version 3
 
-`SAVE_VERSION = 2`. Keep both `tests/fixtures/v1.json` and `v2.json` readable in future versions. The migration table is keyed by **destination** version. `migrations[2]` preserves v1 money, object IDs, types, positions, rotation, paid amounts, name, seed, timestamps, and camera. It initializes the new calendar at day 1, clears new history/claim fields, and initializes each existing home at level 1 with ceil(base capacity / 2) residents and growth 0. No roads or buildings are added during migration. `migrations[1]` is the initial identity entry.
+`SAVE_VERSION = 3`. Keep `tests/fixtures/v1.json`, `v2.json` and `v3.json` readable in future versions. `migrations[3]` adds `{enabled:false,event:null,serial:0}` as `disasters`, preserving all existing data. The migration table is keyed by **destination** version. `migrations[2]` preserves v1 money, object IDs, types, positions, rotation, paid amounts, name, seed, timestamps, and camera. It initializes the new calendar at day 1, clears new history/claim fields, and initializes each existing home at level 1 with ceil(base capacity / 2) residents and growth 0. No roads or buildings are added during migration. `migrations[1]` is the initial identity entry.
 
 ```text
 Town {
-  version: 2,
+  version: 3,
   name: nonempty string <= 32 characters,
   seed: uint32,
   mode: "starter" | "empty" | "sandbox",
@@ -62,6 +62,7 @@ Town {
   claimedGoals: unique known goal ID strings[],
   profitableDays, thrivingDays: consecutive-day counters,
   lastBudget: null | DayReport,
+  disasters: { enabled: boolean, event: null | {type,time,x,z,serial}, serial: integer 0..1e9 },
   history: DayReport[] (last 60 completed days, with closing money)
 }
 Object {
@@ -70,6 +71,7 @@ Object {
   x, z: integer top-left tile,
   rotation: 0 | 1 | 2 | 3,
   paid: finite original purchase amount, 0 <= paid <= definition cost,
+  damaged?: boolean, // repair site; residents/level preserved
   // homes only:
   residents: integer in [0, base capacity * level],
   level: 1 | 2,
@@ -94,7 +96,7 @@ Validation rejects unsupported versions, malformed required fields, unsafe IDs, 
 
 ## Engine and iOS-oriented checklist
 
-The renderer batches cubes, gabled roofs, low-poly foliage, and turbine rotors with instanced WebGL2 attributes. Static instance buffers rebuild on construction/layer/hover changes. Frame rendering reuses typed matrices, fixed actor arrays, BFS scratch buffers and a dynamic instancing buffer. It does not create actors, vectors, path arrays or GPU buffers each frame. Actor pools cap at 124; dynamic model parts cap at 2,048 cube instances. There are no particles (cap 0).
+The renderer batches cubes, gabled roofs, low-poly foliage, and turbine rotors with instanced WebGL2 attributes. Static instance buffers rebuild on construction/layer/hover changes. Frame rendering reuses typed matrices, fixed actor arrays, BFS scratch buffers and a dynamic instancing buffer. It does not create actors, vectors, path arrays or GPU buffers each frame. Actor pools cap at 124; dynamic model parts cap at 2,048 cube instances. There are no particles (cap 0); milestone 4 reuses the dynamic buffer for up to 64 event/collapse pieces.
 
 - Safe areas: `viewport-fit=cover`; top and bottom HUD respect `env(safe-area-inset-*)`.
 - All buttons: minimum 52 × 52 CSS px. No hover-only action is required.
@@ -146,7 +148,7 @@ Tier 1: 3 homes → $300; 10 non-path places → $500; 30 road/bridge/dock tiles
 
 ## Milestone 3 living-world contract
 
-Save version **2 remains unchanged**. Decorative actors, route positions, shader time and lighting preferences are not added to the city JSON. `dayProgress` already persists the calendar phase. Existing v1/v2 fixtures must continue to pass; no v3 fixture is appropriate without a v3 format.
+Milestone 3 shipped with save version **2**; milestone 4 upgrades it to version 3. Decorative actors, route positions, shader time and lighting preferences are not added to the city JSON. `dayProgress` already persists the calendar phase. Existing v1/v2 fixtures must continue to pass; no v3 fixture is appropriate without a v3 format.
 
 `LIVING_CORE_START` / `LIVING_CORE_END` delimit the pure route/pool code exercised by `tests/living.test.cjs`. Use that exact implementation in tests, not a separate mock. Runtime state and diagnostic hooks are available through `window.__baytown.life`.
 
@@ -166,3 +168,17 @@ Save version **2 remains unchanged**. Decorative actors, route positions, shader
 - Powered occupied-home windows and other powered-building windows use emissive material 4, bulbs/navigation lights material 5, transparent ground-light discs material 6, and rotating turbine blades material 7. Some windows stay dark for variation. Lamps are automatic roadside decorations, capped above and attached to supplied road networks; they do not change economy numbers. Stars are seeded once on a pointer-transparent canvas and fade with night. Night map labels use lighter ink.
 - Pause, dialogs, hidden documents and context loss stop actor, water and turbine time. A still moment freezes those decorative motions while calendar/economy lighting continue. Live reduced-motion changes stop/resume movement without a reload. WebGL restoration recreates static and dynamic buffers, then reapplies viewport and lighting; CPU actor/town data remain intact.
 - Keep existing economy and persistence tests. Add night/harbor screenshots in both iPad sizes and exercise quality caps, pause/still modes, live reduced motion, road edits and context recovery with ships. Inspect genuine shader output as well as derived metadata. Actual iPad Safari performance remains unverified by headless Chromium.
+
+## Milestone 4 disaster contract
+
+Save version **3** persists opt-in status, event progress and damaged flags. Migration initializes old towns with events off. Validate event type (tornado/earthquake/meteor/tsunami), time [0,20), integer map anchors, matching event/outer serial, and enabled status for a non-null event. Missing/invalid state in v3 is rejected; import failure leaves the open town unchanged. No offline catch-up.
+
+`DISASTER_CORE_START/END` contains the real deterministic exposure, hit-time and protection rules tested in Node. `window.__baytown.disasters` exposes start, step, repair, dynamite, show and protection for browser checks. Time advances from the existing active simulation clock: warning 0–5 seconds; staggered deterministic impacts 5–15; event visuals 5–17; recovery to 20. Pauses, dialogs, hidden documents and context loss stop it; 3× applies. Saved time crossing determines each hit once; no repeated impacts on reload. Opt-in launches are manual only. Starting clears construction undo; building/undo are blocked during the event. Stop/off clears only the active event, preserving repair sites.
+
+Inland events anchor at the first home or (40,36): tornado |x-anchor|<18 and |z-anchor|<5, earthquake distance<15, meteors distance<11. Tsunami targets x>=46. Roads, bridges, docks, walls, mountains, trees, flowers and benches are immune. This is stylized geometric exposure, not fluid/structural simulation. Residents, level, footprint and original paid amount survive collapse. Repair sites retain services/income at half their otherwise calculated strength; utility sources supply half capacity. Damage combines with utility shortages. Home growth pauses while damaged. Upkeep and workforce remain unchanged.
+
+Police/hospital/fire/coastguard prevent 75% of deterministic tornado/quake/meteor/wave hits respectively within 12 tiles (anchor distance). Emergency protection continues while a station is damaged, independent of staffing/utilities. Sea walls east of a building within 18 columns and within size+1 rows block waves fully. Defense resolution does not depend on frame size.
+
+Repair costs ceil(25% catalog cost), free in sandbox; insufficient funds change nothing. Repair clears undo to avoid stale construction money deltas. Clearing a damaged site refunds zero, clearly labeled. Mountain removal requires explicit $100 Dynamite from its inspector, free in sandbox; a construction transaction supports undo. Existing save recovery/backup behavior is unchanged.
+
+Dynamic visuals use the preallocated 2,048-instance buffer, max 40 event parts plus 24 collapse parts, no particles; no world rebuild per frame. Reduced motion/still mode uses static event markers without falling/collapse animation. Context recovery preserves CPU event state. Tests cover core protection/exposure, both iPad orientations, opt-in UI, warning visibility, pause/build locks, repairs, all event completion, v1/v2/v3 fixtures, malformed state, dynamite undo, reduced motion and active-event context loss. Screenshots: disaster-ipad-portrait.png and disaster-ipad-landscape.png.

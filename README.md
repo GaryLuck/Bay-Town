@@ -10,7 +10,7 @@ npm start
 
 This serves the checkout on port 8000 using Python 3. The file also works offline; browser storage behavior for directly opened files varies. Export a save file before changing origin, browser, or device.
 
-## What works through milestone 3
+## What works through milestone 4
 
 - A deterministic 72 × 72 seaside map with an eastern ocean, northwest lake, trees, and hills.
 - Starter village, empty land with $30,000, and unlimited sandbox modes.
@@ -27,9 +27,13 @@ This serves the checkout on port 8000 using Python 3. The file also works offlin
 - Versioned autosave, IndexedDB with a localStorage mirror, three named slots, a recovery backup before loading/starting another town, and file export/import. Invalid imports leave the open town untouched. Unreadable autosaves are preserved for download.
 - WebGL context-loss recovery, safe-area padding, 52px minimum button targets, touch controls, keyboard controls, reduced motion, three graphics settings, and optional user-activated sound.
 
-**Milestones 4–6 remain later work:** disasters, interiors, and personal Ethan features. Disasters stay off.
+- Four manually launched, opt-in adventures: tornado, earthquake, meteor shower and tsunami. Use Settings → Choose an adventure. Each has a warning, an animated event, a calm finish, and a stop control. Disasters are off in new and upgraded towns.
+- Repairable collapsed places keep their residents and floors, operate at half their usual strength, and cost 25% of the catalog price to rebuild (free in sandbox). Damaged utility sources supply half capacity. Clear a damaged site for no refund. Normal construction still refunds its recorded purchase price.
+- Police, hospitals, fire stations and coast guards protect nearby places against their matching event. Sea walls shield nearby inland places from waves. Tap a placed mountain for $100 dynamite; clearing it can be undone.
 
-Moving figures illustrate the town’s population and routes; they do not change the economy or hold individually saved identities. Traffic congestion and physical vehicle collisions are not simulated. All town buildings, residents, funds, goals, and calendar progress stay in save version 2, and existing v1/v2 saves remain readable. Actors and their routes regenerate from the town and seed; no save-format upgrade is needed for this milestone.
+**Milestones 5–6 remain later work:** interiors and personal Ethan features.
+
+Moving figures illustrate the town’s population and routes; they do not change the economy or hold individually saved identities. Traffic congestion and physical vehicle collisions are not simulated. Save version 3 adds opt-in adventure state and repair flags. Existing v1/v2 saves upgrade with adventures off; the layout, money and residents are preserved. An event saved midway resumes at its saved stage without offline catch-up. Actors and their routes still regenerate.
 
 The new starter town begins with 11 residents, room for 22, full utilities, 77 happiness, and a positive $39.58/day estimate. Existing towns keep their exact buildings, funds, and road layouts when upgraded from v1: use the new maps to connect any missing roads. Home residents initially fill half of each base home’s capacity during migration. Nothing is removed or charged for the upgrade.
 
@@ -78,7 +82,7 @@ If Chromium is already installed, skip the browser download. Tests automatically
 NODE_PATH=/workspace/.baytown-tools/node_modules npm test
 ```
 
-The suite starts its own local server. It uses real headless Chromium with ANGLE/SwiftShader, checks iPad portrait (768 × 1024) and landscape (1024 × 768), exercises touch and mouse input, and writes screenshots to `screenshots/`. It covers placement costs and rejection, drag transactions, rotation, refunds, camera controls, IndexedDB/localStorage saves, named slots, reloads, file export/import, the shipped v1/v2 fixtures and migration, corrupt save handling, context recovery, storage failure, and multi-touch gestures. Milestone 2 checks also exercise utility layers, service rings, budget forecasts, pause/speed controls, home growth, day-spanning undo, two-tier goal grants, and 60 days of actual browser simulation. Milestone 3 adds real movement, actor-cap changes, live reduced-motion toggles, night-pixel/lighting checks, harbor visits, and GPU recovery while ships are visible. It also verifies that the game makes no external HTTP requests.
+The suite starts its own local server. It uses real headless Chromium with ANGLE/SwiftShader, checks iPad portrait (768 × 1024) and landscape (1024 × 768), exercises touch and mouse input, and writes screenshots to `screenshots/`. It covers placement costs and rejection, drag transactions, rotation, refunds, camera controls, IndexedDB/localStorage saves, named slots, reloads, file export/import, the shipped v1/v2/v3 fixtures and migration, corrupt save handling, context recovery, storage failure, and multi-touch gestures. Milestone 2 checks also exercise utility layers, service rings, budget forecasts, pause/speed controls, home growth, day-spanning undo, two-tier goal grants, and 60 days of actual browser simulation. Milestone 3 adds real movement, actor-cap changes, live reduced-motion toggles, night-pixel/lighting checks, harbor visits, and GPU recovery while ships are visible. It also verifies that the game makes no external HTTP requests.
 
 The pure living-world tests exercise the actual inline route planner and fixed pools: shortest paths and disconnections, bridge/dock rules, map boundaries, deterministic seeded variation, caps, reusable buffers, road removal, smooth corners/reversals, enclosed harbor entrances, and ship hull clearance.
 
@@ -91,3 +95,11 @@ Chromium emulation does **not** verify actual iPad Safari behavior or performanc
 `index.html` is the canonical source. Its nine numbered sections follow the engine/world/assets/city/sim/disasters/interior/ui/main structure requested in `REQUIREMENTS.md`. Runtime debug and acceptance-test hooks live at `window.__baytown`.
 
 Read [baytown-reference](skills/baytown-reference/SKILL.md) before changing prices, map rules, or saves. Save version 2 is current; the v1 fixture remains supported by an explicit migration. Add a fixture and a migration when shipping another save version. Keep serving the same file from the same origin to retain browser storage. No artifact has been published from this checkout; publication and replacing an existing artifact require the user’s direction.
+
+## Disaster rules (milestone 4)
+
+Events only start when chosen; there is no random scheduler. Warning lasts 5 game seconds, impacts occur during the next 10, visuals last until second 17, and recovery finishes at second 20. Pause, dialogs, hidden tabs and context loss stop event time; 3× speed applies. Building and undo wait until the event ends. Stopping an event prevents future hits, while existing repair sites remain.
+
+The first occupied home anchors inland events, or tile (40,36) in an empty town. Tornadoes affect a 36-tile-wide strip within 5 tiles of its row; quakes reach 15 tiles and meteors 11 tiles around that point. Waves affect buildings from column 46 eastward. Roads, bridges, docks, sea walls, mountains, trees, flowers and benches are spared. These are stylized adventures, without terrain destruction or fluid/structural physics.
+
+Police protect against tornadoes; hospitals against earthquakes; fire stations against meteors; coast guards against waves. Within 12 tiles of the building’s anchor, they prevent 75% of deterministic hits. Emergency teams keep protecting while their station needs repair, without staffing/utility requirements. A sea wall east of a building, within 18 tiles and within its footprint size plus one row, fully shields it from waves. Effects reuse the existing dynamic GPU buffer: at most 40 event pieces plus 24 collapse pieces, with no particles. Reduced motion and still mode show static event markers.

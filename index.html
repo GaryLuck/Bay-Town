@@ -1969,6 +1969,23 @@
       </div>
     </footer>
     <div class="toast" id="toast" role="status" aria-live="polite"></div>
+    <div
+      id="disaster-banner"
+      role="status"
+      hidden
+      style="
+        position: fixed;
+        top: calc(env(safe-area-inset-top) + 160px);
+        left: min(220px, 28vw);
+        right: 16px;
+        text-align: center;
+        background: #fff3cf;
+        padding: 12px;
+        border-radius: 16px;
+        z-index: 5;
+        pointer-events: none;
+      "
+    ></div>
     <div class="dialog-backdrop" id="modal" hidden>
       <section
         class="dialog"
@@ -2499,7 +2516,7 @@ void main(){
 
       /* 02 · WORLD — deterministic terrain regenerated from a seed. */
       const SIZE = 72,
-        SAVE_VERSION = 2,
+        SAVE_VERSION = 3,
         MAX_OBJECTS = 5000;
       let terrain = new Uint8Array(SIZE * SIZE),
         scenery = [],
@@ -2675,6 +2692,7 @@ void main(){
               });
         }
         initializeEconomy(town);
+        town.disasters = { enabled: false, event: null, serial: 0 };
         rebuildOccupancy();
         camera.x =
           mode === "starter" ? (innerHeight > innerWidth ? 42 : 40) : 38;
@@ -2891,7 +2909,7 @@ void main(){
           roof: "#9d6451",
           height: 1.3,
           description:
-            "A bright red door for brave helpers. A staffed station lifts happiness within 10 tiles. Disaster protection arrives in milestone 4.",
+            "A bright red door for brave helpers. A staffed station lifts happiness within 10 tiles. Emergency teams also help shield nearby places during adventures.",
         },
         hospital: {
           name: "Hospital",
@@ -2915,7 +2933,7 @@ void main(){
           roof: "#7a98a1",
           height: 1.3,
           description:
-            "A lookout for the bay. A staffed station lifts happiness within 10 tiles. Disaster protection arrives in milestone 4.",
+            "A lookout for the bay. A staffed station lifts happiness within 10 tiles. Emergency teams also help shield nearby places during adventures.",
         },
         hall: {
           name: "Town hall",
@@ -3109,7 +3127,7 @@ void main(){
           kind: "seawall",
           color: "#afb7a1",
           description:
-            "A strong edge for the shore. Disaster defenses arrive in milestone 4.",
+            "A strong edge for the shore. Shields nearby inland buildings from waves to the east.",
           drag: true,
         },
         mountain: {
@@ -3211,6 +3229,22 @@ void main(){
           roof = def.roofRGB,
           k = def.kind,
           seed = hash(obj.x, obj.z, town.seed);
+        if (obj.damaged) {
+          const progress = 1;
+          cube(x, 0.12, z, n * 0.9, 0.22, n * 0.9, [0.69, 0.63, 0.51]);
+          cube(
+            x - 0.2,
+            0.23,
+            z,
+            n * 0.45,
+            0.3 + (1 - progress) * 2,
+            n * 0.55,
+            rgb,
+            progress * 0.35,
+          );
+          cube(x + 0.3, 0.2, z + 0.2, n * 0.4, 0.28, n * 0.4, roof, -0.35);
+          return;
+        }
         if (k === "road" || k === "bridge" || k === "dock") {
           const isBridge = k === "bridge",
             isDock = k === "dock",
@@ -3625,6 +3659,11 @@ void main(){
           z + def.size > SIZE
         )
           return { ok: false, reason: "Stay inside the town map." };
+        if (town.disasters?.event)
+          return {
+            ok: false,
+            reason: "Let the adventure finish before building.",
+          };
         if (type === "remove")
           return objectAt(x, z)
             ? { ok: true }
@@ -3710,8 +3749,14 @@ void main(){
         if (!check.ok) return check;
         if (type === "remove") {
           const obj = objectAt(x, z);
+          if (obj.type === "mountain")
+            return {
+              ok: false,
+              reason: "Use Dynamite in the mountain’s details.",
+            };
           town.objects = town.objects.filter((o) => o.id !== obj.id);
-          if (town.mode !== "sandbox") town.money += obj.paid || 0;
+          if (town.mode !== "sandbox")
+            town.money += obj.damaged ? 0 : obj.paid || 0;
           if (inspectorId === obj.id) {
             inspectorId = null;
             $("inspect").hidden = true;
@@ -3803,6 +3848,7 @@ void main(){
         return count;
       }
       function undo() {
+        if (town.disasters?.event) return false;
         const last = undoStack[undoStack.length - 1];
         if (!last) {
           toast("Nothing to undo yet.");
@@ -3859,9 +3905,13 @@ void main(){
           : `${d.size} × ${d.size} ${d.size === 1 ? "tile" : "tiles"}`;
         $("inspect-coordinates").textContent =
           `On the map: ${obj.x + 1}, ${obj.z + 1}`;
-        $("inspect-remove").textContent = obj.paid
-          ? `Remove · refund ${money(obj.paid)}`
-          : "Remove · starter place";
+        $("inspect-remove").textContent = obj.damaged
+          ? "Clear repair site · no refund"
+          : obj.type === "mountain"
+            ? "Use Dynamite below"
+            : obj.paid
+              ? `Remove · refund ${money(obj.paid)}`
+              : "Remove · starter place";
         $("inspect").hidden = false;
         updateInspector();
         dirty = true;
@@ -4148,8 +4198,10 @@ void main(){
           summary.upkeep += record.upkeep;
           if (nets.length) {
             for (const ni of nets) {
-              networks[ni].powerSupply += (e.power || 0) / nets.length;
-              networks[ni].waterSupply += (e.water || 0) / nets.length;
+              networks[ni].powerSupply +=
+                ((e.power || 0) * (o.damaged ? 0.5 : 1)) / nets.length;
+              networks[ni].waterSupply +=
+                ((e.water || 0) * (o.damaged ? 0.5 : 1)) / nets.length;
             }
           }
           if (e.jobs) workplaces.push(record);
@@ -4221,6 +4273,7 @@ void main(){
             (!r.road || r.power < 1 - 1e-9 || r.water < 1 - 1e-9)
               ? 0.5
               : 1;
+          if (o.damaged) r.efficiency *= 0.5;
           r.strength = r.efficiency * (r.jobs ? r.staff / r.jobs : 1);
           if (needsUtilities && r.efficiency < 1) summary.unserved++;
           if (
@@ -4467,6 +4520,7 @@ void main(){
           contextLost
         )
           return;
+        stepDisaster(elapsed * town.speed);
         town.dayProgress += (elapsed * town.speed) / SIM_RULES.daySeconds;
         if (town.dayProgress >= 1) {
           town.dayProgress -= 1;
@@ -4519,6 +4573,13 @@ void main(){
         const d = DEFS[obj.type],
           e = ECONOMY[obj.type] || {},
           r = simView.records[obj.id];
+        $("inspect-remove").textContent = obj.damaged
+          ? "Clear repair site · no refund"
+          : obj.type === "mountain"
+            ? "Use Dynamite below"
+            : obj.paid
+              ? `Remove · refund ${money(obj.paid)}`
+              : "Remove · starter place";
         $("inspect-info").textContent = d.capacity
           ? `${obj.residents} of ${homeCapacity(obj)} neighbors · level ${obj.level}`
           : `${d.size} × ${d.size} ${d.size === 1 ? "tile" : "tiles"}`;
@@ -4544,7 +4605,7 @@ void main(){
         else if (e.wageIncome)
           html += `<div><span>Daily income</span><strong>${money(r.income)}</strong></div>`;
         if (e.power || e.water)
-          html += `<div><span>${e.power ? "Power" : "Water"} capacity</span><strong>${e.power || e.water} units</strong></div><p class="growth-note">${r.road ? "Shared along touching road networks." : "Build a road against the edge to share this supply."}</p>`;
+          html += `<div><span>${e.power ? "Power" : "Water"} capacity</span><strong>${(e.power || e.water) * (obj.damaged ? 0.5 : 1)} units</strong></div><p class="growth-note">${r.road ? "Shared along touching road networks." : "Build a road against the edge to share this supply."}</p>`;
         if (e.radius)
           html += `<div><span>Reach</span><strong>${e.radius} tiles</strong></div><div><span>Happiness lift</span><strong>+${cents(e.bonus * r.strength)} / +${e.bonus}</strong></div>`;
         html += `<div><span>Daily upkeep</span><strong>${money(r.upkeep)}</strong></div>`;
@@ -4556,7 +4617,18 @@ void main(){
               ships++;
           html += `<div><span>Visiting ships</span><strong>${ships}</strong></div><p class="growth-note">${!port?.hasDock ? "Build a dock against this harbor’s edge to welcome boats." : !port.berths.length ? "Give this dock a clear way out to open water." : "A little comings and goings. Ships follow clear water to and from the dock."}</p>`;
         }
+        if (obj.damaged)
+          html =
+            `<p>This place needs a little care. Neighbors and floors are safe. It runs at half strength until rebuilt.</p><button class="action" id="repair-building">Rebuild · ${town.mode === "sandbox" ? "Free" : money(Math.ceil(d.cost * 0.25))}</button>` +
+            html;
+        if (obj.type === "mountain")
+          html +=
+            '<button class="action" id="dynamite-mountain">Dynamite · $100</button>';
         $("inspect-details").innerHTML = html;
+        if ($("repair-building"))
+          $("repair-building").onclick = () => repairBuilding(obj.id);
+        if ($("dynamite-mountain"))
+          $("dynamite-mountain").onclick = () => dynamiteMountain(obj.id);
       }
       function rebuildBubbles() {
         if (!simView || !$("utility-bubbles")) return;
@@ -5514,6 +5586,7 @@ void main(){
       }
       function buildDynamicActors() {
         dynamicCount = 0;
+        drawDisaster();
         for (let i = 0; i < lifePool.count; i++) {
           if (lifePool.length[i] < 2) continue;
           const kind = lifePool.kind[i],
@@ -6020,8 +6093,278 @@ void main(){
         lifeMotion = mode;
         savePreferences();
       }
-      // Disasters and interiors remain later milestones.
-      /* 06 · DISASTERS — opt-in only; not enabled or simulated in milestone 2. */
+      /* 06 · DISASTERS — chosen adventures, preserved homes and recovery. */
+      /* DISASTER_CORE_START */
+      const DISASTER_TYPES = ["tornado", "earthquake", "meteor", "tsunami"];
+      function disasterHitTime(o, e) {
+        return 5 + (((o.id * 37) % 101) / 101) * 10;
+      }
+      function disasterProtection(o, e, objects, defs = DEFS) {
+        const service = {
+          tornado: "police",
+          earthquake: "hospital",
+          meteor: "fire",
+          tsunami: "coastguard",
+        }[e.type];
+        const nearby = objects.some(
+          (p) => p.type === service && Math.hypot(p.x - o.x, p.z - o.z) <= 12,
+        );
+        const wall =
+          e.type === "tsunami" &&
+          objects.some(
+            (p) =>
+              p.type === "seawall" &&
+              p.x > o.x &&
+              p.x - o.x <= 18 &&
+              Math.abs(p.z - o.z) <= defs[o.type].size + 1,
+          );
+        return wall ? 1 : nearby ? 0.75 : 0;
+      }
+      function disasterExposed(o, e) {
+        if (
+          [
+            "road",
+            "bridge",
+            "dock",
+            "seawall",
+            "mountain",
+            "tree",
+            "flower",
+            "bench",
+          ].includes(o.type)
+        )
+          return false;
+        if (e.type === "tsunami") return o.x >= 46;
+        if (e.type === "earthquake")
+          return Math.hypot(o.x - e.x, o.z - e.z) < 15;
+        if (e.type === "tornado")
+          return Math.abs(o.z - e.z) < 5 && Math.abs(o.x - e.x) < 18;
+        return Math.hypot(o.x - e.x, o.z - e.z) < 11;
+      }
+      function disasterWillDamage(o, e, objects, defs = DEFS) {
+        const roll = ((o.id * 73 + e.serial * 19) % 100) / 100;
+        return (
+          !o.damaged &&
+          disasterExposed(o, e) &&
+          roll >= disasterProtection(o, e, objects, defs)
+        );
+      }
+      /* DISASTER_CORE_END */
+      function startDisaster(type) {
+        const d = town.disasters;
+        if (
+          !d.enabled ||
+          d.event ||
+          d.serial >= 1e9 ||
+          !DISASTER_TYPES.includes(type)
+        )
+          return false;
+        const target = town.objects.find((o) => DEFS[o.type].capacity) || {
+          x: 40,
+          z: 36,
+        };
+        d.event = {
+          type,
+          time: 0,
+          x: target.x,
+          z: target.z,
+          serial: ++d.serial,
+        };
+        undoStack = [];
+        selectTool(null);
+        markChanged();
+        toast(
+          "Adventure ahead! Everyone is safe. You can stop it in Settings.",
+        );
+        return true;
+      }
+      function stepDisaster(seconds) {
+        const e = town?.disasters?.event;
+        if (!e || !Number.isFinite(seconds) || seconds <= 0) return;
+        const before = e.time;
+        e.time = Math.min(20, e.time + seconds);
+        // Emergency teams keep protecting neighbors even if their own station needs repair.
+        let hits = 0;
+        for (const o of town.objects) {
+          const hit = disasterHitTime(o, e);
+          if (
+            hit > before &&
+            hit <= e.time &&
+            disasterWillDamage(o, e, town.objects)
+          ) {
+            o.damaged = true;
+            hits++;
+          }
+        }
+        if (hits) markChanged();
+        if (e.time >= 20) {
+          town.disasters.event = null;
+          markChanged();
+          toast(
+            "All clear! Tap a repair site to rebuild. Your neighbors are safe.",
+          );
+        } else {
+          changeSerial++;
+        }
+        updateDisasterBanner();
+      }
+      let bannerEvent = null,
+        bannerPhase = -1;
+      function updateDisasterBanner() {
+        const e = town?.disasters?.event;
+        const phase = !e ? -1 : e.time < 5 ? 0 : e.time < 17 ? 1 : 2;
+        if (e === bannerEvent && phase === bannerPhase) return;
+        bannerEvent = e;
+        bannerPhase = phase;
+        const banner = $("disaster-banner");
+        banner.hidden = !e;
+        if (e)
+          banner.textContent = `${e.type === "meteor" ? "Meteor shower" : e.type[0].toUpperCase() + e.type.slice(1)} · ${e.time < 5 ? "Get ready" : e.time < 17 ? "Adventure in progress" : "All settling down"} · Everyone is safe`;
+      }
+      function repairBuilding(id) {
+        const o = town.objects.find((o) => o.id === id);
+        if (!o?.damaged || town.disasters.event) return false;
+        const cost = Math.ceil(DEFS[o.type].cost * 0.25);
+        if (town.mode !== "sandbox" && town.money < cost) {
+          toast(`Needs ${money(cost)} to rebuild.`);
+          return false;
+        }
+        if (town.mode !== "sandbox") town.money -= cost;
+        delete o.damaged;
+        undoStack = [];
+        markChanged();
+        toast("Good as new. Welcome home!");
+        return true;
+      }
+      function dynamiteMountain(id) {
+        const o = town.objects.find((o) => o.id === id);
+        if (o?.type !== "mountain" || town.disasters.event) return false;
+        if (town.mode !== "sandbox" && town.money < 100) {
+          toast("Needs $100 for dynamite.");
+          return false;
+        }
+        const before = beginTransaction();
+        town.objects = town.objects.filter((p) => p.id !== id);
+        if (town.mode !== "sandbox") town.money -= 100;
+        inspectorId = null;
+        $("inspect").hidden = true;
+        commitTransaction(before, "Clear mountain");
+        toast("Pop! A fresh space to build.");
+        return true;
+      }
+      function drawDisaster() {
+        const e = town?.disasters?.event;
+        if (!e || e.time < 5 || e.time > 17) return;
+        if (!reducedMotion && lifeMotion !== "still") {
+          let count = 0;
+          for (const o of town.objects) {
+            const age = e.time - disasterHitTime(o, e);
+            if (o.damaged && age >= 0 && age < 1 && count++ < 24) {
+              const n = DEFS[o.type].size;
+              putDynamic(
+                o.x + (n - 1) / 2,
+                0.3 + (1 - age) * 2,
+                o.z + (n - 1) / 2,
+                n * 0.7,
+                (1 - age) * 2 + 0.1,
+                n * 0.7,
+                0.72,
+                0.64,
+                0.5,
+                age * 0.6,
+              );
+            }
+          }
+        }
+        const t = reducedMotion || lifeMotion === "still" ? 6 : e.time;
+        if (e.type === "tornado") {
+          for (let i = 0; i < 18; i++) {
+            const a = i * 2 + t * 2,
+              r = 0.2 + i * 0.08;
+            putDynamic(
+              e.x - 15 + (t - 5) * 2.5 + Math.cos(a) * r,
+              0.3 + i * 0.22,
+              e.z + Math.sin(a) * r,
+              0.65,
+              0.3,
+              0.65,
+              0.69,
+              0.72,
+              0.73,
+              a,
+            );
+          }
+        } else if (e.type === "tsunami") {
+          for (let i = 0; i < 40; i++)
+            putDynamic(
+              64 - (t - 5) * 1.5,
+              0.3 + Math.sin(i * 0.5 + t) * 0.15,
+              i + 15,
+              1.4,
+              1,
+              1,
+              0.35,
+              0.7,
+              0.8,
+              0,
+            );
+        } else if (e.type === "meteor") {
+          for (let i = 0; i < 8; i++) {
+            const f = (t * 0.6 + i * 0.17) % 1;
+            putDynamic(
+              e.x + ((i % 3) - 1) * 4 + 3 * (1 - f),
+              (1 - f) * 12 + 0.3,
+              e.z + ((i % 4) - 2) * 3,
+              0.45,
+              0.6,
+              0.45,
+              0.94,
+              0.66,
+              0.32,
+              0.3,
+            );
+          }
+        } else {
+          for (let i = 0; i < 16; i++)
+            putDynamic(
+              e.x - 8 + i,
+              0.08,
+              e.z + Math.sin(i) * 2,
+              1.1,
+              0.08,
+              0.18,
+              0.62,
+              0.47,
+              0.3,
+              Math.sin(i),
+            );
+        }
+      }
+      function showDisasters() {
+        const d = town.disasters;
+        openDialog(
+          `${dialogHeader("A little adventure")}<p>Always your choice. Everyone stays safe. Places may need rebuilding for 25% of their price. Homes keep their neighbors and floors; repair sites run at half strength.</p><button class="action secondary" id="toggle-disasters">Adventures: ${d.enabled ? "On" : "Off"}</button><p>Police help with tornadoes, hospitals with earthquakes, fire stations with meteors, and coast guards with waves. Within 12 tiles they prevent 75% of hits. Sea walls shield places up to 18 tiles inland behind them.</p><div class="actions">${DISASTER_TYPES.map((type) => `<button class="action secondary" data-disaster="${type}" ${!d.enabled || d.event ? "disabled" : ""}>${type === "meteor" ? "Meteor shower" : type[0].toUpperCase() + type.slice(1)}</button>`).join("")}</div>${d.event ? '<button class="action" id="stop-disaster">Stop this adventure</button>' : ""}<p>No surprise events. Each adventure has a warning, action, and a calm finish. Roads and defenses stay intact. Export a save first if you want a keepsake of your town before an adventure.</p>`,
+        );
+        $("toggle-disasters").onclick = () => {
+          d.enabled = !d.enabled;
+          if (!d.enabled) d.event = null;
+          markChanged();
+          updateDisasterBanner();
+          showDisasters();
+        };
+        for (const b of $("dialog").querySelectorAll("[data-disaster]"))
+          b.onclick = () => {
+            closeDialog();
+            startDisaster(b.dataset.disaster);
+          };
+        if ($("stop-disaster"))
+          $("stop-disaster").onclick = () => {
+            d.event = null;
+            markChanged();
+            updateDisasterBanner();
+            closeDialog();
+          };
+      }
       /* 07 · INTERIOR — home interiors and decorating arrive in milestone 5. */
 
       /* 08 · UI — inline icons, progressive thumbnails, touch and keyboard. */
@@ -6198,6 +6541,7 @@ void main(){
         el.scrollLeft = scroll;
       }
       function updateUI() {
+        updateDisasterBanner();
         if (!town || !simView) return;
         const s = simView.summary;
         $("funds").textContent =
@@ -6312,7 +6656,7 @@ void main(){
       function showWelcome(isNew = false) {
         let mode = "starter";
         openDialog(
-          `<div class="welcome"><div class="welcome-art">${thumbSVG("cottage")}${thumbSVG("lighthouse")}${thumbSVG("tree")}</div><div class="eyebrow">Welcome to your little corner of the coast</div><h2 id="dialog-title">Let's make<br>somewhere lovely.</h2><p>A road by the water. A home under the trees.<br>A whole little world, built your way.</p><label for="town-name">What should we call your town?</label><input id="town-name" maxlength="32" value="Baytown Bay" autocomplete="off"><div class="mode-options"><button class="mode-option" data-mode="starter" aria-pressed="true">${icon("town")}<span><strong>A little head start</strong><small>A seaside village, ready to make your own</small></span></button><button class="mode-option" data-mode="empty" aria-pressed="false">${icon("leaf")}<span><strong>A blank canvas</strong><small>Just the coast, the trees, and $30,000</small></span></button><button class="mode-option" data-mode="sandbox" aria-pressed="false">${icon("infinity")}<span><strong>Big imagination</strong><small>Unlimited funds. Build as you please.</small></span></button></div><button class="action" id="begin-town">Let's build a town <span aria-hidden="true">↗</span></button>${isNew ? '<button class="action secondary" id="cancel-new">Back to my town</button>' : ""}<div class="feature-note">Chapter 3: a town with a little life.<br>Neighbors take a stroll. Boats come and go. Windows glow after sunset.</div></div>`,
+          `<div class="welcome"><div class="welcome-art">${thumbSVG("cottage")}${thumbSVG("lighthouse")}${thumbSVG("tree")}</div><div class="eyebrow">Welcome to your little corner of the coast</div><h2 id="dialog-title">Let's make<br>somewhere lovely.</h2><p>A road by the water. A home under the trees.<br>A whole little world, built your way.</p><label for="town-name">What should we call your town?</label><input id="town-name" maxlength="32" value="Baytown Bay" autocomplete="off"><div class="mode-options"><button class="mode-option" data-mode="starter" aria-pressed="true">${icon("town")}<span><strong>A little head start</strong><small>A seaside village, ready to make your own</small></span></button><button class="mode-option" data-mode="empty" aria-pressed="false">${icon("leaf")}<span><strong>A blank canvas</strong><small>Just the coast, the trees, and $30,000</small></span></button><button class="mode-option" data-mode="sandbox" aria-pressed="false">${icon("infinity")}<span><strong>Big imagination</strong><small>Unlimited funds. Build as you please.</small></span></button></div><button class="action" id="begin-town">Let's build a town <span aria-hidden="true">↗</span></button>${isNew ? '<button class="action secondary" id="cancel-new">Back to my town</button>' : ""}<div class="feature-note">Chapter 4: a little adventure, if you choose.<br>Neighbors take a stroll. Boats come and go. Windows glow after sunset.</div></div>`,
         );
         for (const b of $("dialog").querySelectorAll("[data-mode]"))
           b.addEventListener("click", () => {
@@ -6345,13 +6689,14 @@ void main(){
       }
       function showHelp() {
         openDialog(
-          `${dialogHeader("A little town planner’s guide")}<p>There’s no hurry here. Choose a place, find a little space, and make the bay your own.</p><div class="help-grid"><div><strong>Look around</strong>Drag the map with one finger when nothing is selected. With a tool selected, use two fingers. Pinch or scroll to zoom.</div><div><strong>Build a place</strong>Pick a card, then tap a clear spot. Drag to draw roads, bridges, or docks. Tap the same card to put your tool away.</div><div><strong>Change your mind</strong>Undo brings back the last change. Remove refunds the full price you paid. Starter places have no refund.</div><div><strong>Keep your town</strong>It saves as you build. Use the save button for three extra slots and a file you can keep somewhere safe.</div></div><h3>A few handy keys</h3><p>Arrow keys / WASD: move · + / −: zoom · Q / E: turn view · R: turn building · Escape: put tool away · ⌘/Ctrl Z: undo · ⌘/Ctrl S: save.</p><div class="feature-note">This is milestone 3. Homes earn $8 per neighbor each day. Power and water follow roads. Both utilities and 75 happiness help homes grow. Shops need nearby road-connected customers and people at work. Use the map layers and town budget to see why places work. Missing power or water only makes a place run at half strength. Time pauses while a notebook is open or you leave the game. Neighbors, pets, and traffic follow the paths you build. Harbor ships need a dock and open water. Night brings warm windows, lamps, and stars. Disasters and interiors come in later chapters.</div>`,
+          `${dialogHeader("A little town planner’s guide")}<p>There’s no hurry here. Choose a place, find a little space, and make the bay your own.</p><div class="help-grid"><div><strong>Look around</strong>Drag the map with one finger when nothing is selected. With a tool selected, use two fingers. Pinch or scroll to zoom.</div><div><strong>Build a place</strong>Pick a card, then tap a clear spot. Drag to draw roads, bridges, or docks. Tap the same card to put your tool away.</div><div><strong>Change your mind</strong>Undo brings back the last change. Remove refunds the full price you paid. Starter places have no refund.</div><div><strong>Keep your town</strong>It saves as you build. Use the save button for three extra slots and a file you can keep somewhere safe.</div></div><h3>A few handy keys</h3><p>Arrow keys / WASD: move · + / −: zoom · Q / E: turn view · R: turn building · Escape: put tool away · ⌘/Ctrl Z: undo · ⌘/Ctrl S: save.</p><div class="feature-note">This is milestone 4. Homes earn $8 per neighbor each day. Power and water follow roads. Both utilities and 75 happiness help homes grow. Shops need nearby road-connected customers and people at work. Use the map layers and town budget to see why places work. Missing power or water only makes a place run at half strength. Time pauses while a notebook is open or you leave the game. Neighbors, pets, and traffic follow the paths you build. Harbor ships need a dock and open water. Night brings warm windows, lamps, and stars. Choose disasters in Settings. Interiors come in chapter 5.</div>`,
         );
       }
       function showSettings() {
         openDialog(
-          `${dialogHeader("Your little corner")}<p>A few ways to make yourself comfortable.</p><div class="setting-row"><label for="quality">Graphics</label><select id="quality"><option value="auto">Balanced</option><option value="low">Easy on battery</option><option value="high">Extra crisp</option></select></div><div class="setting-row"><span>Gentle building sounds</span><button class="action secondary" id="sound">${sound ? "On" : "Off"}</button></div><div class="setting-row"><span>Motion</span><span id="motion-status" style="color:var(--muted);font-size:12px">${reducedMotion ? "Reduced · follows device" : "Gentle life around the bay"}</span></div><div class="setting-row"><label for="world-lighting">Light by the bay</label><select id="world-lighting"><option value="cycle">Follow the day</option><option value="day">Always sunny</option><option value="night">Starry night</option></select></div><div class="setting-row"><label for="world-motion">Town life</label><select id="world-motion"><option value="lively">A little bustle</option><option value="still">A still moment</option></select></div><div class="setting-row"><span>Disasters</span><span style="color:var(--muted);font-size:12px">Off · later chapter</span></div><div class="actions" style="margin-top:22px"><button class="action secondary" id="settings-help">How to play</button><button class="action secondary" id="new-town">Another town</button></div><div class="feature-note">Starting another town keeps this one in a recovery backup. Named save slots are kept too. Export a file for a lasting copy.</div>`,
+          `${dialogHeader("Your little corner")}<p>A few ways to make yourself comfortable.</p><div class="setting-row"><label for="quality">Graphics</label><select id="quality"><option value="auto">Balanced</option><option value="low">Easy on battery</option><option value="high">Extra crisp</option></select></div><div class="setting-row"><span>Gentle building sounds</span><button class="action secondary" id="sound">${sound ? "On" : "Off"}</button></div><div class="setting-row"><span>Motion</span><span id="motion-status" style="color:var(--muted);font-size:12px">${reducedMotion ? "Reduced · follows device" : "Gentle life around the bay"}</span></div><div class="setting-row"><label for="world-lighting">Light by the bay</label><select id="world-lighting"><option value="cycle">Follow the day</option><option value="day">Always sunny</option><option value="night">Starry night</option></select></div><div class="setting-row"><label for="world-motion">Town life</label><select id="world-motion"><option value="lively">A little bustle</option><option value="still">A still moment</option></select></div><div class="setting-row"><span>Disasters</span><button class="action secondary" id="open-disasters">Choose an adventure</button></div><div class="actions" style="margin-top:22px"><button class="action secondary" id="settings-help">How to play</button><button class="action secondary" id="new-town">Another town</button></div><div class="feature-note">Starting another town keeps this one in a recovery backup. Named save slots are kept too. Export a file for a lasting copy.</div>`,
         );
+        $("open-disasters").onclick = showDisasters;
         $("world-lighting").value = lifeLighting;
         $("world-motion").value = lifeMotion;
         $("world-lighting").addEventListener("change", (e) =>
@@ -6407,7 +6752,14 @@ void main(){
       }
 
       /* 09 · MAIN — versioned persistence, input, lifecycle and debug hooks. */
-      const migrations = { 1: (s) => s, 2: (s) => initializeEconomy(s, true) };
+      const migrations = {
+        1: (s) => s,
+        2: (s) => initializeEconomy(s, true),
+        3: (s) => {
+          s.disasters = { enabled: false, event: null, serial: 0 };
+          return s;
+        },
+      };
       let dbPromise = null,
         storageWarning = false,
         saving = false,
@@ -6643,11 +6995,36 @@ void main(){
           )
         )
           throw Error("The saved budget history is invalid.");
+        const ds = s.disasters,
+          ev = ds?.event;
+        if (
+          !ds ||
+          typeof ds.enabled !== "boolean" ||
+          !Number.isSafeInteger(ds.serial) ||
+          ds.serial < 0 ||
+          ds.serial > 1e9 ||
+          (ev !== null &&
+            (!ds.enabled ||
+              !ev ||
+              !DISASTER_TYPES.includes(ev.type) ||
+              !Number.isFinite(ev.time) ||
+              ev.time < 0 ||
+              ev.time >= 20 ||
+              !Number.isInteger(ev.x) ||
+              ev.x < 0 ||
+              ev.x >= SIZE ||
+              !Number.isInteger(ev.z) ||
+              ev.z < 0 ||
+              ev.z >= SIZE ||
+              ev.serial !== ds.serial))
+        )
+          throw Error("The adventure information is invalid.");
         const ids = new Set(),
           used = new Uint8Array(SIZE * SIZE);
         for (const o of s.objects) {
           if (
             !o ||
+            (o.damaged !== undefined && typeof o.damaged !== "boolean") ||
             !Object.hasOwn(DEFS, o.type) ||
             o.type === "remove" ||
             !Number.isSafeInteger(o.id) ||
@@ -7338,6 +7715,14 @@ void main(){
             }
             return { windows, lamps, pools: batches.disc.count };
           },
+        },
+        disasters: {
+          start: startDisaster,
+          step: stepDisaster,
+          repair: repairBuilding,
+          dynamite: dynamiteMountain,
+          show: showDisasters,
+          protection: disasterProtection,
         },
         stats: townStats,
         analyzeCity,
