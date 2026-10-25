@@ -10,7 +10,7 @@ npm start
 
 This serves the checkout on port 8000 using Python 3. The file also works offline; browser storage behavior for directly opened files varies. Export a save file before changing origin, browser, or device.
 
-## What works through milestone 4
+## What works through milestone 5
 
 - A deterministic 72 × 72 seaside map with an eastern ocean, northwest lake, trees, and hills.
 - Starter village, empty land with $30,000, and unlimited sandbox modes.
@@ -31,9 +31,13 @@ This serves the checkout on port 8000 using Python 3. The file also works offlin
 - Repairable collapsed places keep their residents and floors, operate at half their usual strength, and cost 25% of the catalog price to rebuild (free in sandbox). Damaged utility sources supply half capacity. Clear a damaged site for no refund. Normal construction still refunds its recorded purchase price.
 - Police, hospitals, fire stations and coast guards protect nearby places against their matching event. Sea walls shield nearby inland places from waves. Tap a placed mountain for $100 dynamite; clearing it can be undone.
 
-**Milestones 5–6 remain later work:** interiors and personal Ethan features.
+- Enter any of the five home types through **Come inside** in its inspector. Walk in first person using the touch pad and drag-to-look, or WASD/arrows and Q/E. Each home has one main room, sized from 6 × 6 to 10 × 8; apartments have one representative apartment room.
+- Decorate from an overhead view with 30 furniture choices, move/turn/remove controls, 40-step room undo, eight wall paints and eight floor finishes. Decorating is free, with up to 40 pieces per home and 1,000 saved pieces across the town. Rugs can go under furniture; solid pieces keep the doorway clear.
+- Rooms stay with their homes through saves, exports, disasters, rebuilding and construction undo. Economy and disaster time rest while visiting. Back to town restores the city camera; a reload opens the town view.
 
-Moving figures illustrate the town’s population and routes; they do not change the economy or hold individually saved identities. Traffic congestion and physical vehicle collisions are not simulated. Save version 3 adds opt-in adventure state and repair flags. Existing v1/v2 saves upgrade with adventures off; the layout, money and residents are preserved. An event saved midway resumes at its saved stage without offline catch-up. Actors and their routes still regenerate.
+**Milestone 6 remains later work:** personal Ethan features and final polish.
+
+Moving figures illustrate the town’s population and routes; they do not change the economy or hold individually saved identities. Traffic congestion and physical vehicle collisions are not simulated. Save version 4 adds each home’s optional room data, on top of version 3 adventure state and repair flags. Existing v1/v2/v3 saves remain readable; v1/v2 saves upgrade with adventures off; the layout, money and residents are preserved. An event saved midway resumes at its saved stage without offline catch-up. Actors and their routes still regenerate.
 
 The new starter town begins with 11 residents, room for 22, full utilities, 77 happiness, and a positive $39.58/day estimate. Existing towns keep their exact buildings, funds, and road layouts when upgraded from v1: use the new maps to connect any missing roads. Home residents initially fill half of each base home’s capacity during migration. Nothing is removed or charged for the upgrade.
 
@@ -82,7 +86,7 @@ If Chromium is already installed, skip the browser download. Tests automatically
 NODE_PATH=/workspace/.baytown-tools/node_modules npm test
 ```
 
-The suite starts its own local server. It uses real headless Chromium with ANGLE/SwiftShader, checks iPad portrait (768 × 1024) and landscape (1024 × 768), exercises touch and mouse input, and writes screenshots to `screenshots/`. It covers placement costs and rejection, drag transactions, rotation, refunds, camera controls, IndexedDB/localStorage saves, named slots, reloads, file export/import, the shipped v1/v2/v3 fixtures and migration, corrupt save handling, context recovery, storage failure, and multi-touch gestures. Milestone 2 checks also exercise utility layers, service rings, budget forecasts, pause/speed controls, home growth, day-spanning undo, two-tier goal grants, and 60 days of actual browser simulation. Milestone 3 adds real movement, actor-cap changes, live reduced-motion toggles, night-pixel/lighting checks, harbor visits, and GPU recovery while ships are visible. It also verifies that the game makes no external HTTP requests.
+The suite starts its own local server. It uses real headless Chromium with ANGLE/SwiftShader, checks iPad portrait (768 × 1024) and landscape (1024 × 768), exercises touch and mouse input, and writes screenshots to `screenshots/`. It covers placement costs and rejection, drag transactions, rotation, refunds, camera controls, IndexedDB/localStorage saves, named slots, reloads, file export/import, the shipped v1/v2/v3/v4 fixtures and migration, corrupt save handling, context recovery, storage failure, and multi-touch gestures. Milestone 2 checks also exercise utility layers, service rings, budget forecasts, pause/speed controls, home growth, day-spanning undo, two-tier goal grants, and 60 days of actual browser simulation. Milestone 3 adds real movement, actor-cap changes, live reduced-motion toggles, night-pixel/lighting checks, harbor visits, and GPU recovery while ships are visible. It also verifies that the game makes no external HTTP requests.
 
 The pure living-world tests exercise the actual inline route planner and fixed pools: shortest paths and disconnections, bridge/dock rules, map boundaries, deterministic seeded variation, caps, reusable buffers, road removal, smooth corners/reversals, enclosed harbor entrances, and ship hull clearance.
 
@@ -103,3 +107,15 @@ Events only start when chosen; there is no random scheduler. Warning lasts 5 gam
 The first occupied home anchors inland events, or tile (40,36) in an empty town. Tornadoes affect a 36-tile-wide strip within 5 tiles of its row; quakes reach 15 tiles and meteors 11 tiles around that point. Waves affect buildings from column 46 eastward. Roads, bridges, docks, sea walls, mountains, trees, flowers and benches are spared. These are stylized adventures, without terrain destruction or fluid/structural physics.
 
 Police protect against tornadoes; hospitals against earthquakes; fire stations against meteors; coast guards against waves. Within 12 tiles of the building’s anchor, they prevent 75% of deterministic hits. Emergency teams keep protecting while their station needs repair, without staffing/utility requirements. A sea wall east of a building, within 18 tiles and within its footprint size plus one row, fully shields it from waves. Effects reuse the existing dynamic GPU buffer: at most 40 event pieces plus 24 collapse pieces, with no particles. Reduced motion and still mode show static event markers.
+
+## Inside a home (milestone 5)
+
+Put the town tool away, tap a home, and choose **Come inside**. All five home types have a cozy main room; entering a home needing repair still preserves its room. Visits wait until an active disaster finishes. A new room starts with a sofa, bed, plant and rug, unless the town furniture limit is full, in which case it starts empty. Rooms are saved only after the first visit. Home growth does not resize or reset furnishings.
+
+Hold the touch arrows to walk; the curved arrows turn. Drag the scene to look around. WASD and arrow keys walk, Q/E turn, and Escape goes back to town. Movement has wall/furniture collision, a clear starting space by the doorway, and no camera bob. Reduced motion still allows movement you control. Use **Back to town** to leave, including when furniture blocks a path.
+
+**Decorate** opens a floor plan. Choose a furniture category and card, then tap a square. Tap a placed piece to select it; use Move and tap its new square, Turn, or Remove. Put tool away cancels a move. Paint changes walls and floors in either view. Room undo includes furniture and paint, keeps 40 changes during a visit, and resets on leaving. Decoration does not spend funds or affect income/happiness.
+
+The same Save notebook, three slots, autosave, IndexedDB/local mirror, file export/import and backup protections include all rooms. Loading a valid replacement town closes the room after backing up the current town; a rejected import leaves the room open. Reopening starts in town view, with rooms retained. The city’s construction undo preserves rooms when restoring a home; if that would exceed the town’s furniture limit, it keeps the undo available and asks you to put away some pieces first.
+
+The tests exercise the actual inline room placement/collision implementation, all 30 pieces and five room sizes, touch movement and simultaneous looking, floor picking, room editing and paint, real file export, old fixture migration, corrupt imports, context restoration, reduced motion, total furniture limits and construction undo. Screenshots include walk/decorate views in both iPad orientations. Physical Safari device testing remains unverified.

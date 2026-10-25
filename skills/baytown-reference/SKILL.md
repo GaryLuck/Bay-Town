@@ -3,13 +3,13 @@ name: baytown-reference
 description: Baytown Builder numbers, runtime data model, save format, milestones, and browser readiness checks. Read before changing simulation or persistence.
 ---
 
-# Baytown reference · milestone 4
+# Baytown reference · milestone 5
 
 The canonical game is `../../index.html`, relative to this directory. It is a single offline HTML file, with WebGL2, inline CSS/JS/SVG, and no runtime library. Use the existing isolated checkout; do not create a worktree unless requested. Read `../../REQUIREMENTS.md` before extending a milestone. Approval is required before each next milestone.
 
 ## Scope and numbers
 
-Milestones 1–3 implement construction, persistence, utility networks, budgets, workers, customers, happiness, home growth, two tiers of goals, and a seeded living world with traffic, walkers, pets, harbor ships and day/night lighting. Moving figures illustrate the household population and have no independent income effect or saved identities. Milestone 4 adds opt-in staged disasters, repair sites, defenses and mountain dynamite. Milestones 5–6 (interiors and personal features) remain unimplemented. Disasters default off. New starter towns include extra free links and two extra parks; v1 migration preserves the old layout exactly.
+Milestones 1–3 implement construction, persistence, utility networks, budgets, workers, customers, happiness, home growth, two tiers of goals, and a seeded living world with traffic, walkers, pets, harbor ships and day/night lighting. Moving figures illustrate the household population and have no independent income effect or saved identities. Milestone 4 adds opt-in staged disasters, repair sites, defenses and mountain dynamite. Milestone 5 adds first-person home visits and saved decorating. Milestone 6 (personal features and polish) remains unimplemented. Disasters default off. New starter towns include extra free links and two extra parks; v1 migration preserves the old layout exactly.
 
 | Rule                       | Value                                                                              |
 | -------------------------- | ---------------------------------------------------------------------------------- |
@@ -42,13 +42,13 @@ Milestones 1–3 implement construction, persistence, utility networks, budgets,
 
 All footprints are square. `R` or the touch turn button rotates visual orientation, not footprint size. Bridges require water and an adjacent road/bridge. Docks require water and an adjacent land tile/dock. Regular places require dry land. Placement stops a drag at the first blocked/unaffordable tile; already matching road tiles are skipped. Removal may continue across empty tiles.
 
-## Data model and save version 3
+## Data model and save version 4
 
-`SAVE_VERSION = 3`. Keep `tests/fixtures/v1.json`, `v2.json` and `v3.json` readable in future versions. `migrations[3]` adds `{enabled:false,event:null,serial:0}` as `disasters`, preserving all existing data. The migration table is keyed by **destination** version. `migrations[2]` preserves v1 money, object IDs, types, positions, rotation, paid amounts, name, seed, timestamps, and camera. It initializes the new calendar at day 1, clears new history/claim fields, and initializes each existing home at level 1 with ceil(base capacity / 2) residents and growth 0. No roads or buildings are added during migration. `migrations[1]` is the initial identity entry.
+`SAVE_VERSION = 4`. Keep `tests/fixtures/v1.json`, `v2.json`, `v3.json` and `v4.json` readable in future versions. `migrations[4]` is an identity upgrade: home interiors are optional, and default rooms initialize lazily on first visit. `migrations[3]` adds `{enabled:false,event:null,serial:0}` as `disasters`, preserving all existing data. The migration table is keyed by **destination** version. `migrations[2]` preserves v1 money, object IDs, types, positions, rotation, paid amounts, name, seed, timestamps, and camera. It initializes the new calendar at day 1, clears new history/claim fields, and initializes each existing home at level 1 with ceil(base capacity / 2) residents and growth 0. No roads or buildings are added during migration. `migrations[1]` is the initial identity entry.
 
 ```text
 Town {
-  version: 3,
+  version: 4,
   name: nonempty string <= 32 characters,
   seed: uint32,
   mode: "starter" | "empty" | "sandbox",
@@ -73,6 +73,7 @@ Object {
   paid: finite original purchase amount, 0 <= paid <= definition cost,
   damaged?: boolean, // repair site; residents/level preserved
   // homes only:
+  interior?: { wall: integer 0..7, floor: integer 0..7, items: Furniture[] },
   residents: integer in [0, base capacity * level],
   level: 1 | 2,
   growth: integer in [0, 4] (reset to 0 once a level-2 home is full)
@@ -182,3 +183,36 @@ Police/hospital/fire/coastguard prevent 75% of deterministic tornado/quake/meteo
 Repair costs ceil(25% catalog cost), free in sandbox; insufficient funds change nothing. Repair clears undo to avoid stale construction money deltas. Clearing a damaged site refunds zero, clearly labeled. Mountain removal requires explicit $100 Dynamite from its inspector, free in sandbox; a construction transaction supports undo. Existing save recovery/backup behavior is unchanged.
 
 Dynamic visuals use the preallocated 2,048-instance buffer, max 40 event parts plus 24 collapse parts, no particles; no world rebuild per frame. Reduced motion/still mode uses static event markers without falling/collapse animation. Context recovery preserves CPU event state. Tests cover core protection/exposure, both iPad orientations, opt-in UI, warning visibility, pause/build locks, repairs, all event completion, v1/v2/v3 fixtures, malformed state, dynamite undo, reduced motion and active-event context loss. Screenshots: disaster-ipad-portrait.png and disaster-ipad-landscape.png.
+
+## Milestone 5 interior contract
+
+`SAVE_VERSION = 4`; optional per-home `interior` is the only new town field. v1→2→3→4 migrations retain all prior data. v4 fixture includes a decorated home; the v1/v2/v3 fixtures remain unchanged. Home rooms initialize lazily on first entry. Each is one main room (apartments use one representative unit), with no upper-floor navigation. Growth never resizes the room. Room data stays on its home through disaster damage, rebuild, construction removal/undo, slot/auto saves, export/import and recovery. Entering a damaged home is allowed; entering during an active adventure is blocked.
+
+| Rule                                              | Value                                                                           |
+| ------------------------------------------------- | ------------------------------------------------------------------------------- |
+| Cottage / family / town house / apartment / villa | 6×6 / 8×7 / 8×6 / 8×8 / 10×8                                                    |
+| Choices                                           | 30 furniture types in six categories                                            |
+| Palette                                           | 8 wall colors; 8 floor finishes                                                 |
+| Cost / upkeep / income or happiness effects       | All zero                                                                        |
+| Furniture cap                                     | 40/home, 1,000/town (including initialized defaults)                            |
+| Room undo                                         | 40 edits during current visit; furniture and paint; clears on exit              |
+| Walking                                           | 2.1 units/sec; eye height 1.55; radius .22                                      |
+| Movement                                          | Normalized diagonal input; frame dt≤.05 sec; steps≤.08 units; axis sliding      |
+| View                                              | Perspective vertical FOV60°, near .06/far60; decorate overhead orthographic     |
+| Entry                                             | Center of southern doorway, z=depth−.55; reserved central two tiles in last row |
+
+`Furniture { id: integer 1..1e6 (unique within room), type: own key of FURNITURE, x,z: integer top-left room-grid coordinates, rotation: 0..3 }`. Odd rotations swap width/depth. All pieces fit completely inside the room. Solid furniture cannot overlap other solids or the reserved doorway. Rugs are non-solid and may lie under furniture, including in the entry area, but may not overlap another rug. Placement uses the same `roomPlacement` function in runtime and tests. Import validation preflights known types, unique IDs, paints, bounds, rotation, collisions, room and town caps before replacing the open town. Non-home objects may not have interiors.
+
+`INTERIOR_CORE_START/END` delimit the exact pure definitions, default rooms, placement validation, collision and walker code used by the Node suite. `window.__baytown.interior` exposes enter/leave/mode/paint/place/remove/turn/undo, readonly getters for transient session/current room, definitions/sizes/limits and diagnostic movement/validation hooks. The active home object is cached on the transient session; the session, camera, held inputs and undo are never serialized.
+
+Default room: sea-glass walls, honey-oak floor, sofa at (0,0), bed at (0,depth−3), plant at (width−1,0), rug at (floor(width/2)−1,2). If those four pieces would exceed the town cap, initialize an empty room instead. This cap fallback never removes existing furnishings. Changes replace the room with a cloned next state; undo retains prior immutable room states. City undo preflights restored furniture count and leaves its transaction untouched if restoring a home would exceed 1,000 pieces. Rooms do not change the city’s operating forecast.
+
+Home inspector → Come inside opens first-person mode. Touch pad supports held forward/back/strafe and turn buttons, concurrent scene-drag looking, and short taps. WASD/arrows walk; Q/E turn; R turns decor; Ctrl/⌘Z room undo; Ctrl/⌘S saves; Escape exits the room (Escape in a notebook closes it first). There is no pointer-lock requirement. Directional input clears on blur, visibility change, dialog open, mode change, context loss and exit. Dialogs make background room UI inert. Paint and the same Save notebook remain available inside. Town clock, disaster time and decorative life rest during a visit without changing the saved town pause preference. Walking remains user-directed even under reduced motion; no bob, automatic camera movement or particles.
+
+Decorate mode fits the complete room between the measured header and editor bounds, preserving touch space in both orientations. Floor picking uses the shared inverse orthographic matrix. Choosing a catalog piece places it on a tap; tapping an existing piece selects it for move/turn/remove. A move keeps the old piece until its new location validates. Rotation that cannot fit retains the piece and explains why. Put tool away cancels selection/moving. Painting is free and undoable. All controls are at least 52px. Furniture cards use inline SVG sketches; 30 actual floor models use hand-built mesh parts.
+
+The renderer reuses the existing instanced WebGL2 program/batches. Room edits rebuild static geometry; walking only updates preallocated matrices, reusing the cached home, avatar and input state without per-frame actor/vector/buffer allocation. **Engine cube y is a base height**; roomCube converts room models’ center-y coordinates to base-y, while foliage/discs retain their native anchoring. Walls meet the floor; no ceiling is drawn in decorate mode. A restored WebGL context rebuilds room geometry and the current perspective/orthographic view while retaining CPU room state. Exiting restores the untouched city camera and resets frame clocks, with no offline time catch-up. Loading another town closes the room only after validation and successful backup. Reload starts in city view.
+
+Furniture: Seats (sofa, armchair, chair, stool, bench); Tables (dining, coffee, side, desk, round); Rest (bed, single, bunk, crib, ottoman); Storage (bookcase, wardrobe, dresser, cabinet, tv); Little things (plant, lamp, rug, largeRug, cushion); Play (toybox, teddy, train, aquarium, piano). Width/depth/height/color live in the inline FURNITURE table. Paint/floor indices live in ROOM_PAINT/ROOM_FLOORS.
+
+Required checks include all earlier milestones, the exact pure collision/placement tests, actual iPad touch walking plus simultaneous look, all home types including a damaged one, floor picking/rotation/move/remove/undo, paint notebook stacking, real room export, reload/old fixtures/invalid imports, active-room context recovery, reduced motion, 52px controls, the global-cap construction-undo regression and 60-day economy. Inspect interior-walk-ipad-{portrait,landscape}.png and interior-decorate-ipad-{portrait,landscape}.png. Real iPad Safari remains unverified by Chromium emulation.

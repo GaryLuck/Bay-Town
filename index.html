@@ -1745,6 +1745,248 @@
         color: var(--ink);
         font-size: 13px;
       }
+
+      .inside-home .topbar,
+      .inside-home .day-pill,
+      .inside-home .town-tools,
+      .inside-home .journal,
+      .inside-home .compass,
+      .inside-home .map-caption,
+      .inside-home .camera-controls,
+      .inside-home .hint,
+      .inside-home .inspect,
+      .inside-home .build-dock,
+      .inside-home #night-sky,
+      .inside-home #utility-bubbles,
+      .inside-home #utility-key,
+      .inside-home #layer-legend,
+      .inside-home #disaster-banner {
+        display: none !important;
+      }
+      #room-ui {
+        position: fixed;
+        inset: 0;
+        pointer-events: none;
+        z-index: 8;
+      }
+      #room-ui button {
+        min-width: 52px;
+        min-height: 52px;
+        touch-action: manipulation;
+      }
+      .room-header {
+        position: absolute;
+        top: calc(16px + var(--safe-top));
+        left: 16px;
+        right: 16px;
+        display: flex;
+        gap: 8px;
+        align-items: center;
+        pointer-events: auto;
+        background: var(--paper);
+        padding: 12px 16px;
+        border-radius: 22px;
+        box-shadow: var(--shadow);
+      }
+      .room-heading {
+        flex: 1;
+        min-width: 140px;
+      }
+      .room-heading h2 {
+        font:
+          24px Georgia,
+          serif;
+        margin: 0 0 4px;
+      }
+      .room-heading small {
+        font-size: 11px;
+        color: var(--muted);
+      }
+      .room-header .action {
+        width: auto;
+        margin: 0;
+        padding: 10px 14px;
+      }
+      #room-editor {
+        position: absolute;
+        bottom: calc(12px + var(--safe-bottom));
+        left: 16px;
+        right: 16px;
+        pointer-events: auto;
+        background: var(--paper);
+        border-radius: 22px;
+        padding: 10px 14px;
+        box-shadow: var(--shadow);
+      }
+      .room-editor-top {
+        display: flex;
+        align-items: center;
+        gap: 7px;
+      }
+      #room-count {
+        flex: 1;
+        font-size: 12px;
+        color: var(--muted);
+      }
+      .room-tools {
+        display: flex;
+        gap: 5px;
+      }
+      .room-tools button,
+      .room-category {
+        border: 1px solid var(--line);
+        background: transparent;
+        border-radius: 12px;
+        padding: 6px 12px;
+        font-size: 12px;
+      }
+      #room-status {
+        font-size: 12px;
+        margin: 6px 0;
+        color: var(--green);
+        min-height: 16px;
+      }
+      #room-categories {
+        display: flex;
+        gap: 5px;
+        overflow-x: auto;
+      }
+      #room-categories button {
+        white-space: nowrap;
+        min-height: 52px;
+      }
+      #room-ui [aria-pressed="true"] {
+        border-color: var(--green);
+        background: #e2ebd7;
+      }
+      #room-catalog {
+        display: flex;
+        overflow-x: auto;
+        gap: 9px;
+        margin-top: 6px;
+        padding-bottom: 3px;
+      }
+      .room-card {
+        flex: 0 0 124px;
+        border: 1px solid var(--line);
+        border-radius: 14px;
+        background: #f0f1e6;
+        padding: 5px 9px;
+        text-align: left;
+      }
+      .room-card svg {
+        display: block;
+        width: 65px;
+        height: 38px;
+        margin: auto;
+      }
+      .room-card strong,
+      .room-card small {
+        display: block;
+        font-size: 12px;
+        white-space: nowrap;
+      }
+      .room-card small {
+        font-size: 11px;
+        color: var(--muted);
+        margin-top: 3px;
+      }
+      #room-walking {
+        position: absolute;
+        inset: 0;
+        pointer-events: none;
+      }
+      .room-pad {
+        position: absolute;
+        bottom: calc(24px + var(--safe-bottom));
+        left: 20px;
+        display: grid;
+        grid-template-columns: repeat(3, 60px);
+        gap: 6px;
+        pointer-events: auto;
+      }
+      .room-pad button {
+        height: 60px;
+        background: #faf8f0e8;
+        border: 1px solid #d2daca;
+        border-radius: 16px;
+        font-size: 23px;
+        touch-action: none;
+        user-select: none;
+        -webkit-user-select: none;
+      }
+      .room-walk-note {
+        position: absolute;
+        bottom: calc(24px + var(--safe-bottom));
+        right: 20px;
+        max-width: 300px;
+        background: #faf8f0e8;
+        padding: 15px 18px;
+        border-radius: 18px;
+        font-size: 13px;
+        line-height: 1.6;
+      }
+      #room-crosshair {
+        position: absolute;
+        left: 50%;
+        top: 50%;
+        width: 7px;
+        height: 7px;
+        border: 1px solid #ffffffc0;
+        border-radius: 50%;
+        pointer-events: none;
+      }
+      .room-swatches {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 8px;
+      }
+      .room-swatches button {
+        min-height: 68px;
+        border: 1px solid var(--line);
+        border-radius: 13px;
+        background: var(--paper);
+        font-size: 12px;
+        padding: 9px;
+      }
+      .room-swatches i {
+        display: block;
+        height: 24px;
+        border-radius: 7px;
+        margin-bottom: 6px;
+      }
+      .room-swatches [aria-pressed="true"] {
+        outline: 3px solid var(--green);
+      }
+      @media (max-width: 700px) {
+        .room-header {
+          flex-wrap: wrap;
+          padding: 10px;
+          gap: 5px;
+        }
+        .room-heading {
+          flex-basis: 100%;
+        }
+        .room-header .action {
+          flex: 1;
+          font-size: 12px;
+          padding: 8px;
+        }
+        .room-walk-note {
+          max-width: 160px;
+          font-size: 11px;
+        }
+        .room-editor-top {
+          flex-wrap: wrap;
+        }
+        #room-count {
+          flex-basis: 100%;
+        }
+        .room-tools {
+          width: 100%;
+          overflow: auto;
+        }
+      }
     </style>
   </head>
   <body>
@@ -1968,6 +2210,50 @@
         >
       </div>
     </footer>
+
+    <section id="room-ui" aria-label="Inside a home" hidden>
+      <header class="room-header" id="room-header">
+        <div class="room-heading">
+          <h2 id="room-title">A cozy room</h2>
+          <small>Town time rests while you’re inside.</small>
+        </div>
+        <button class="action secondary" id="room-mode">Decorate</button
+        ><button class="action secondary" id="room-paint">Paint</button
+        ><button class="action secondary" id="room-save">Save</button
+        ><button class="action" id="room-exit">Back to town</button>
+      </header>
+      <div id="room-crosshair" aria-hidden="true"></div>
+      <div id="room-walking">
+        <div class="room-pad" aria-label="Walk around the room">
+          <button data-room-walk="turnLeft" aria-label="Look left">↶</button
+          ><button data-room-walk="forward" aria-label="Walk forward">↑</button
+          ><button data-room-walk="turnRight" aria-label="Look right">↷</button
+          ><button data-room-walk="left" aria-label="Step left">←</button
+          ><button data-room-walk="back" aria-label="Walk backward">↓</button
+          ><button data-room-walk="right" aria-label="Step right">→</button>
+        </div>
+        <div class="room-walk-note">
+          <strong>Welcome inside.</strong><br />Hold the arrows to stroll.<br />Drag
+          the room to look around.<br />WASD to walk · Q / E to turn.<br />Tap
+          Decorate to make it yours.
+        </div>
+      </div>
+      <footer id="room-editor" hidden>
+        <div class="room-editor-top">
+          <span id="room-count"></span>
+          <div class="room-tools">
+            <button id="room-turn">Turn ↻</button
+            ><button id="room-move">Move</button
+            ><button id="room-remove">Remove</button
+            ><button id="room-undo" aria-label="Room undo">Undo</button
+            ><button id="room-clear-tool">Put tool away</button>
+          </div>
+        </div>
+        <p id="room-status" role="status"></p>
+        <nav id="room-categories" aria-label="Furniture categories"></nav>
+        <div id="room-catalog" aria-label="Furniture choices"></div>
+      </footer>
+    </section>
     <div class="toast" id="toast" role="status" aria-live="polite"></div>
     <div
       id="disaster-banner"
@@ -2304,6 +2590,10 @@ void main(){
         out[15] = (a20 * b03 - a21 * b01 + a22 * b00) * d;
       }
       function updateCamera() {
+        if (roomSession) {
+          updateRoomCamera();
+          return;
+        }
         const a = camera.angle,
           p = camera.pitch,
           ex = Math.sin(a) * Math.cos(p),
@@ -2457,7 +2747,8 @@ void main(){
         }
         if (quality === "low" && time - lastTime < 32) return;
         lastTime = time;
-        updateLivingFrame(time);
+        if (roomSession) stepInteriorFrame(time);
+        else updateLivingFrame(time);
         if (dirty) {
           rebuildWorld();
           dirty = false;
@@ -2472,9 +2763,9 @@ void main(){
         gl.useProgram(program);
         gl.uniformMatrix4fv(locations.vp, false, vp);
         gl.uniform1f(locations.time, lifePool.motionTime);
-        gl.uniform1f(locations.daylight, lightDay);
-        gl.uniform1f(locations.night, lightNight);
-        gl.uniform1f(locations.warmth, lightWarm);
+        gl.uniform1f(locations.daylight, roomSession ? 1 : lightDay);
+        gl.uniform1f(locations.night, roomSession ? 0 : lightNight);
+        gl.uniform1f(locations.warmth, roomSession ? 0.2 : lightWarm);
         gl.uniform3f(locations.sun, lightSunX, lightSunY, lightSunZ);
         gl.uniform1f(locations.grid, mapLayer === "grid" || selected ? 1 : 0);
         for (const key in batches) {
@@ -2485,7 +2776,7 @@ void main(){
         }
         gl.depthMask(true);
         gl.bindVertexArray(null);
-        drawLivingActors();
+        if (!roomSession) drawLivingActors();
         if (time - lastUI > 5000) {
           lastUI = time;
           maybeAutosave();
@@ -2494,6 +2785,7 @@ void main(){
       canvas.addEventListener("webglcontextlost", (e) => {
         e.preventDefault();
         contextLost = true;
+        resetRoomInput();
         lifeLastTime = 0;
         toast("The view is resting. Your town is safe.");
       });
@@ -2516,7 +2808,7 @@ void main(){
 
       /* 02 · WORLD — deterministic terrain regenerated from a seed. */
       const SIZE = 72,
-        SAVE_VERSION = 3,
+        SAVE_VERSION = 4,
         MAX_OBJECTS = 5000;
       let terrain = new Uint8Array(SIZE * SIZE),
         scenery = [],
@@ -2595,6 +2887,7 @@ void main(){
         return id ? town.objects.find((o) => o.id === id) : null;
       }
       function makeTown(mode = "starter", name = "Baytown Bay", seed = 81024) {
+        if (roomSession) leaveHome();
         town = {
           version: SAVE_VERSION,
           name: name.trim().slice(0, 32) || "Baytown Bay",
@@ -3591,6 +3884,10 @@ void main(){
       }
       function rebuildWorld() {
         for (const key in batches) batches[key].data.length = 0;
+        if (roomSession) {
+          buildRoomScene();
+          return;
+        }
         buildTerrain();
         for (const obj of town.objects) building(obj);
         addStreetLamps();
@@ -3659,6 +3956,11 @@ void main(){
           z + def.size > SIZE
         )
           return { ok: false, reason: "Stay inside the town map." };
+        if (roomSession)
+          return {
+            ok: false,
+            reason: "Head back to town before building outside.",
+          };
         if (town.disasters?.event)
           return {
             ok: false,
@@ -3848,7 +4150,7 @@ void main(){
         return count;
       }
       function undo() {
-        if (town.disasters?.event) return false;
+        if (roomSession || town.disasters?.event) return false;
         const last = undoStack[undoStack.length - 1];
         if (!last) {
           toast("Nothing to undo yet.");
@@ -3862,8 +4164,20 @@ void main(){
           );
           return false;
         }
-        undoStack.pop();
         const added = new Set(last.added);
+        let restoredFurniture = 0;
+        for (const o of town.objects)
+          if (!added.has(o.id))
+            restoredFurniture += o.interior?.items.length || 0;
+        for (const o of last.removed)
+          restoredFurniture += o.interior?.items.length || 0;
+        if (restoredFurniture > ROOM_LIMITS.town) {
+          toast(
+            "Put away some furniture before restoring this home. Your undo is still here.",
+          );
+          return false;
+        }
+        undoStack.pop();
         town.objects = town.objects.filter((o) => !added.has(o.id));
         for (const obj of last.removed) town.objects.push({ ...obj });
         if (town.mode !== "sandbox")
@@ -4515,6 +4829,7 @@ void main(){
           !town ||
           !welcomed ||
           town.simPaused ||
+          roomSession ||
           !$("modal").hidden ||
           !active ||
           contextLost
@@ -4624,7 +4939,12 @@ void main(){
         if (obj.type === "mountain")
           html +=
             '<button class="action" id="dynamite-mountain">Dynamite · $100</button>';
+        if (d.capacity)
+          html =
+            `<button class="action" id="enter-home" ${town.disasters.event ? "disabled" : ""}>${town.disasters.event ? "Visit after the adventure" : "Come inside"}</button>` +
+            html;
         $("inspect-details").innerHTML = html;
+        if ($("enter-home")) $("enter-home").onclick = () => enterHome(obj.id);
         if ($("repair-building"))
           $("repair-building").onclick = () => repairBuilding(obj.id);
         if ($("dynamite-mountain"))
@@ -6154,6 +6474,7 @@ void main(){
         const d = town.disasters;
         if (
           !d.enabled ||
+          roomSession ||
           d.event ||
           d.serial >= 1e9 ||
           !DISASTER_TYPES.includes(type)
@@ -6365,7 +6686,1095 @@ void main(){
             closeDialog();
           };
       }
-      /* 07 · INTERIOR — home interiors and decorating arrive in milestone 5. */
+      /* 07 · INTERIOR — saved cozy rooms, touch walking and decorating. */
+      /* INTERIOR_CORE_START */
+      const ROOM_LIMITS = Object.freeze({
+        perHome: 40,
+        town: 1000,
+        radius: 0.22,
+        speed: 2.1,
+      });
+      const ROOM_SIZES = Object.freeze({
+        cottage: [6, 6],
+        family: [8, 7],
+        townhouse: [8, 6],
+        apartment: [8, 8],
+        villa: [10, 8],
+      });
+      const ROOM_PAINT = [
+        { name: "Sea glass", color: [0.75, 0.83, 0.73] },
+        { name: "Warm cream", color: [0.94, 0.89, 0.74] },
+        { name: "Cloud", color: [0.87, 0.9, 0.88] },
+        { name: "Peach", color: [0.91, 0.74, 0.63] },
+        { name: "Sky", color: [0.66, 0.8, 0.86] },
+        { name: "Lavender", color: [0.78, 0.74, 0.85] },
+        { name: "Rose", color: [0.89, 0.72, 0.75] },
+        { name: "Honey", color: [0.88, 0.8, 0.56] },
+      ];
+      const ROOM_FLOORS = [
+        { name: "Honey oak", color: [0.67, 0.49, 0.32] },
+        { name: "Pale ash", color: [0.8, 0.73, 0.58] },
+        { name: "Walnut", color: [0.43, 0.32, 0.25] },
+        { name: "White tile", color: [0.89, 0.88, 0.8] },
+        { name: "Sage tile", color: [0.58, 0.7, 0.58] },
+        { name: "Blue tile", color: [0.55, 0.69, 0.75] },
+        { name: "Rose tile", color: [0.78, 0.59, 0.55] },
+        { name: "Sandstone", color: [0.8, 0.72, 0.55] },
+      ];
+      const FURNITURE = Object.fromEntries(
+        [
+          ["sofa", "Soft sofa", "Seats", 2, 1, 0.85, "#719688"],
+          ["armchair", "Reading chair", "Seats", 1, 1, 0.85, "#c59b63"],
+          ["chair", "Dining chair", "Seats", 1, 1, 0.95, "#ab815c"],
+          ["stool", "Little stool", "Seats", 1, 1, 0.55, "#7d9b98"],
+          ["bench", "Window bench", "Seats", 2, 1, 0.65, "#bf9773"],
+          ["dining", "Dining table", "Tables", 2, 2, 0.8, "#b38b60"],
+          ["coffee", "Coffee table", "Tables", 2, 1, 0.45, "#b9966d"],
+          ["side", "Side table", "Tables", 1, 1, 0.65, "#9a7958"],
+          ["desk", "Writing desk", "Tables", 2, 1, 0.8, "#aabb9b"],
+          ["round", "Round table", "Tables", 2, 2, 0.8, "#d0ad72"],
+          ["bed", "Double bed", "Rest", 2, 3, 0.6, "#8ca9aa"],
+          ["single", "Single bed", "Rest", 1, 3, 0.6, "#c4a080"],
+          ["bunk", "Bunk beds", "Rest", 2, 3, 2, "#9caa88"],
+          ["crib", "Little cot", "Rest", 1, 2, 1.1, "#d4bc91"],
+          ["ottoman", "Cozy ottoman", "Rest", 1, 1, 0.4, "#bd8c83"],
+          ["bookcase", "Bookcase", "Storage", 2, 1, 2, "#a4815f"],
+          ["wardrobe", "Wardrobe", "Storage", 2, 1, 2.3, "#b6ac8b"],
+          ["dresser", "Dresser", "Storage", 2, 1, 1.1, "#c3a17e"],
+          ["cabinet", "Small cabinet", "Storage", 1, 1, 1.2, "#8eaaa4"],
+          ["tv", "TV stand", "Storage", 2, 1, 1.4, "#967c65"],
+          ["plant", "Leafy plant", "Little things", 1, 1, 1.4, "#6b9464"],
+          ["lamp", "Floor lamp", "Little things", 1, 1, 1.9, "#e2c484"],
+          ["rug", "Little rug", "Little things", 2, 2, 0.025, "#bb8e71"],
+          [
+            "largeRug",
+            "Big striped rug",
+            "Little things",
+            3,
+            2,
+            0.025,
+            "#7faaa6",
+          ],
+          ["cushion", "Floor cushion", "Little things", 1, 1, 0.2, "#d9b46c"],
+          ["toybox", "Toy chest", "Play", 1, 1, 0.65, "#91afa3"],
+          ["teddy", "Teddy bear", "Play", 1, 1, 0.85, "#b38a60"],
+          ["train", "Toy train", "Play", 1, 2, 0.35, "#b86e56"],
+          ["aquarium", "Fish tank", "Play", 2, 1, 1.4, "#6aa9b0"],
+          ["piano", "Little piano", "Play", 2, 1, 1.2, "#776458"],
+        ].map(([type, name, category, w, d, h, color]) => [
+          type,
+          {
+            type,
+            name,
+            category,
+            w,
+            d,
+            h,
+            color,
+            solid: type !== "rug" && type !== "largeRug",
+          },
+        ]),
+      );
+      function furnitureWidth(item) {
+        const d = FURNITURE[item.type];
+        return item.rotation % 2 ? d.d : d.w;
+      }
+      function furnitureDepth(item) {
+        const d = FURNITURE[item.type];
+        return item.rotation % 2 ? d.w : d.d;
+      }
+      function defaultRoom(type) {
+        const [w, d] = ROOM_SIZES[type];
+        return {
+          wall: 0,
+          floor: 0,
+          items: [
+            { id: 1, type: "sofa", x: 0, z: 0, rotation: 0 },
+            { id: 2, type: "bed", x: 0, z: d - 3, rotation: 0 },
+            { id: 3, type: "plant", x: w - 1, z: 0, rotation: 0 },
+            { id: 4, type: "rug", x: Math.floor(w / 2) - 1, z: 2, rotation: 0 },
+          ],
+        };
+      }
+      function roomPlacement(type, room, item, ignore = 0) {
+        const size = ROOM_SIZES[type];
+        if (
+          !Object.hasOwn(ROOM_SIZES, type) ||
+          !Object.hasOwn(FURNITURE, item.type) ||
+          !Number.isInteger(item.rotation) ||
+          item.rotation < 0 ||
+          item.rotation > 3 ||
+          !Number.isInteger(item.x) ||
+          !Number.isInteger(item.z)
+        )
+          return "Choose a furniture piece and a floor square.";
+        const w = furnitureWidth(item),
+          d = furnitureDepth(item);
+        if (
+          item.x < 0 ||
+          item.z < 0 ||
+          item.x + w > size[0] ||
+          item.z + d > size[1]
+        )
+          return "Keep the whole piece inside the room.";
+        if (
+          FURNITURE[item.type].solid &&
+          item.x < size[0] / 2 + 1 &&
+          item.x + w > size[0] / 2 - 1 &&
+          item.z + d > size[1] - 1
+        )
+          return "Leave a little clear space by the door.";
+        for (const other of room.items) {
+          if (
+            other.id === ignore ||
+            FURNITURE[other.type].solid !== FURNITURE[item.type].solid
+          )
+            continue;
+          if (
+            item.x < other.x + furnitureWidth(other) &&
+            item.x + w > other.x &&
+            item.z < other.z + furnitureDepth(other) &&
+            item.z + d > other.z
+          )
+            return "There’s already a piece in that space.";
+        }
+        return "";
+      }
+      function roomCanStand(type, room, x, z) {
+        const [w, d] = ROOM_SIZES[type],
+          r = ROOM_LIMITS.radius;
+        if (x < r || z < r || x > w - r || z > d - r) return false;
+        for (const item of room.items) {
+          if (!FURNITURE[item.type].solid) continue;
+          if (
+            x > item.x - r &&
+            x < item.x + furnitureWidth(item) + r &&
+            z > item.z - r &&
+            z < item.z + furnitureDepth(item) + r
+          )
+            return false;
+        }
+        return true;
+      }
+      function moveRoomWalker(type, room, walker, side, forward, seconds) {
+        const length = Math.hypot(side, forward);
+        if (!length || !Number.isFinite(seconds) || seconds <= 0) return;
+        const distance = ROOM_LIMITS.speed * Math.min(seconds, 0.25),
+          steps = Math.max(1, Math.ceil(distance / 0.08));
+        const dx =
+          (((Math.cos(walker.yaw) * side + Math.sin(walker.yaw) * forward) /
+            length) *
+            distance) /
+          steps;
+        const dz =
+          (((Math.sin(walker.yaw) * side - Math.cos(walker.yaw) * forward) /
+            length) *
+            distance) /
+          steps;
+        for (let i = 0; i < steps; i++) {
+          if (roomCanStand(type, room, walker.x + dx, walker.z)) walker.x += dx;
+          if (roomCanStand(type, room, walker.x, walker.z + dz)) walker.z += dz;
+        }
+      }
+      function validateRoom(type, room) {
+        if (
+          !Object.hasOwn(ROOM_SIZES, type) ||
+          !room ||
+          !Number.isInteger(room.wall) ||
+          room.wall < 0 ||
+          room.wall >= 8 ||
+          !Number.isInteger(room.floor) ||
+          room.floor < 0 ||
+          room.floor >= 8 ||
+          !Array.isArray(room.items) ||
+          room.items.length > ROOM_LIMITS.perHome
+        )
+          throw Error("A saved room is invalid.");
+        const ids = new Set();
+        for (const item of room.items)
+          if (!item || !Object.hasOwn(FURNITURE, item.type))
+            throw Error("A saved furniture piece is invalid.");
+        for (const item of room.items) {
+          if (
+            !item ||
+            !Number.isInteger(item.id) ||
+            item.id < 1 ||
+            item.id > 1e6 ||
+            ids.has(item.id) ||
+            roomPlacement(type, room, item, item.id)
+          )
+            throw Error("A saved furniture piece is invalid.");
+          ids.add(item.id);
+        }
+        return room.items.length;
+      }
+      /* INTERIOR_CORE_END */
+      let roomSession = null,
+        roomLastTime = 0;
+      const roomKeys = new Set(),
+        roomHeld = {
+          left: false,
+          right: false,
+          forward: false,
+          back: false,
+          turnLeft: false,
+          turnRight: false,
+        };
+      function roomHome() {
+        return roomSession?.home || null;
+      }
+      function furnitureCount() {
+        return town.objects.reduce(
+          (n, o) => n + (o.interior?.items.length || 0),
+          0,
+        );
+      }
+      function enterHome(id) {
+        const home = town.objects.find((o) => o.id === id);
+        if (
+          !home ||
+          !Object.hasOwn(ROOM_SIZES, home.type) ||
+          town.disasters.event
+        ) {
+          toast("Visit a home after the adventure is over.");
+          return false;
+        }
+        if (roomSession) leaveHome();
+        if (!home.interior) {
+          home.interior = defaultRoom(home.type);
+          if (furnitureCount() > ROOM_LIMITS.town) home.interior.items = [];
+          changeSerial++;
+          town.updated = Date.now();
+        }
+        const [w, d] = ROOM_SIZES[home.type];
+        roomSession = {
+          home,
+          homeId: id,
+          mode: "walk",
+          x: w / 2,
+          z: d - 0.55,
+          yaw: 0,
+          pitch: -0.06,
+          tool: null,
+          rotation: 0,
+          selected: 0,
+          moving: 0,
+          category: "Seats",
+          undo: [],
+          pointer: null,
+        };
+        selected = null;
+        hover = null;
+        gesture = null;
+        pointers.clear();
+        inspectorId = null;
+        $("inspect").hidden = true;
+        document.body.classList.add("inside-home");
+        $("room-ui").hidden = false;
+        $("world").setAttribute(
+          "aria-label",
+          "Inside a home. Hold W A S D or arrow keys to walk, Q and E to turn. Drag to look around. Escape returns to town.",
+        );
+        resetRoomInput();
+        updateRoomUI();
+        updateCamera();
+        dirty = true;
+        $("room-mode").focus({ preventScroll: true });
+        return true;
+      }
+      function leaveHome() {
+        if (!roomSession) return false;
+        resetRoomInput();
+        roomSession = null;
+        roomLastTime = 0;
+        lifeLastTime = 0;
+        simLastTime = 0;
+        document.body.classList.remove("inside-home");
+        $("room-ui").hidden = true;
+        $("world").setAttribute(
+          "aria-label",
+          "3D town map. Use arrow keys to move, plus and minus to zoom. Select a building and tap the map to place it.",
+        );
+        updateCamera();
+        dirty = true;
+        canvas.focus({ preventScroll: true });
+        return true;
+      }
+      function resetRoomInput() {
+        roomKeys.clear();
+        for (const key in roomHeld) roomHeld[key] = false;
+        if (roomSession) roomSession.pointer = null;
+        roomLastTime = 0;
+      }
+      function roomEdit(commit) {
+        const home = roomHome();
+        if (!home) return false;
+        const before = home.interior,
+          next = structuredClone(before);
+        const error = commit(next);
+        if (error) {
+          toast(error);
+          return false;
+        }
+        roomSession.undo.push(before);
+        if (roomSession.undo.length > 40) roomSession.undo.shift();
+        home.interior = next;
+        changeSerial++;
+        town.updated = Date.now();
+        dirty = true;
+        updateRoomUI();
+        return true;
+      }
+      function putFurniture(type, x, z, rotation = roomSession?.rotation || 0) {
+        const home = roomHome();
+        if (!home || !Object.hasOwn(FURNITURE, type)) return false;
+        const moving = roomSession.moving;
+        if (
+          !moving &&
+          (home.interior.items.length >= 40 || furnitureCount() >= 1000)
+        ) {
+          toast("There’s room for 40 pieces here and 1,000 across the town.");
+          return false;
+        }
+        let id = moving || 1;
+        if (!moving) while (home.interior.items.some((o) => o.id === id)) id++;
+        const item = { id, type, x, z, rotation };
+        const error = roomPlacement(home.type, home.interior, item, moving);
+        if (error) {
+          toast(error);
+          return false;
+        }
+        return roomEdit((room) => {
+          if (moving) room.items = room.items.filter((o) => o.id !== moving);
+          room.items.push(item);
+          roomSession.selected = id;
+          roomSession.moving = 0;
+          roomSession.tool = null;
+        });
+      }
+      function removeFurniture(id = roomSession?.selected) {
+        const home = roomHome();
+        if (!home?.interior.items.some((o) => o.id === id)) return false;
+        return roomEdit((room) => {
+          room.items = room.items.filter((o) => o.id !== id);
+          roomSession.selected = 0;
+          roomSession.tool = null;
+          roomSession.moving = 0;
+        });
+      }
+      function turnFurniture() {
+        if (!roomSession) return false;
+        const home = roomHome(),
+          item = home.interior.items.find((o) => o.id === roomSession.selected);
+        if (item && !roomSession.moving) {
+          const rotated = { ...item, rotation: (item.rotation + 1) % 4 };
+          const error = roomPlacement(
+            home.type,
+            home.interior,
+            rotated,
+            item.id,
+          );
+          if (error) {
+            toast(error);
+            return false;
+          }
+          return roomEdit((room) => {
+            room.items = room.items.map((o) =>
+              o.id === item.id ? rotated : o,
+            );
+          });
+        }
+        roomSession.rotation = (roomSession.rotation + 1) % 4;
+        updateRoomUI();
+        return true;
+      }
+      function undoRoom() {
+        const home = roomHome();
+        if (!home || !roomSession.undo.length) return false;
+        home.interior = roomSession.undo.pop();
+        roomSession.selected = 0;
+        roomSession.moving = 0;
+        roomSession.tool = null;
+        changeSerial++;
+        town.updated = Date.now();
+        dirty = true;
+        updateRoomUI();
+        return true;
+      }
+      function paintRoom(surface, index) {
+        if (
+          !roomSession ||
+          !["wall", "floor"].includes(surface) ||
+          !Number.isInteger(index) ||
+          index < 0 ||
+          index > 7
+        )
+          return false;
+        if (roomHome().interior[surface] === index) return true;
+        return roomEdit((room) => {
+          room[surface] = index;
+        });
+      }
+      function setRoomMode(mode) {
+        if (!roomSession || !["walk", "decorate"].includes(mode)) return false;
+        resetRoomInput();
+        roomSession.mode = mode;
+        roomSession.tool = null;
+        roomSession.selected = 0;
+        roomSession.moving = 0;
+        const home = roomHome(),
+          [w, d] = ROOM_SIZES[home.type];
+        if (
+          mode === "walk" &&
+          !roomCanStand(home.type, home.interior, roomSession.x, roomSession.z)
+        ) {
+          roomSession.x = w / 2;
+          roomSession.z = d - 0.55;
+        }
+        updateRoomUI();
+        updateCamera();
+        dirty = true;
+        return true;
+      }
+      function updateRoomUI() {
+        const home = roomHome();
+        if (!home) return;
+        const s = roomSession,
+          edit = s.mode === "decorate";
+        $("room-title").textContent = DEFS[home.type].name;
+        $("room-mode").textContent = edit ? "Walk around" : "Decorate";
+        $("room-editor").hidden = !edit;
+        $("room-walking").hidden = edit;
+        $("room-crosshair").hidden = edit;
+        $("room-undo").disabled = !s.undo.length;
+        $("room-move").disabled = !s.selected || !!s.moving;
+        $("room-remove").disabled = !s.selected;
+        $("room-turn").disabled = !s.selected && !s.tool;
+        $("room-count").textContent =
+          `${home.interior.items.length} / 40 pieces · Free to decorate`;
+        $("room-status").textContent = s.tool
+          ? `${s.moving ? "Move" : "Place"} ${FURNITURE[s.tool].name.toLowerCase()} · ${furnitureWidth({ type: s.tool, rotation: s.rotation })} × ${furnitureDepth({ type: s.tool, rotation: s.rotation })} · tap a floor square`
+          : s.selected
+            ? `${FURNITURE[home.interior.items.find((o) => o.id === s.selected).type].name} selected · move, turn or put away`
+            : "Pick a piece, then tap the floor. Tap furniture to change it.";
+        const cats = [
+          ...new Set(Object.values(FURNITURE).map((d) => d.category)),
+        ];
+        $("room-categories").innerHTML = cats
+          .map(
+            (cat) =>
+              `<button class="room-category" data-room-category="${cat}" aria-pressed="${s.category === cat}">${cat}</button>`,
+          )
+          .join("");
+        for (const b of $("room-categories").querySelectorAll("button"))
+          b.onclick = () => {
+            s.category = b.dataset.roomCategory;
+            updateRoomUI();
+          };
+        const catalog = $("room-catalog"),
+          scroll = catalog.scrollLeft;
+        catalog.innerHTML = Object.values(FURNITURE)
+          .filter((d) => d.category === s.category)
+          .map(
+            (d) =>
+              `<button class="room-card" data-furniture="${d.type}" aria-pressed="${s.tool === d.type}"><svg viewBox="0 0 80 48" aria-hidden="true"><path d="M12 29L38 14l30 15-26 15z" fill="${d.color}"/><path d="M12 29V15l26-12v11M38 3l30 12v14L38 14z" fill="${d.color}" opacity=".65"/></svg><strong>${d.name}</strong><small>${d.w} × ${d.d} · Free</small></button>`,
+          )
+          .join("");
+        for (const b of catalog.querySelectorAll("button"))
+          b.onclick = () => {
+            s.tool =
+              s.tool === b.dataset.furniture ? null : b.dataset.furniture;
+            s.selected = 0;
+            s.moving = 0;
+            s.rotation = 0;
+            updateRoomUI();
+            dirty = true;
+          };
+        catalog.scrollLeft = scroll;
+      }
+      function showRoomPaint() {
+        if (!roomSession) return;
+        openDialog(
+          `${dialogHeader("A fresh coat of happy")}<p>Choose a wall color and a floor finish. Every color is free, and Room undo can bring the old one back.</p>${[
+            ["wall", ROOM_PAINT],
+            ["floor", ROOM_FLOORS],
+          ]
+            .map(
+              ([surface, colors]) =>
+                `<h3>${surface === "wall" ? "Walls" : "Floor"}</h3><div class="room-swatches">${colors.map((c, i) => `<button data-surface="${surface}" data-paint="${i}" aria-pressed="${roomHome().interior[surface] === i}"><i style="background:rgb(${c.color.map((v) => Math.round(v * 255)).join(",")})"></i>${c.name}</button>`).join("")}</div>`,
+            )
+            .join("")}`,
+        );
+        for (const b of $("dialog").querySelectorAll("[data-paint]"))
+          b.onclick = () => {
+            paintRoom(b.dataset.surface, Number(b.dataset.paint));
+            for (const other of $("dialog").querySelectorAll(
+              `[data-surface="${b.dataset.surface}"]`,
+            ))
+              other.setAttribute("aria-pressed", String(other === b));
+          };
+      }
+      function updateRoomCamera() {
+        if (!roomSession) return;
+        const s = roomSession,
+          [w, d] = ROOM_SIZES[roomHome().type],
+          aspect = canvas.width / canvas.height;
+        view.fill(0);
+        projection.fill(0);
+        if (s.mode === "decorate") {
+          view[0] = 1;
+          view[6] = 1;
+          view[9] = -1;
+          view[12] = -w / 2;
+          view[13] = d / 2;
+          view[14] = -20;
+          view[15] = 1;
+          const top = $("room-header").getBoundingClientRect().bottom + 16,
+            bottom = $("room-editor").getBoundingClientRect().top - 16,
+            available = Math.max(120, bottom - top),
+            halfY = Math.max((d * innerHeight) / available, w / aspect) * 0.56;
+          projection[0] = 1 / (halfY * aspect);
+          projection[5] = 1 / halfY;
+          projection[10] = -2 / 100;
+          projection[13] = 1 - (top + bottom) / innerHeight;
+          projection[14] = -1;
+          projection[15] = 1;
+        } else {
+          const a = s.yaw,
+            p = s.pitch,
+            ex = -Math.sin(a) * Math.cos(p),
+            ey = -Math.sin(p),
+            ez = Math.cos(a) * Math.cos(p),
+            xx = Math.cos(a),
+            xz = Math.sin(a),
+            yx = -Math.sin(a) * Math.sin(p),
+            yy = Math.cos(p),
+            yz = Math.cos(a) * Math.sin(p);
+          view[0] = xx;
+          view[1] = yx;
+          view[2] = ex;
+          view[5] = yy;
+          view[6] = ey;
+          view[8] = xz;
+          view[9] = yz;
+          view[10] = ez;
+          view[12] = -(xx * s.x + xz * s.z);
+          view[13] = -(yx * s.x + yy * 1.55 + yz * s.z);
+          view[14] = -(ex * s.x + ey * 1.55 + ez * s.z);
+          view[15] = 1;
+          const f = 1 / Math.tan(Math.PI / 6),
+            near = 0.06,
+            far = 60;
+          projection[0] = f / aspect;
+          projection[5] = f;
+          projection[10] = -(far + near) / (far - near);
+          projection[11] = -1;
+          projection[14] = (-2 * far * near) / (far - near);
+        }
+        multiply(vp, projection, view);
+        invert(inverse, vp);
+      }
+      function stepInteriorFrame(time) {
+        const dt = roomLastTime
+          ? Math.min(0.05, (time - roomLastTime) / 1000)
+          : 0;
+        roomLastTime = time;
+        if (
+          !roomSession ||
+          roomSession.mode !== "walk" ||
+          !active ||
+          contextLost ||
+          !$("modal").hidden
+        )
+          return;
+        const side =
+          Number(
+            roomHeld.right || roomKeys.has("d") || roomKeys.has("arrowright"),
+          ) -
+          Number(
+            roomHeld.left || roomKeys.has("a") || roomKeys.has("arrowleft"),
+          );
+        const forward =
+          Number(
+            roomHeld.forward || roomKeys.has("w") || roomKeys.has("arrowup"),
+          ) -
+          Number(
+            roomHeld.back || roomKeys.has("s") || roomKeys.has("arrowdown"),
+          );
+        const turn =
+          Number(roomHeld.turnRight || roomKeys.has("e")) -
+          Number(roomHeld.turnLeft || roomKeys.has("q"));
+        if (side || forward || turn) {
+          const h = roomHome();
+          roomSession.yaw += turn * dt * 1.6;
+          moveRoomWalker(h.type, h.interior, roomSession, side, forward, dt);
+          updateRoomCamera();
+        }
+      }
+      function roomPointerDown(e) {
+        if (!$("modal").hidden || contextLost || roomSession.pointer) return;
+        canvas.focus({ preventScroll: true });
+        canvas.setPointerCapture(e.pointerId);
+        roomSession.pointer = {
+          id: e.pointerId,
+          x: e.clientX,
+          y: e.clientY,
+          startX: e.clientX,
+          startY: e.clientY,
+          moved: false,
+        };
+      }
+      function roomPointerMove(e) {
+        const p = roomSession.pointer;
+        if (!p || p.id !== e.pointerId) return;
+        if (Math.hypot(e.clientX - p.startX, e.clientY - p.startY) > 7)
+          p.moved = true;
+        if (roomSession.mode === "walk") {
+          roomSession.yaw += (e.clientX - p.x) * 0.004;
+          roomSession.pitch = clamp(
+            roomSession.pitch - (e.clientY - p.y) * 0.004,
+            -0.85,
+            0.85,
+          );
+          updateRoomCamera();
+        }
+        p.x = e.clientX;
+        p.y = e.clientY;
+      }
+      function roomPointerUp(e) {
+        const s = roomSession,
+          p = s.pointer;
+        if (!p || p.id !== e.pointerId) return;
+        s.pointer = null;
+        if (
+          s.mode !== "decorate" ||
+          p.moved ||
+          !$("modal").hidden ||
+          contextLost
+        )
+          return;
+        const point = screenToWorld(e.clientX, e.clientY),
+          x = Math.floor(point.x),
+          z = Math.floor(point.z),
+          home = roomHome();
+        if (s.tool) {
+          putFurniture(s.tool, x, z);
+          return;
+        }
+        const item =
+          home.interior.items.find(
+            (o) =>
+              FURNITURE[o.type].solid &&
+              x >= o.x &&
+              x < o.x + furnitureWidth(o) &&
+              z >= o.z &&
+              z < o.z + furnitureDepth(o),
+          ) ||
+          home.interior.items.find(
+            (o) =>
+              x >= o.x &&
+              x < o.x + furnitureWidth(o) &&
+              z >= o.z &&
+              z < o.z + furnitureDepth(o),
+          );
+        s.selected = item?.id || 0;
+        updateRoomUI();
+        dirty = true;
+      }
+      function roomKeyboard(e) {
+        if (["INPUT", "SELECT", "TEXTAREA"].includes(e.target.tagName)) return;
+        const key = e.key.toLowerCase();
+        if ((e.ctrlKey || e.metaKey) && key === "s") {
+          e.preventDefault();
+          saveKey("auto").then((ok) => {
+            if (ok) toast("Your town and cozy rooms are saved.");
+          });
+          return;
+        }
+        if ((e.ctrlKey || e.metaKey) && key === "z") {
+          e.preventDefault();
+          undoRoom();
+          return;
+        }
+        if (key === "escape") {
+          e.preventDefault();
+          leaveHome();
+          return;
+        }
+        if (key === "r" && roomSession.mode === "decorate") {
+          e.preventDefault();
+          turnFurniture();
+          return;
+        }
+        if (
+          [
+            "w",
+            "a",
+            "s",
+            "d",
+            "arrowup",
+            "arrowdown",
+            "arrowleft",
+            "arrowright",
+            "q",
+            "e",
+          ].includes(key)
+        ) {
+          e.preventDefault();
+          roomKeys.add(key);
+        }
+      }
+      function roomCube(x, y, z, w, h, d, color, angle = 0) {
+        cube(x, y - h / 2, z, w, h, d, color, angle);
+      }
+      function furnitureModel(item) {
+        const f = FURNITURE[item.type],
+          width = furnitureWidth(item),
+          depth = furnitureDepth(item),
+          cx = item.x + width / 2,
+          cz = item.z + depth / 2,
+          a = (item.rotation * Math.PI) / 2;
+        const rgb = hex(f.color),
+          wood = [0.59, 0.43, 0.29],
+          cream = [0.94, 0.9, 0.77],
+          dark = [0.25, 0.3, 0.29];
+        const part = (x, y, z, w, h, d, col = rgb) =>
+          roomCube(
+            cx + Math.cos(a) * x + Math.sin(a) * z,
+            y,
+            cz - Math.sin(a) * x + Math.cos(a) * z,
+            w,
+            h,
+            d,
+            col,
+            a,
+          );
+        const w = f.w * 0.86,
+          d = f.d * 0.86,
+          t = item.type;
+        if (!f.solid) {
+          part(0, 0.022, 0, w, 0.035, d);
+          for (let i = -1; i <= 1; i++)
+            part(i * w * 0.22, 0.045, 0, 0.045, 0.008, d * 0.9, cream);
+          return;
+        }
+        if (
+          [
+            "sofa",
+            "armchair",
+            "chair",
+            "bench",
+            "stool",
+            "ottoman",
+            "cushion",
+          ].includes(t)
+        ) {
+          const h = f.h;
+          part(0, h * 0.55, 0, w, h * 0.3, d);
+          if (!["stool", "ottoman", "cushion"].includes(t)) {
+            part(0, h * 0.7, -d * 0.42, w, h * 0.6, 0.15);
+            if (t !== "chair")
+              for (const side of [-1, 1])
+                part(side * w * 0.44, h * 0.6, 0, 0.13, h * 0.5, d);
+          }
+          for (const x of [-1, 1])
+            for (const z of [-1, 1])
+              part(
+                x * w * 0.35,
+                h * 0.2,
+                z * d * 0.32,
+                0.09,
+                h * 0.4,
+                0.09,
+                wood,
+              );
+          return;
+        }
+        if (["bed", "single", "bunk", "crib"].includes(t)) {
+          part(0, 0.28, 0, w, 0.25, d, wood);
+          part(0, 0.48, 0, w * 0.96, 0.18, d * 0.96, cream);
+          part(0, 0.6, 0.25, w * 0.96, 0.12, d * 0.67);
+          part(0, 0.65, -d * 0.34, w * 0.7, 0.18, 0.48, cream);
+          part(0, 0.65, -d * 0.47, w, 0.95, 0.12, wood);
+          if (t === "bunk") {
+            for (const x of [-1, 1])
+              for (const z of [-1, 1])
+                part(x * w * 0.46, 1, z * d * 0.46, 0.1, 2, 0.1, wood);
+            part(0, 1.5, 0, w, 0.22, d);
+            part(0, 1.65, -d * 0.34, w * 0.7, 0.16, 0.48, cream);
+            for (let i = 0; i < 5; i++)
+              part(w * 0.46, 0.2 + i * 0.35, 0, 0.14, 0.07, 0.65, cream);
+          }
+          if (t === "crib")
+            for (let i = 0; i < 7; i++) {
+              part(
+                -w * 0.47,
+                0.75,
+                -d * 0.42 + i * d * 0.14,
+                0.05,
+                0.7,
+                0.05,
+                cream,
+              );
+              part(
+                w * 0.47,
+                0.75,
+                -d * 0.42 + i * d * 0.14,
+                0.05,
+                0.7,
+                0.05,
+                cream,
+              );
+            }
+          return;
+        }
+        if (["dining", "coffee", "side", "desk", "round"].includes(t)) {
+          if (t === "round")
+            instance("disc", cx, f.h + 0.06, cz, w, 1, d, rgb, a);
+          else part(0, f.h, 0, w, 0.12, d);
+          for (const x of [-1, 1])
+            for (const z of [-1, 1])
+              part(x * w * 0.36, f.h * 0.48, z * d * 0.34, 0.1, f.h, 0.1, wood);
+          if (t === "desk") {
+            part(w * 0.28, f.h * 0.65, 0, w * 0.3, 0.32, d * 0.9);
+            part(-w * 0.2, f.h + 0.1, -d * 0.1, 0.35, 0.08, 0.3, cream);
+          }
+          if (t === "round") part(0, f.h + 0.17, 0, 0.3, 0.22, 0.3, cream);
+          return;
+        }
+        if (
+          [
+            "bookcase",
+            "wardrobe",
+            "dresser",
+            "cabinet",
+            "tv",
+            "aquarium",
+            "piano",
+            "toybox",
+          ].includes(t)
+        ) {
+          const h = t === "tv" || t === "aquarium" ? 0.65 : f.h;
+          part(0, h / 2, 0, w, h, d);
+          if (t === "bookcase") {
+            for (let row = 0; row < 3; row++) {
+              part(0, 0.2 + row * 0.58, d * 0.47, w * 0.94, 0.07, 0.12, cream);
+              for (let i = 0; i < 7; i++)
+                part(
+                  -w * 0.38 + i * w * 0.125,
+                  0.42 + row * 0.58,
+                  d * 0.45,
+                  0.12,
+                  0.35,
+                  0.14,
+                  ROOM_PAINT[(i + row) % 8].color,
+                );
+            }
+          } else if (t === "tv") {
+            part(0, 1.03, 0, w * 0.82, 0.65, 0.12, dark);
+            part(0, 1.05, 0.075, w * 0.72, 0.49, 0.025, [0.44, 0.64, 0.66]);
+            part(0, 0.74, 0, 0.15, 0.3, 0.15, dark);
+          } else if (t === "aquarium") {
+            part(0, 1.04, 0, w * 0.92, 0.72, d * 0.85, [0.43, 0.69, 0.73]);
+            part(-0.3, 1.1, d * 0.44, 0.22, 0.1, 0.045, [0.96, 0.68, 0.32]);
+            part(0.3, 0.93, d * 0.44, 0.22, 0.1, 0.045, cream);
+            part(0, 1.43, 0, w, 0.08, d, dark);
+          } else if (t === "piano") {
+            part(0, 0.8, d * 0.55, w, 0.12, 0.32, cream);
+            for (let i = 0; i < 10; i++)
+              part(
+                -w * 0.43 + i * w * 0.095,
+                0.87,
+                d * 0.5,
+                0.045,
+                0.03,
+                0.17,
+                dark,
+              );
+          } else {
+            part(0, h * 0.5, d * 0.51, 0.025, h * 0.84, 0.02, cream);
+            for (const x of [-0.12, 0.12])
+              part(x, h * 0.53, d * 0.55, 0.05, 0.06, 0.06, dark);
+          }
+          return;
+        }
+        if (t === "plant") {
+          part(0, 0.25, 0, 0.5, 0.5, 0.5, [0.67, 0.44, 0.3]);
+          part(0, 0.7, 0, 0.08, 0.8, 0.08, wood);
+          instance("tree", cx, 0.55, cz, 0.8, 0.95, 0.8, rgb, a);
+          return;
+        }
+        if (t === "lamp") {
+          part(0, 0.07, 0, 0.55, 0.08, 0.55, wood);
+          part(0, 0.9, 0, 0.05, 1.7, 0.05, wood);
+          part(0, 1.65, 0, 0.65, 0.45, 0.65);
+          part(0, 1.43, 0, 0.5, 0.04, 0.5, cream);
+          return;
+        }
+        if (t === "teddy") {
+          part(0, 0.35, 0, 0.5, 0.6, 0.42);
+          part(0, 0.72, 0, 0.48, 0.4, 0.4);
+          for (const side of [-1, 1]) {
+            part(side * 0.22, 0.91, 0, 0.18, 0.18, 0.16);
+            part(side * 0.32, 0.35, 0, 0.2, 0.22, 0.2);
+          }
+          part(0, 0.68, 0.23, 0.16, 0.12, 0.08, cream);
+          for (const side of [-1, 1])
+            part(side * 0.12, 0.77, 0.21, 0.04, 0.05, 0.04, dark);
+          return;
+        }
+        if (t === "train") {
+          for (let i = 0; i < 2; i++) {
+            part(0, 0.2, -0.4 + i * 0.85, 0.65, 0.3, 0.7);
+            for (const side of [-1, 1])
+              part(side * 0.36, 0.11, -0.4 + i * 0.85, 0.12, 0.18, 0.45, dark);
+          }
+          part(0, 0.45, -0.5, 0.5, 0.3, 0.4, cream);
+        }
+      }
+      function buildRoomScene() {
+        const home = roomHome(),
+          room = home.interior,
+          [w, d] = ROOM_SIZES[home.type],
+          edit = roomSession.mode === "decorate",
+          wall = ROOM_PAINT[room.wall].color,
+          floor = ROOM_FLOORS[room.floor].color,
+          trim = [0.93, 0.89, 0.77],
+          wood = [0.64, 0.48, 0.33];
+        for (let z = 0; z < d; z++)
+          for (let x = 0; x < w; x++) {
+            roomCube(x + 0.5, -0.07, z + 0.5, 0.985, 0.14, 0.985, floor);
+            if (room.floor < 3)
+              roomCube(x + 0.5, 0.004, z + 0.5, 0.025, 0.005, 0.96, wood);
+          }
+        const h = edit ? 1.05 : 3.1;
+        roomCube(w / 2, h / 2, -0.08, w + 0.3, h, 0.16, wall);
+        roomCube(-0.08, h / 2, d / 2, 0.16, h, d + 0.3, wall);
+        if (!edit) {
+          roomCube(w + 0.08, h / 2, d / 2, 0.16, h, d + 0.3, wall);
+          roomCube(w / 4 - 0.5, h / 2, d + 0.08, w / 2 - 1, h, 0.16, wall);
+          roomCube(w * 0.75 + 0.5, h / 2, d + 0.08, w / 2 - 1, h, 0.16, wall);
+          roomCube(w / 2, 2.8, d + 0.08, 2, 0.6, 0.16, wall);
+          roomCube(w / 2, 3.17, d / 2, w, 0.14, d, trim);
+        }
+        roomCube(w / 2, 0.1, 0.035, w, 0.2, 0.055, trim);
+        roomCube(0.035, 0.1, d / 2, 0.055, 0.2, d, trim);
+        if (!edit) {
+          roomCube(w - 0.035, 0.1, d / 2, 0.055, 0.2, d, trim);
+          roomCube(w / 2, 1.05, d + 0.1, 1.8, 2.1, 0.12, wood);
+          roomCube(w / 2 + 0.63, 1.02, d - 0.01, 0.09, 0.09, 0.09, trim);
+          roomCube(w / 2, 1.95, 0.015, 2.4, 1.35, 0.04, wood);
+          roomCube(w / 2, 1.96, 0.045, 2.2, 1.16, 0.035, [0.63, 0.81, 0.83]);
+          roomCube(w / 2, 1.58, 0.07, 2.18, 0.35, 0.025, [0.4, 0.67, 0.69]);
+          roomCube(w / 2, 1.45, 0.08, 2.18, 0.08, 0.02, [0.74, 0.78, 0.54]);
+          roomCube(w / 2, 1.95, 0.09, 0.065, 1.25, 0.045, trim);
+          roomCube(w / 2, 1.95, 0.09, 2.3, 0.065, 0.045, trim);
+          roomCube(w / 2, 1.24, 0.16, 2.6, 0.09, 0.34, trim);
+          roomCube(1, 1.85, 0.055, 0.7, 0.85, 0.06, wood);
+          roomCube(1, 1.85, 0.095, 0.56, 0.7, 0.025, [0.89, 0.8, 0.59]);
+          instance("tree", 1, 1.55, 0.13, 0.4, 0.5, 0.01, [0.37, 0.56, 0.39]);
+        }
+        // The doorway is always reserved for a safe walking start.
+        roomCube(w / 2, 0.012, d - 0.5, 1.8, 0.016, 0.8, [0.82, 0.75, 0.58]);
+        for (const item of room.items) furnitureModel(item);
+        if (edit && roomSession.selected) {
+          const item = room.items.find((o) => o.id === roomSession.selected);
+          if (item)
+            roomCube(
+              item.x + furnitureWidth(item) / 2,
+              0.014,
+              item.z + furnitureDepth(item) / 2,
+              furnitureWidth(item),
+              0.015,
+              furnitureDepth(item),
+              [0.95, 0.79, 0.34],
+            );
+        }
+        uploadWorld();
+      }
+      $("room-exit").onclick = leaveHome;
+      $("room-mode").onclick = () =>
+        setRoomMode(roomSession.mode === "walk" ? "decorate" : "walk");
+      $("room-save").onclick = showSaves;
+      $("room-paint").onclick = showRoomPaint;
+      $("room-undo").onclick = undoRoom;
+      $("room-turn").onclick = turnFurniture;
+      $("room-remove").onclick = () => removeFurniture();
+      $("room-move").onclick = () => {
+        const item = roomHome().interior.items.find(
+          (o) => o.id === roomSession.selected,
+        );
+        if (item) {
+          roomSession.moving = item.id;
+          roomSession.tool = item.type;
+          roomSession.rotation = item.rotation;
+          updateRoomUI();
+        }
+      };
+      $("room-clear-tool").onclick = () => {
+        roomSession.tool = null;
+        roomSession.selected = 0;
+        roomSession.moving = 0;
+        updateRoomUI();
+        dirty = true;
+      };
+      for (const b of document.querySelectorAll("[data-room-walk]")) {
+        let downAt = 0,
+          pointer = null;
+        b.onpointerdown = (e) => {
+          if (!roomSession || !$("modal").hidden) return;
+          pointer = e.pointerId;
+          downAt = e.timeStamp;
+          roomHeld[b.dataset.roomWalk] = true;
+          b.setPointerCapture(e.pointerId);
+          e.preventDefault();
+        };
+        b.onpointerup = (e) => {
+          if (pointer !== e.pointerId) return;
+          roomHeld[b.dataset.roomWalk] = false;
+          pointer = null;
+          if (e.timeStamp - downAt < 150 && roomSession && $("modal").hidden) {
+            const key = b.dataset.roomWalk;
+            if (key === "turnLeft" || key === "turnRight")
+              roomSession.yaw += (key === "turnLeft" ? -1 : 1) * 0.18;
+            else {
+              const home = roomHome();
+              moveRoomWalker(
+                home.type,
+                home.interior,
+                roomSession,
+                key === "left" ? -1 : key === "right" ? 1 : 0,
+                key === "forward" ? 1 : key === "back" ? -1 : 0,
+                0.16,
+              );
+            }
+            updateRoomCamera();
+          }
+        };
+        b.onpointercancel = b.onlostpointercapture = () => {
+          roomHeld[b.dataset.roomWalk] = false;
+          pointer = null;
+        };
+        b.onclick = (e) => {
+          if (e.detail === 0 && roomSession) {
+            const key = b.dataset.roomWalk;
+            if (key === "turnLeft" || key === "turnRight")
+              roomSession.yaw += (key === "turnLeft" ? -1 : 1) * 0.2;
+            else {
+              const home = roomHome();
+              moveRoomWalker(
+                home.type,
+                home.interior,
+                roomSession,
+                key === "left" ? -1 : key === "right" ? 1 : 0,
+                key === "forward" ? 1 : key === "back" ? -1 : 0,
+                0.2,
+              );
+            }
+            updateRoomCamera();
+          }
+        };
+      }
 
       /* 08 · UI — inline icons, progressive thumbnails, touch and keyboard. */
       const ICONS = {
@@ -6625,6 +8034,8 @@ void main(){
       let modalReturn = null,
         modalEscape = null;
       function openDialog(html, onClose = null) {
+        resetRoomInput();
+        $("room-ui").inert = true;
         modalReturn = document.activeElement;
         modalEscape = onClose;
         $("dialog").innerHTML = html;
@@ -6639,6 +8050,7 @@ void main(){
         if (first) first.focus();
       }
       function closeDialog() {
+        $("room-ui").inert = false;
         $("modal").hidden = true;
         $("dialog").innerHTML = "";
         modalEscape = null;
@@ -6656,7 +8068,7 @@ void main(){
       function showWelcome(isNew = false) {
         let mode = "starter";
         openDialog(
-          `<div class="welcome"><div class="welcome-art">${thumbSVG("cottage")}${thumbSVG("lighthouse")}${thumbSVG("tree")}</div><div class="eyebrow">Welcome to your little corner of the coast</div><h2 id="dialog-title">Let's make<br>somewhere lovely.</h2><p>A road by the water. A home under the trees.<br>A whole little world, built your way.</p><label for="town-name">What should we call your town?</label><input id="town-name" maxlength="32" value="Baytown Bay" autocomplete="off"><div class="mode-options"><button class="mode-option" data-mode="starter" aria-pressed="true">${icon("town")}<span><strong>A little head start</strong><small>A seaside village, ready to make your own</small></span></button><button class="mode-option" data-mode="empty" aria-pressed="false">${icon("leaf")}<span><strong>A blank canvas</strong><small>Just the coast, the trees, and $30,000</small></span></button><button class="mode-option" data-mode="sandbox" aria-pressed="false">${icon("infinity")}<span><strong>Big imagination</strong><small>Unlimited funds. Build as you please.</small></span></button></div><button class="action" id="begin-town">Let's build a town <span aria-hidden="true">↗</span></button>${isNew ? '<button class="action secondary" id="cancel-new">Back to my town</button>' : ""}<div class="feature-note">Chapter 4: a little adventure, if you choose.<br>Neighbors take a stroll. Boats come and go. Windows glow after sunset.</div></div>`,
+          `<div class="welcome"><div class="welcome-art">${thumbSVG("cottage")}${thumbSVG("lighthouse")}${thumbSVG("tree")}</div><div class="eyebrow">Welcome to your little corner of the coast</div><h2 id="dialog-title">Let's make<br>somewhere lovely.</h2><p>A road by the water. A home under the trees.<br>A whole little world, built your way.</p><label for="town-name">What should we call your town?</label><input id="town-name" maxlength="32" value="Baytown Bay" autocomplete="off"><div class="mode-options"><button class="mode-option" data-mode="starter" aria-pressed="true">${icon("town")}<span><strong>A little head start</strong><small>A seaside village, ready to make your own</small></span></button><button class="mode-option" data-mode="empty" aria-pressed="false">${icon("leaf")}<span><strong>A blank canvas</strong><small>Just the coast, the trees, and $30,000</small></span></button><button class="mode-option" data-mode="sandbox" aria-pressed="false">${icon("infinity")}<span><strong>Big imagination</strong><small>Unlimited funds. Build as you please.</small></span></button></div><button class="action" id="begin-town">Let's build a town <span aria-hidden="true">↗</span></button>${isNew ? '<button class="action secondary" id="cancel-new">Back to my town</button>' : ""}<div class="feature-note">Chapter 5: make yourself at home.<br>Neighbors take a stroll. Boats come and go. Windows glow after sunset.</div></div>`,
         );
         for (const b of $("dialog").querySelectorAll("[data-mode]"))
           b.addEventListener("click", () => {
@@ -6689,7 +8101,7 @@ void main(){
       }
       function showHelp() {
         openDialog(
-          `${dialogHeader("A little town planner’s guide")}<p>There’s no hurry here. Choose a place, find a little space, and make the bay your own.</p><div class="help-grid"><div><strong>Look around</strong>Drag the map with one finger when nothing is selected. With a tool selected, use two fingers. Pinch or scroll to zoom.</div><div><strong>Build a place</strong>Pick a card, then tap a clear spot. Drag to draw roads, bridges, or docks. Tap the same card to put your tool away.</div><div><strong>Change your mind</strong>Undo brings back the last change. Remove refunds the full price you paid. Starter places have no refund.</div><div><strong>Keep your town</strong>It saves as you build. Use the save button for three extra slots and a file you can keep somewhere safe.</div></div><h3>A few handy keys</h3><p>Arrow keys / WASD: move · + / −: zoom · Q / E: turn view · R: turn building · Escape: put tool away · ⌘/Ctrl Z: undo · ⌘/Ctrl S: save.</p><div class="feature-note">This is milestone 4. Homes earn $8 per neighbor each day. Power and water follow roads. Both utilities and 75 happiness help homes grow. Shops need nearby road-connected customers and people at work. Use the map layers and town budget to see why places work. Missing power or water only makes a place run at half strength. Time pauses while a notebook is open or you leave the game. Neighbors, pets, and traffic follow the paths you build. Harbor ships need a dock and open water. Night brings warm windows, lamps, and stars. Choose disasters in Settings. Interiors come in chapter 5.</div>`,
+          `${dialogHeader("A little town planner’s guide")}<p>There’s no hurry here. Choose a place, find a little space, and make the bay your own.</p><div class="help-grid"><div><strong>Look around</strong>Drag the map with one finger when nothing is selected. With a tool selected, use two fingers. Pinch or scroll to zoom.</div><div><strong>Build a place</strong>Pick a card, then tap a clear spot. Drag to draw roads, bridges, or docks. Tap the same card to put your tool away.</div><div><strong>Change your mind</strong>Undo brings back the last change. Remove refunds the full price you paid. Starter places have no refund.</div><div><strong>Keep your town</strong>It saves as you build. Use the save button for three extra slots and a file you can keep somewhere safe.</div></div><h3>A few handy keys</h3><p>Arrow keys / WASD: move · + / −: zoom · Q / E: turn view · R: turn building · Escape: put tool away · ⌘/Ctrl Z: undo · ⌘/Ctrl S: save.</p><div class="feature-note">This is milestone 5. Homes earn $8 per neighbor each day. Power and water follow roads. Both utilities and 75 happiness help homes grow. Shops need nearby road-connected customers and people at work. Use the map layers and town budget to see why places work. Missing power or water only makes a place run at half strength. Time pauses while a notebook is open or you leave the game. Neighbors, pets, and traffic follow the paths you build. Harbor ships need a dock and open water. Night brings warm windows, lamps, and stars. Choose disasters in Settings. Tap a home and Come inside to walk and decorate. Decorating is free. Town time rests while you visit.</div>`,
         );
       }
       function showSettings() {
@@ -6754,6 +8166,7 @@ void main(){
       /* 09 · MAIN — versioned persistence, input, lifecycle and debug hooks. */
       const migrations = {
         1: (s) => s,
+        4: (s) => s,
         2: (s) => initializeEconomy(s, true),
         3: (s) => {
           s.disasters = { enabled: false, event: null, serial: 0 };
@@ -7021,6 +8434,7 @@ void main(){
           throw Error("The adventure information is invalid.");
         const ids = new Set(),
           used = new Uint8Array(SIZE * SIZE);
+        let savedFurniture = 0;
         for (const o of s.objects) {
           if (
             !o ||
@@ -7044,6 +8458,10 @@ void main(){
               "A saved place is invalid. Your current town has not changed.",
             );
           const d = DEFS[o.type];
+          if (o.interior !== undefined)
+            savedFurniture += validateRoom(o.type, o.interior);
+          if (savedFurniture > ROOM_LIMITS.town)
+            throw Error("This town has too much furniture.");
           if (
             d.capacity &&
             (![1, 2].includes(o.level) ||
@@ -7152,6 +8570,7 @@ void main(){
           throw Error(
             "Could not back up your current town. Export it before loading another.",
           );
+        if (roomSession) leaveHome();
         town = valid;
         generateTerrain(town.seed);
         rebuildOccupancy();
@@ -7331,6 +8750,10 @@ void main(){
         return { x: Math.floor(w.x + 0.5), z: Math.floor(w.z + 0.5) };
       }
       canvas.addEventListener("pointerdown", (e) => {
+        if (roomSession) {
+          roomPointerDown(e);
+          return;
+        }
         if (!$("modal").hidden || contextLost || !welcomed) return;
         canvas.focus({ preventScroll: true });
         canvas.setPointerCapture(e.pointerId);
@@ -7372,6 +8795,10 @@ void main(){
         updateCamera();
       }
       canvas.addEventListener("pointermove", (e) => {
+        if (roomSession) {
+          roomPointerMove(e);
+          return;
+        }
         if (!$("modal").hidden || contextLost || !welcomed) return;
         if (pointers.has(e.pointerId))
           pointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
@@ -7415,6 +8842,10 @@ void main(){
         }
       });
       canvas.addEventListener("pointerup", (e) => {
+        if (roomSession) {
+          roomPointerUp(e);
+          return;
+        }
         pointers.delete(e.pointerId);
         if (multiGesture) {
           if (pointers.size === 0) {
@@ -7448,6 +8879,11 @@ void main(){
         dirty = true;
       });
       canvas.addEventListener("pointercancel", (e) => {
+        if (roomSession) {
+          if (roomSession.pointer?.id === e.pointerId)
+            roomSession.pointer = null;
+          return;
+        }
         pointers.delete(e.pointerId);
         gesture = null;
         hover = null;
@@ -7455,6 +8891,11 @@ void main(){
         dirty = true;
       });
       canvas.addEventListener("lostpointercapture", (e) => {
+        if (roomSession) {
+          if (roomSession.pointer?.id === e.pointerId)
+            roomSession.pointer = null;
+          return;
+        }
         pointers.delete(e.pointerId);
         if (!pointers.size) {
           gesture = null;
@@ -7472,7 +8913,7 @@ void main(){
         "wheel",
         (e) => {
           e.preventDefault();
-          if (!$("modal").hidden) return;
+          if (roomSession || !$("modal").hidden) return;
           const before = screenToWorld(e.clientX, e.clientY);
           camera.zoom = clamp(camera.zoom * Math.exp(e.deltaY * 0.001), 10, 80);
           updateCamera();
@@ -7525,6 +8966,10 @@ void main(){
               first.focus();
             }
           }
+          return;
+        }
+        if (roomSession) {
+          roomKeyboard(e);
           return;
         }
         if (["INPUT", "SELECT", "TEXTAREA"].includes(e.target.tagName)) return;
@@ -7583,9 +9028,11 @@ void main(){
         }
       });
       document.addEventListener("keyup", (e) => {
+        roomKeys.delete(e.key.toLowerCase());
         if (e.code === "Space") spaceDown = false;
       });
       window.addEventListener("blur", () => {
+        resetRoomInput();
         spaceDown = false;
         pointers.clear();
         gesture = null;
@@ -7650,6 +9097,7 @@ void main(){
       document.addEventListener("visibilitychange", () => {
         active = !document.hidden;
         if (!active) {
+          resetRoomInput();
           lifeLastTime = 0;
           maybeAutosave();
         } else resize();
@@ -7690,6 +9138,41 @@ void main(){
           return SAVE_VERSION;
         },
         defs: DEFS,
+        interior: {
+          enter: enterHome,
+          leave: leaveHome,
+          mode: setRoomMode,
+          paint: paintRoom,
+          place: putFurniture,
+          remove: removeFurniture,
+          turn: turnFurniture,
+          undo: undoRoom,
+          get session() {
+            return roomSession;
+          },
+          get room() {
+            return roomHome()?.interior || null;
+          },
+          furniture: FURNITURE,
+          sizes: ROOM_SIZES,
+          limits: ROOM_LIMITS,
+          canStand: roomCanStand,
+          validate: validateRoom,
+          move: (side, forward, seconds) => {
+            const h = roomHome();
+            if (h) {
+              moveRoomWalker(
+                h.type,
+                h.interior,
+                roomSession,
+                side,
+                forward,
+                seconds,
+              );
+              updateRoomCamera();
+            }
+          },
+        },
         life: {
           info: lifeInfo,
           get pool() {
