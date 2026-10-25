@@ -3,13 +3,13 @@ name: baytown-reference
 description: Baytown Builder numbers, runtime data model, save format, milestones, and browser readiness checks. Read before changing simulation or persistence.
 ---
 
-# Baytown reference · milestone 5
+# Baytown reference · milestone 6
 
 The canonical game is `../../index.html`, relative to this directory. It is a single offline HTML file, with WebGL2, inline CSS/JS/SVG, and no runtime library. Use the existing isolated checkout; do not create a worktree unless requested. Read `../../REQUIREMENTS.md` before extending a milestone. Approval is required before each next milestone.
 
 ## Scope and numbers
 
-Milestones 1–3 implement construction, persistence, utility networks, budgets, workers, customers, happiness, home growth, two tiers of goals, and a seeded living world with traffic, walkers, pets, harbor ships and day/night lighting. Moving figures illustrate the household population and have no independent income effect or saved identities. Milestone 4 adds opt-in staged disasters, repair sites, defenses and mountain dynamite. Milestone 5 adds first-person home visits and saved decorating. Milestone 6 (personal features and polish) remains unimplemented. Disasters default off. New starter towns include extra free links and two extra parks; v1 migration preserves the old layout exactly.
+Milestones 1–3 implement construction, persistence, utility networks, budgets, workers, customers, happiness, home growth, two tiers of goals, and a seeded living world with traffic, walkers, pets, harbor ships and day/night lighting. Moving figures illustrate the household population and have no independent income effect or saved identities. Milestone 4 adds opt-in staged disasters, repair sites, defenses and mountain dynamite. Milestone 5 adds first-person home visits and saved decorating. Milestone 6 adds Ethan Tower, a giraffe garden, biplane skywriting, parades and final copy/layout polish. All six code milestones are implemented; real-device testing remains unverified. Disasters default off. New starter towns include extra free links and two extra parks; v1 migration preserves the old layout exactly.
 
 | Rule                       | Value                                                                              |
 | -------------------------- | ---------------------------------------------------------------------------------- |
@@ -42,13 +42,13 @@ Milestones 1–3 implement construction, persistence, utility networks, budgets,
 
 All footprints are square. `R` or the touch turn button rotates visual orientation, not footprint size. Bridges require water and an adjacent road/bridge. Docks require water and an adjacent land tile/dock. Regular places require dry land. Placement stops a drag at the first blocked/unaffordable tile; already matching road tiles are skipped. Removal may continue across empty tiles.
 
-## Data model and save version 4
+## Data model and save version 5
 
-`SAVE_VERSION = 4`. Keep `tests/fixtures/v1.json`, `v2.json`, `v3.json` and `v4.json` readable in future versions. `migrations[4]` is an identity upgrade: home interiors are optional, and default rooms initialize lazily on first visit. `migrations[3]` adds `{enabled:false,event:null,serial:0}` as `disasters`, preserving all existing data. The migration table is keyed by **destination** version. `migrations[2]` preserves v1 money, object IDs, types, positions, rotation, paid amounts, name, seed, timestamps, and camera. It initializes the new calendar at day 1, clears new history/claim fields, and initializes each existing home at level 1 with ceil(base capacity / 2) residents and growth 0. No roads or buildings are added during migration. `migrations[1]` is the initial identity entry.
+`SAVE_VERSION = 5`. Keep `tests/fixtures/v1.json`, `v2.json`, `v3.json`, `v4.json` and `v5.json` readable in future versions. `migrations[5]` is an identity upgrade for the new `ethantower`/`giraffegarden` object types; it inserts no objects and preserves rooms/adventures/economy. `migrations[4]` is an identity upgrade: home interiors are optional, and default rooms initialize lazily on first visit. `migrations[3]` adds `{enabled:false,event:null,serial:0}` as `disasters`, preserving all existing data. The migration table is keyed by **destination** version. `migrations[2]` preserves v1 money, object IDs, types, positions, rotation, paid amounts, name, seed, timestamps, and camera. It initializes the new calendar at day 1, clears new history/claim fields, and initializes each existing home at level 1 with ceil(base capacity / 2) residents and growth 0. No roads or buildings are added during migration. `migrations[1]` is the initial identity entry.
 
 ```text
 Town {
-  version: 4,
+  version: 5,
   name: nonempty string <= 32 characters,
   seed: uint32,
   mode: "starter" | "empty" | "sandbox",
@@ -186,7 +186,7 @@ Dynamic visuals use the preallocated 2,048-instance buffer, max 40 event parts p
 
 ## Milestone 5 interior contract
 
-`SAVE_VERSION = 4`; optional per-home `interior` is the only new town field. v1→2→3→4 migrations retain all prior data. v4 fixture includes a decorated home; the v1/v2/v3 fixtures remain unchanged. Home rooms initialize lazily on first entry. Each is one main room (apartments use one representative unit), with no upper-floor navigation. Growth never resizes the room. Room data stays on its home through disaster damage, rebuild, construction removal/undo, slot/auto saves, export/import and recovery. Entering a damaged home is allowed; entering during an active adventure is blocked.
+Milestone 5 shipped with `SAVE_VERSION = 4`; optional per-home `interior` is the only new town field. v1→2→3→4 migrations retain all prior data. v4 fixture includes a decorated home; the v1/v2/v3 fixtures remain unchanged. Home rooms initialize lazily on first entry. Each is one main room (apartments use one representative unit), with no upper-floor navigation. Growth never resizes the room. Room data stays on its home through disaster damage, rebuild, construction removal/undo, slot/auto saves, export/import and recovery. Entering a damaged home is allowed; entering during an active adventure is blocked.
 
 | Rule                                              | Value                                                                           |
 | ------------------------------------------------- | ------------------------------------------------------------------------------- |
@@ -216,3 +216,28 @@ The renderer reuses the existing instanced WebGL2 program/batches. Room edits re
 Furniture: Seats (sofa, armchair, chair, stool, bench); Tables (dining, coffee, side, desk, round); Rest (bed, single, bunk, crib, ottoman); Storage (bookcase, wardrobe, dresser, cabinet, tv); Little things (plant, lamp, rug, largeRug, cushion); Play (toybox, teddy, train, aquarium, piano). Width/depth/height/color live in the inline FURNITURE table. Paint/floor indices live in ROOM_PAINT/ROOM_FLOORS.
 
 Required checks include all earlier milestones, the exact pure collision/placement tests, actual iPad touch walking plus simultaneous look, all home types including a damaged one, floor picking/rotation/move/remove/undo, paint notebook stacking, real room export, reload/old fixtures/invalid imports, active-room context recovery, reduced motion, 52px controls, the global-cap construction-undo regression and 60-day economy. Inspect interior-walk-ipad-{portrait,landscape}.png and interior-decorate-ipad-{portrait,landscape}.png. Real iPad Safari remains unverified by Chromium emulation.
+
+## Milestone 6 personal-feature contract
+
+All six milestones are implemented. Save version **5** introduces `ethantower` and `giraffegarden` as own keys in DEFS, with no new required root fields. Migration 5 is identity. New fixture v5 contains both types and the decorated v4 home; never rewrite earlier shipped fixtures. Ordinary placement, terrain/occupancy/ID checks, recorded paid refunds, inverse construction undo, disaster repair flags and 25% rebuild charges apply. Existing towns are not populated with landmarks automatically.
+
+| Type          | Footprint |  Cost | Upkeep | Jobs / income                   |    Utility demand | Service                |
+| ------------- | --------- | ----: | -----: | ------------------------------- | ----------------: | ---------------------- |
+| ethantower    | 3×3       | 6,000 |     20 | 16 jobs; 12 per staffed job/day | 6 power + 6 water | none                   |
+| giraffegarden | 3×3       | 1,800 |      4 | no jobs/income                  |                 0 | radius8, +12 happiness |
+
+The tower has stepped massing, lit windows, crown and a block-dot ETHAN nameplate. The garden includes two static giraffe models (body, long neck, ears, ossicones, legs and spots), fence, trough and planting. Giraffes are not independent pathfinding actors. New types use existing utility/workforce/service analysis and existing damage half-strength rules. Duplicate gardens do not stack their same-type happiness bonus.
+
+`CELEBRATION_CORE_START/END` contains the actual 5×7 glyph masks, message, caps, `planParade` and `sampleParade`, extracted by Node tests. `window.__baytown.celebrations` exposes start/stop/step/info/show, fixed route/heights arrays and planner/sampler diagnostic hooks. SKY_MESSAGE is exactly `GO ETHAN!`; GIFT_GLYPHS also draws the tower name. Temporary celebration fields live in one reusable party object, not Town JSON. No extra save fixture fields are needed.
+
+Settings → Ethan’s corner provides normal placement tools plus separate manual skywriting/parade starts. Builds show Free in sandbox and normal prices otherwise. No surprise scheduler, charges, grants or repeated rewards. At most one of each celebration runs at a time. Skywriting forms over 22 moving seconds; total event lasts 45 active seconds and cloud alpha fades during the last five. Parade duration is 45 active seconds, speed .8 tiles/sec with .7-tile follower lag. Low/auto/high caps are 6/10/12 marchers, further bounded by floor((routeLength−1)/.7), plus one float. Initial moving poses start at0; when launched under reduced/still mode, sky time starts22 and parade time12 for a completed quiet pose. Live reduced/still toggles freeze stored motion time without jumping, while event age continues. Lively mode resumes that same pose.
+
+`advanceClock` steps event age after its existing pause/modal/hidden/context-loss/interior guards; speed1×/3× applies. Decorative motion time advances only when not reduced and motion=lively. The Finish banner stops both. A chosen disaster stops celebrations before beginning, and starts are rejected during an active disaster or home visit. Valid town replacement (after validation/backup) and new-town creation stop celebrations; invalid imports preserve the open town/event. Context restoration retains party state and route buffers while recreating GPU resources. Reload intentionally opens without celebrations.
+
+Navigation uses the road/bridge mask; docks, water and structures are excluded. One fixed Int16 route, parent and queue (5,184 cells each), Float32 elevation array and four-float pose scratch are allocated once. For each connected component the planner uses two BFS sweeps to find a long shortest endpoint route, chooses the longest candidate across components and requires length≥6. This is not an exhaustive longest-simple-path search. Parent -1 marks unseen components and temporary -2 marks the current component’s second sweep. Four-neighbor boundary checks prohibit row wrapping. Sampling interpolates adjacent coordinates/elevations, reflects at endpoints and remains position-continuous through corners/return turns. Parade figures are decorative, without traffic collisions. A changed layout validates every used route tile against the refreshed mask; a removed tile ends the parade before rendering an invalid route. Other edits retain it. Bridge elevations use .28, roads .11.
+
+Skywriting is a stylized camera-facing dot-cloud display and a modeled biplane, not a particle simulation. Layout measures guide/control bounds at launch, resize and return from a home visit, uses 90% of the available horizontal gap (bounded .25–.8 of viewport width), scales by current zoom/aspect, and anchors to the launch camera without map clamping. It shifts toward the camera by 18 world units along the view axis to avoid tall buildings occluding the letters without changing screen placement. Reusable five-float skyLayout records scale, altitude, width and actual x/z anchor for tests. Biplane size tracks the message, and the writing nose progresses across its width. Shader material8 uses uGiftFade for cloud opacity; context restoration recreates this uniform location.
+
+Dynamic parts share the existing 2,048-instance buffer. Celebration geometry is below 500 instances, no particle pool is added, and numeric side/end loops avoid per-frame array literals. Model/route/pose state is reused. Static landmarks rebuild only with the existing world geometry. No runtime library, external font or network asset is added. Cards have inline SVG fallbacks and use the existing progressive thumbnail rasterizer. Plain help/removal copy now distinguishes healthy refunds, zero-refund repair sites and mountain dynamite.
+
+Required validation: all earlier suites, five celebration core checks, actual iPad portrait/landscape hub/landmark/sky+parade screenshots, landmark price/refund/undo, workforce/service integration, fixed caps, paused and modal-held clocks, reduced/still continuity, active-event GPU recovery, edited routes, minimum zoom and both extreme camera edges, 45-second expiry, all v1–v5 fixture migrations, reload and unchanged town money/goals/furnishings. Inspect ethan-corner, ethan-landmarks and ethan-celebration screenshots in both sizes. Physical Safari/Home Screen, thermals and VoiceOver remain unverified.

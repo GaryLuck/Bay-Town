@@ -1987,6 +1987,68 @@
           overflow: auto;
         }
       }
+
+      .ethan-actions {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 10px;
+      }
+      .ethan-actions .action {
+        width: 100%;
+        min-width: 0;
+        min-height: 68px;
+        padding: 12px;
+        line-height: 1.45;
+      }
+      .ethan-note {
+        padding: 18px 22px;
+        border-radius: 18px;
+        background: #e4ecd7;
+        color: var(--green);
+        font:
+          26px Georgia,
+          serif;
+        margin: 16px 0;
+      }
+      .ethan-note small {
+        font:
+          13px -apple-system,
+          BlinkMacSystemFont,
+          "Segoe UI",
+          sans-serif;
+      }
+      #celebration-banner {
+        position: absolute;
+        bottom: calc(240px + var(--safe-bottom));
+        left: min(220px, 28vw);
+        width: min(420px, calc(100vw - 240px));
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 7px 10px 7px 16px;
+        background: #faf8f0ed;
+        border: 1px solid #fff8;
+        border-radius: 18px;
+        box-shadow: var(--shadow);
+        z-index: 5;
+        font-size: 12px;
+      }
+      #celebration-caption {
+        flex: 1;
+      }
+      #stop-celebration {
+        min-width: 52px;
+        min-height: 52px;
+        border-radius: 12px;
+        background: #e2ebd7;
+        border: 1px solid #d1dec8;
+      }
+      .celebrating .hint {
+        display: none;
+      }
+      .inside-home #celebration-banner {
+        display: none !important;
+      }
     </style>
   </head>
   <body>
@@ -2254,6 +2316,12 @@
         <div id="room-catalog" aria-label="Furniture choices"></div>
       </footer>
     </section>
+    <div id="celebration-banner" role="status" hidden>
+      <span id="celebration-caption"></span
+      ><button id="stop-celebration" aria-label="Finish the celebration">
+        Finish
+      </button>
+    </div>
     <div class="toast" id="toast" role="status" aria-live="polite"></div>
     <div
       id="disaster-banner"
@@ -2332,9 +2400,10 @@ void main(){float c=cos(iAngle),s=sin(iAngle);vec3 source=aPosition;if(iMaterial
       const fragmentSource = `#version 300 es
 precision highp float;
 in vec3 vColor;in vec3 vNormal;in vec3 vWorld;in vec3 vLocal;flat in float vMaterial;
-uniform float uTime;uniform float uGrid;uniform float uDaylight;uniform float uNight;uniform float uWarmth;uniform vec3 uSun;
+uniform float uGiftFade;uniform float uTime;uniform float uGrid;uniform float uDaylight;uniform float uNight;uniform float uWarmth;uniform vec3 uSun;
 out vec4 outColor;
 void main(){
+ if(vMaterial>7.5&&vMaterial<8.5){outColor=vec4(vColor,uGiftFade);return;}
  if(vMaterial>5.5&&vMaterial<6.5){float falloff=max(0.,1.-length(vLocal.xz)*2.);outColor=vec4(vColor,.30*uNight*falloff);return;}
  float sun=max(0.,dot(normalize(vNormal),normalize(uSun)));
  vec3 day=vec3(.77+.30*sun)*mix(vec3(1.),vec3(1.10,.94,.79),uWarmth*.6);
@@ -2507,6 +2576,7 @@ void main(){
         locations = {
           vp: gl.getUniformLocation(program, "uVP"),
           time: gl.getUniformLocation(program, "uTime"),
+          giftFade: gl.getUniformLocation(program, "uGiftFade"),
           grid: gl.getUniformLocation(program, "uGrid"),
           daylight: gl.getUniformLocation(program, "uDaylight"),
           night: gl.getUniformLocation(program, "uNight"),
@@ -2651,6 +2721,7 @@ void main(){
         gl.viewport(0, 0, w, h);
         updateCamera();
         drawNightSky();
+        fitCelebrationLayout();
       }
       function screenToWorld(sx, sy) {
         const nx = (sx / innerWidth) * 2 - 1,
@@ -2763,6 +2834,10 @@ void main(){
         gl.useProgram(program);
         gl.uniformMatrix4fv(locations.vp, false, vp);
         gl.uniform1f(locations.time, lifePool.motionTime);
+        gl.uniform1f(
+          locations.giftFade,
+          Math.min(1, Math.max(0, (45 - party.skyAge) / 5)),
+        );
         gl.uniform1f(locations.daylight, roomSession ? 1 : lightDay);
         gl.uniform1f(locations.night, roomSession ? 0 : lightNight);
         gl.uniform1f(locations.warmth, roomSession ? 0.2 : lightWarm);
@@ -2785,6 +2860,8 @@ void main(){
       canvas.addEventListener("webglcontextlost", (e) => {
         e.preventDefault();
         contextLost = true;
+        partyInstances = 0;
+        skyDots = 0;
         resetRoomInput();
         lifeLastTime = 0;
         toast("The view is resting. Your town is safe.");
@@ -2808,7 +2885,7 @@ void main(){
 
       /* 02 · WORLD — deterministic terrain regenerated from a seed. */
       const SIZE = 72,
-        SAVE_VERSION = 4,
+        SAVE_VERSION = 5,
         MAX_OBJECTS = 5000;
       let terrain = new Uint8Array(SIZE * SIZE),
         scenery = [],
@@ -2888,6 +2965,7 @@ void main(){
       }
       function makeTown(mode = "starter", name = "Baytown Bay", seed = 81024) {
         if (roomSession) leaveHome();
+        stopCelebration();
         town = {
           version: SAVE_VERSION,
           name: name.trim().slice(0, 32) || "Baytown Bay",
@@ -3329,6 +3407,30 @@ void main(){
           height: 1.05,
           description: "Everything a growing town might need, under one roof.",
         },
+        ethantower: {
+          name: "Ethan Tower",
+          category: "Shops & Work",
+          cost: 6000,
+          size: 3,
+          kind: "ethantower",
+          color: "#adc4b5",
+          roof: "#d1bb7a",
+          height: 6.4,
+          description:
+            "Ethan’s name, right up in the skyline. Sixteen jobs along connected roads. A landmark for a big imagination.",
+        },
+        giraffegarden: {
+          name: "Giraffe garden",
+          category: "Parks",
+          cost: 1800,
+          size: 3,
+          kind: "giraffegarden",
+          color: "#c4b56b",
+          roof: "#9db580",
+          height: 2.1,
+          description:
+            "Two very tall neighbors in a leafy garden. Lifts nearby happiness by 12 within 8 tiles.",
+        },
         office: {
           name: "Office",
           category: "Shops & Work",
@@ -3441,7 +3543,7 @@ void main(){
           kind: "remove",
           color: "#ba997a",
           description:
-            "Tap or drag over a built place to remove it. Paid places receive a full refund.",
+            "Clear built places. Healthy paid places refund their price; repair sites refund $0. Use Dynamite in a mountain’s details.",
           drag: true,
         },
       };
@@ -3536,6 +3638,10 @@ void main(){
             progress * 0.35,
           );
           cube(x + 0.3, 0.2, z + 0.2, n * 0.4, 0.28, n * 0.4, roof, -0.35);
+          return;
+        }
+        if (k === "ethantower" || k === "giraffegarden") {
+          buildGiftPlace(obj, x, z, angle);
           return;
         }
         if (k === "road" || k === "bridge" || k === "dock") {
@@ -4260,6 +4366,8 @@ void main(){
         cafe: { upkeep: 8, jobs: 4, retail: true, demand: 2 },
         market: { upkeep: 10, jobs: 6, retail: true, demand: 2 },
         office: { upkeep: 12, jobs: 10, wageIncome: 12, demand: 4 },
+        ethantower: { upkeep: 20, jobs: 16, wageIncome: 12, demand: 6 },
+        giraffegarden: { upkeep: 4, radius: 8, bonus: 12 },
         factory: {
           upkeep: 16,
           jobs: 12,
@@ -4836,6 +4944,7 @@ void main(){
         )
           return;
         stepDisaster(elapsed * town.speed);
+        stepCelebrations(elapsed * town.speed);
         town.dayProgress += (elapsed * town.speed) / SIM_RULES.daySeconds;
         if (town.dayProgress >= 1) {
           town.dayProgress -= 1;
@@ -5753,6 +5862,7 @@ void main(){
         lifeGraph = buildLifeGraph(town, terrain, DEFS);
         lifePool.seed = (town.seed ^ 0x5ba71a3) >>> 0 || 1;
         seedLifePool(lifePool, lifeGraph, LIFE_LIMITS[quality]);
+        validateParadeRoute();
         lifeLastTime = 0;
         drawNightSky();
       }
@@ -5907,6 +6017,7 @@ void main(){
       function buildDynamicActors() {
         dynamicCount = 0;
         drawDisaster();
+        drawCelebrations();
         for (let i = 0; i < lifePool.count; i++) {
           if (lifePool.length[i] < 2) continue;
           const kind = lifePool.kind[i],
@@ -6413,6 +6524,829 @@ void main(){
         lifeMotion = mode;
         savePreferences();
       }
+      /* 05b · ETHAN'S CORNER — landmarks and chosen, capped celebrations. */
+      /* CELEBRATION_CORE_START */
+      const PARTY_LIMITS = Object.freeze({
+        seconds: 45,
+        low: 6,
+        auto: 10,
+        high: 12,
+      });
+      const SKY_MESSAGE = "GO ETHAN!";
+      const GIFT_GLYPHS = {
+        E: [31, 16, 16, 30, 16, 16, 31],
+        T: [31, 4, 4, 4, 4, 4, 4],
+        H: [17, 17, 17, 31, 17, 17, 17],
+        A: [14, 17, 17, 31, 17, 17, 17],
+        N: [17, 25, 25, 21, 19, 19, 17],
+        G: [15, 16, 16, 23, 17, 17, 14],
+        O: [14, 17, 17, 17, 17, 17, 14],
+        "!": [4, 4, 4, 4, 4, 0, 4],
+        " ": [0, 0, 0, 0, 0, 0, 0],
+      };
+      function planParade(mask, out, parent, queue, width = 72) {
+        parent.fill(-1);
+        let best = 0;
+        const count = mask.length;
+        for (let start = 0; start < count; start++) {
+          if (!mask[start] || parent[start] !== -1) continue;
+          let head = 0,
+            tail = 1;
+          queue[0] = start;
+          parent[start] = start;
+          while (head < tail) {
+            const at = queue[head++],
+              x = at % width;
+            for (let k = 0; k < 4; k++) {
+              if ((k === 0 && x === 0) || (k === 1 && x === width - 1))
+                continue;
+              const next =
+                k === 0
+                  ? at - 1
+                  : k === 1
+                    ? at + 1
+                    : k === 2
+                      ? at - width
+                      : at + width;
+              if (
+                next < 0 ||
+                next >= count ||
+                !mask[next] ||
+                parent[next] !== -1
+              )
+                continue;
+              parent[next] = at;
+              queue[tail++] = next;
+            }
+          }
+          // Search again from an endpoint, retaining visited marks for other components.
+          const endpoint = queue[tail - 1];
+          for (let i = 0; i < tail; i++) parent[queue[i]] = -2;
+          head = 0;
+          tail = 1;
+          queue[0] = endpoint;
+          parent[endpoint] = endpoint;
+          while (head < tail) {
+            const at = queue[head++],
+              x = at % width;
+            for (let k = 0; k < 4; k++) {
+              if ((k === 0 && x === 0) || (k === 1 && x === width - 1))
+                continue;
+              const next =
+                k === 0
+                  ? at - 1
+                  : k === 1
+                    ? at + 1
+                    : k === 2
+                      ? at - width
+                      : at + width;
+              if (next < 0 || next >= count || parent[next] !== -2) continue;
+              parent[next] = at;
+              queue[tail++] = next;
+            }
+          }
+          let length = 1,
+            at = queue[tail - 1];
+          while (at !== endpoint) {
+            length++;
+            at = parent[at];
+          }
+          if (length > best) {
+            best = length;
+            at = queue[tail - 1];
+            for (let i = 0; i < length; i++) {
+              out[i] = at;
+              at = parent[at];
+            }
+          }
+        }
+        return best >= 6 ? best : 0;
+      }
+      function sampleParade(route, length, heights, distance, out, width = 72) {
+        if (length < 2) return false;
+        const span = length - 1,
+          period = span * 2,
+          phase = ((distance % period) + period) % period;
+        const back = phase > span,
+          pos = back ? period - phase : phase,
+          index = Math.min(span - 1, Math.floor(pos)),
+          f = pos - index;
+        const a = route[index],
+          b = route[index + 1],
+          ax = a % width,
+          az = Math.floor(a / width),
+          bx = b % width,
+          bz = Math.floor(b / width);
+        out[0] = ax + (bx - ax) * f;
+        out[1] = heights[a] + (heights[b] - heights[a]) * f;
+        out[2] = az + (bz - az) * f;
+        out[3] = Math.atan2(bx - ax, bz - az) + (back ? Math.PI : 0);
+        return true;
+      }
+      /* CELEBRATION_CORE_END */
+      const party = {
+        sky: false,
+        parade: false,
+        skyAge: 0,
+        paradeAge: 0,
+        skyTime: 0,
+        paradeTime: 0,
+        x: 36,
+        z: 35,
+        length: 0,
+      };
+      const paradeRoute = new Int16Array(5184),
+        paradeParent = new Int16Array(5184),
+        paradeQueue = new Int16Array(5184),
+        paradeHeights = new Float32Array(5184),
+        paradePose = new Float32Array(4);
+      let partyBannerKey = -1,
+        partyInstances = 0,
+        skyDots = 0;
+      function startCelebration(kind) {
+        if (
+          !["sky", "parade"].includes(kind) ||
+          roomSession ||
+          !welcomed ||
+          town.disasters.event ||
+          party[kind]
+        )
+          return false;
+        if (kind === "parade") {
+          party.length = planParade(
+            lifeGraph.drive,
+            paradeRoute,
+            paradeParent,
+            paradeQueue,
+          );
+          if (!party.length) {
+            toast("Draw a longer connected road, then invite the parade.");
+            return false;
+          }
+          paradeHeights.fill(0.11);
+          for (const o of town.objects)
+            if (o.type === "bridge") paradeHeights[o.z * 72 + o.x] = 0.28;
+          party.paradeAge = 0;
+          party.paradeTime = reducedMotion || lifeMotion === "still" ? 12 : 0;
+        } else {
+          party.skyAge = 0;
+          skyDots = 0;
+          party.skyTime = reducedMotion || lifeMotion === "still" ? 22 : 0;
+          party.x = camera.x;
+          party.z = camera.z;
+        }
+        party[kind] = true;
+        fitCelebrationLayout();
+        updatePartyBanner();
+        toast(
+          kind === "sky"
+            ? "Look up, Ethan. This one's for you!"
+            : "Here comes a little cheer for Ethan!",
+        );
+        return true;
+      }
+      function stopCelebration(kind = "all") {
+        if (kind === "all" || kind === "sky") party.sky = false;
+        if (kind === "all" || kind === "parade") party.parade = false;
+        updatePartyBanner();
+      }
+      function stepCelebrations(seconds) {
+        if (!Number.isFinite(seconds) || seconds <= 0) return;
+        const moving = !reducedMotion && lifeMotion === "lively";
+        if (party.sky) {
+          party.skyAge += seconds;
+          if (moving) party.skyTime += seconds;
+          if (party.skyAge >= 45) party.sky = false;
+        }
+        if (party.parade) {
+          party.paradeAge += seconds;
+          if (moving) party.paradeTime += seconds;
+          if (party.paradeAge >= 45) party.parade = false;
+        }
+        updatePartyBanner();
+      }
+      function validateParadeRoute() {
+        if (!party.parade) return;
+        for (let i = 0; i < party.length; i++)
+          if (!lifeGraph.drive[paradeRoute[i]]) {
+            party.parade = false;
+            updatePartyBanner();
+            toast(
+              "The road changed. The parade takes a bow—invite it again when you’re ready.",
+            );
+            return;
+          }
+        for (const o of town.objects)
+          if (o.type === "bridge") paradeHeights[o.z * 72 + o.x] = 0.28;
+      }
+      function updatePartyBanner() {
+        const key = Number(party.sky) + Number(party.parade) * 2;
+        if (key === partyBannerKey) return;
+        partyBannerKey = key;
+        $("celebration-banner").hidden = !key;
+        document.body.classList.toggle("celebrating", !!key);
+        $("celebration-caption").textContent =
+          key === 3
+            ? "A parade below. A cheer in the sky. For Ethan."
+            : party.sky
+              ? "GO ETHAN! A little cheer in the sky."
+              : "A little parade, just for Ethan.";
+      }
+      function giftText(word, x, y, z, scale, angle, color) {
+        const width = (word.length * 6 - 1) * scale,
+          c = Math.cos(angle),
+          s = Math.sin(angle);
+        for (let i = 0; i < word.length; i++) {
+          const rows = GIFT_GLYPHS[word[i]];
+          for (let row = 0; row < 7; row++)
+            for (let col = 0; col < 5; col++)
+              if (rows[row] & (1 << (4 - col))) {
+                const dx = (i * 6 + col) * scale - width / 2;
+                cube(
+                  x + c * dx,
+                  y + (6 - row) * scale,
+                  z - s * dx,
+                  scale * 0.8,
+                  scale * 0.8,
+                  scale * 0.09,
+                  color,
+                  angle,
+                  5,
+                );
+              }
+        }
+      }
+      function giraffeModel(x, z, angle, scale = 1) {
+        const c = Math.cos(angle),
+          s = Math.sin(angle),
+          gold = [0.85, 0.65, 0.32],
+          brown = [0.46, 0.31, 0.19];
+        const part = (lx, y, lz, w, h, d, color = gold) =>
+          cube(
+            x + (c * lx + s * lz) * scale,
+            y * scale,
+            z + (-s * lx + c * lz) * scale,
+            w * scale,
+            h * scale,
+            d * scale,
+            color,
+            angle,
+          );
+        for (const dx of [-0.19, 0.19])
+          for (const dz of [-0.3, 0.3]) {
+            part(dx, 0.05, dz, 0.09, 0.64, 0.1);
+            part(dx, 0.035, dz, 0.1, 0.08, 0.12, brown);
+          }
+        part(0, 0.66, 0, 0.48, 0.4, 0.86);
+        part(0, 0.94, 0.3, 0.18, 0.87, 0.19);
+        part(0, 1.7, 0.41, 0.29, 0.22, 0.42);
+        for (const side of [-1, 1]) {
+          part(side * 0.1, 1.92, 0.3, 0.045, 0.17, 0.045, brown);
+          part(side * 0.21, 1.81, 0.29, 0.17, 0.07, 0.1);
+          part(side * 0.153, 1.83, 0.51, 0.025, 0.045, 0.04, brown);
+        }
+        part(0, 0.78, -0.53, 0.045, 0.45, 0.045, brown);
+        for (let i = 0; i < 5; i++) {
+          part(
+            0.244,
+            0.73 + (i % 2) * 0.13,
+            -0.29 + i * 0.14,
+            0.015,
+            0.09,
+            0.09,
+            brown,
+          );
+          part(0.097, 1.03 + i * 0.13, 0.31, 0.015, 0.075, 0.07, brown);
+        }
+      }
+      function buildGiftPlace(obj, x, z, angle) {
+        if (obj.type === "ethantower") {
+          const lit = simView?.records[obj.id]?.power > 0;
+          cube(x, 0.02, z, 2.9, 0.12, 2.9, [0.74, 0.76, 0.64]);
+          cube(x, 0.14, z, 2.65, 1.7, 2.65, [0.75, 0.82, 0.76], angle);
+          cube(x, 1.84, z, 2.22, 2.05, 2.22, [0.55, 0.7, 0.68], angle);
+          cube(x, 3.89, z, 1.75, 1.85, 1.75, [0.69, 0.78, 0.69], angle);
+          cube(x, 5.74, z, 1.1, 0.65, 1.1, [0.83, 0.74, 0.48], angle);
+          cube(x, 6.39, z, 0.09, 0.75, 0.09, [0.68, 0.62, 0.44]);
+          windows(x, z, 2.68, 2.68, 1.7, angle, 2, lit, obj.id);
+          // Higher rows sit on the set-back facades.
+          for (let row = 0; row < 5; row++)
+            for (const side of [-1, 1])
+              for (let col = -1; col <= 1; col++) {
+                const a = angle + (side === 1 ? 0 : Math.PI / 2),
+                  c = Math.cos(a),
+                  s = Math.sin(a),
+                  edge = row < 3 ? 1.13 : 0.89,
+                  dx = col * 0.47;
+                cube(
+                  x + c * dx + s * edge,
+                  2.1 + row * 0.58,
+                  z - s * dx + c * edge,
+                  0.23,
+                  0.32,
+                  0.035,
+                  [0.36, 0.52, 0.49],
+                  a,
+                  lit ? 4 : 0,
+                );
+              }
+          const front = 1.16;
+          cube(
+            x + Math.sin(angle) * front,
+            4.9,
+            z + Math.cos(angle) * front,
+            2.4,
+            0.7,
+            0.065,
+            [0.2, 0.38, 0.34],
+            angle,
+          );
+          giftText(
+            "ETHAN",
+            x + Math.sin(angle) * (front + 0.04),
+            5.02,
+            z + Math.cos(angle) * (front + 0.04),
+            0.071,
+            angle,
+            [0.98, 0.86, 0.52],
+          );
+          return;
+        }
+        cube(x, 0.02, z, 2.95, 0.07, 2.95, [0.62, 0.73, 0.45]);
+        for (const dx of [-1.33, 1.33])
+          for (const dz of [-1.33, 1.33])
+            cube(x + dx, 0.09, z + dz, 0.1, 0.68, 0.1, C.wood);
+        for (const h of [0.3, 0.58]) {
+          cube(x, h, z - 1.33, 2.7, 0.055, 0.07, C.wood);
+          cube(x, h, z + 1.33, 2.7, 0.055, 0.07, C.wood);
+          cube(x - 1.33, h, z, 0.07, 0.055, 2.7, C.wood);
+          cube(x + 1.33, h, z, 0.07, 0.055, 2.7, C.wood);
+        }
+        giraffeModel(x - 0.55, z + 0.05, -0.32, 0.92);
+        giraffeModel(x + 0.55, z - 0.2, 0.4, 0.75);
+        cube(x - 0.8, 0.09, z - 0.95, 0.7, 0.2, 0.34, [0.58, 0.63, 0.56]);
+        cube(x - 0.8, 0.29, z - 0.95, 0.6, 0.02, 0.24, C.water);
+        tree(x + 0.96, z + 0.96, 0.45, 1);
+      }
+      function partyPart(
+        x,
+        y,
+        z,
+        a,
+        lx,
+        ly,
+        lz,
+        w,
+        h,
+        d,
+        r,
+        g,
+        b,
+        material = 0,
+      ) {
+        putDynamic(
+          x + Math.cos(a) * lx + Math.sin(a) * lz,
+          y + ly,
+          z - Math.sin(a) * lx + Math.cos(a) * lz,
+          w,
+          h,
+          d,
+          r,
+          g,
+          b,
+          a,
+          material,
+        );
+      }
+      let skyModelScale = 1;
+      const skyLayout = new Float32Array(5);
+      function planePart(x, y, z, a, lx, ly, lz, w, h, d, r, g, b) {
+        const q = skyModelScale;
+        partyPart(
+          x,
+          y,
+          z,
+          a,
+          lx * q,
+          ly * q,
+          lz * q,
+          w * q,
+          h * q,
+          d * q,
+          r,
+          g,
+          b,
+        );
+      }
+      function fitCelebrationLayout() {
+        if (!party.sky) return;
+        const journal = document
+            .querySelector(".journal")
+            .getBoundingClientRect(),
+          controls = document
+            .querySelector(".camera-controls")
+            .getBoundingClientRect();
+        const left = journal.width ? journal.right + 14 : 16,
+          right = controls.width ? controls.left - 14 : innerWidth - 16;
+        party.skyFraction = Math.max(
+          0.25,
+          Math.min(0.8, ((right - left) / innerWidth) * 0.9),
+        );
+        party.skyShift = ((left + right) / 2 - innerWidth / 2) / innerHeight;
+      }
+      function drawCelebrations() {
+        const start = dynamicCount;
+        skyDots = 0;
+        if (party.sky) {
+          const t = party.skyTime,
+            c = Math.cos(camera.angle),
+            s = Math.sin(camera.angle),
+            upx = -s * Math.sin(camera.pitch),
+            upy = Math.cos(camera.pitch),
+            upz = -c * Math.sin(camera.pitch),
+            scale =
+              camera.zoom *
+              Math.min(
+                (party.skyFraction * (canvas.width / canvas.height)) /
+                  (SKY_MESSAGE.length * 6 - 1),
+                0.025,
+              ),
+            altitude =
+              (camera.zoom * 0.12) / Math.cos(camera.pitch) +
+              Math.sin(camera.pitch) * 18,
+            anchorX =
+              party.x +
+              c * camera.zoom * party.skyShift +
+              Math.sin(camera.angle) * Math.cos(camera.pitch) * 18,
+            anchorZ =
+              party.z -
+              s * camera.zoom * party.skyShift +
+              Math.cos(camera.angle) * Math.cos(camera.pitch) * 18,
+            width = (SKY_MESSAGE.length * 6 - 1) * scale,
+            progress = Math.min(1, t / 22);
+          skyModelScale = scale / 0.31;
+          skyLayout[0] = scale;
+          skyLayout[1] = altitude;
+          skyLayout[2] = width;
+          skyLayout[3] = anchorX;
+          skyLayout[4] = anchorZ;
+          for (let i = 0; i < SKY_MESSAGE.length; i++) {
+            const rows = GIFT_GLYPHS[SKY_MESSAGE[i]];
+            for (let row = 0; row < 7; row++)
+              for (let col = 0; col < 5; col++) {
+                const dx = (i * 6 + col) * scale - width / 2,
+                  dy = (6 - row) * scale;
+                if (
+                  dx > progress * width - width / 2 ||
+                  !(rows[row] & (1 << (4 - col)))
+                )
+                  continue;
+                putDynamic(
+                  anchorX + c * dx + upx * dy,
+                  altitude + upy * dy,
+                  anchorZ - s * dx + upz * dy,
+                  scale * 0.74,
+                  scale * 0.74,
+                  scale * 0.74,
+                  0.98,
+                  0.96,
+                  0.84,
+                  0,
+                  8,
+                );
+                skyDots++;
+              }
+          }
+          // A little red-and-cream biplane writes across the same camera-facing sky plane.
+          const dx = progress * width - width / 2,
+            dy = 9 * scale,
+            x = anchorX + c * dx + upx * dy,
+            y = altitude + upy * dy,
+            z = anchorZ - s * dx + upz * dy,
+            a = camera.angle + Math.PI / 2;
+          planePart(x, y, z, a, 0, 0, 0, 0.26, 0.24, 1.15, 0.77, 0.35, 0.25);
+          planePart(
+            x,
+            y,
+            z,
+            a,
+            0,
+            0.42,
+            0.05,
+            1.8,
+            0.07,
+            0.43,
+            0.94,
+            0.83,
+            0.57,
+          );
+          planePart(
+            x,
+            y,
+            z,
+            a,
+            0,
+            -0.08,
+            0.05,
+            1.65,
+            0.07,
+            0.43,
+            0.94,
+            0.83,
+            0.57,
+          );
+          for (let side = -1; side <= 1; side += 2)
+            planePart(
+              x,
+              y,
+              z,
+              a,
+              side * 0.6,
+              -0.02,
+              0.05,
+              0.045,
+              0.5,
+              0.045,
+              0.38,
+              0.42,
+              0.34,
+            );
+          planePart(
+            x,
+            y,
+            z,
+            a,
+            0,
+            0.2,
+            -0.4,
+            0.1,
+            0.33,
+            0.32,
+            0.77,
+            0.35,
+            0.25,
+          );
+          planePart(
+            x,
+            y,
+            z,
+            a,
+            0,
+            0.14,
+            -0.16,
+            0.24,
+            0.12,
+            0.3,
+            0.37,
+            0.53,
+            0.55,
+          );
+          planePart(
+            x,
+            y,
+            z,
+            a,
+            0,
+            -0.24,
+            0.16,
+            0.5,
+            0.1,
+            0.12,
+            0.28,
+            0.32,
+            0.29,
+          );
+          planePart(
+            x,
+            y,
+            z,
+            a,
+            0,
+            0.08,
+            0.64,
+            0.7,
+            0.05,
+            0.035,
+            0.35,
+            0.38,
+            0.31,
+          );
+        }
+        if (party.parade && party.length >= 6) {
+          const t = party.paradeTime,
+            cap = Math.min(
+              PARTY_LIMITS[quality],
+              Math.floor((party.length - 1) / 0.7),
+            ),
+            distance = t * 0.8;
+          sampleParade(
+            paradeRoute,
+            party.length,
+            paradeHeights,
+            distance,
+            paradePose,
+          );
+          const x = paradePose[0],
+            y = paradePose[1],
+            z = paradePose[2],
+            a = paradePose[3];
+          partyPart(x, y, z, a, 0, 0.18, 0, 0.78, 0.3, 1.45, 0.29, 0.52, 0.43);
+          partyPart(x, y, z, a, 0, 0.48, 0, 0.88, 0.12, 1.55, 0.91, 0.73, 0.41);
+          for (let side = -1; side <= 1; side += 2)
+            for (let end = -1; end <= 1; end += 2)
+              partyPart(
+                x,
+                y,
+                z,
+                a,
+                side * 0.4,
+                0,
+                end * 0.45,
+                0.14,
+                0.22,
+                0.24,
+                0.28,
+                0.31,
+                0.27,
+              );
+          partyPart(x, y, z, a, 0, 0.6, 0, 0.44, 0.8, 0.44, 0.92, 0.74, 0.39);
+          partyPart(x, y, z, a, 0, 1.4, 0, 0.64, 0.13, 0.64, 0.94, 0.86, 0.65);
+          for (let i = 0; i < cap; i++) {
+            const d = distance - (i + 1) * 0.7;
+            if (d < 0) continue;
+            sampleParade(
+              paradeRoute,
+              party.length,
+              paradeHeights,
+              d,
+              paradePose,
+            );
+            const px = paradePose[0],
+              py = paradePose[1],
+              pz = paradePose[2],
+              pa = paradePose[3],
+              v = i % 4,
+              p = v * 3,
+              gait = Math.sin(t * 6 + i) * 0.04;
+            partyPart(
+              px,
+              py,
+              pz,
+              pa,
+              0,
+              0.24,
+              0,
+              0.24,
+              0.3,
+              0.18,
+              SHIRT_PALETTE[p],
+              SHIRT_PALETTE[p + 1],
+              SHIRT_PALETTE[p + 2],
+            );
+            partyPart(
+              px,
+              py,
+              pz,
+              pa,
+              0,
+              0.54,
+              0,
+              0.18,
+              0.19,
+              0.18,
+              0.85,
+              0.68,
+              0.49,
+            );
+            for (let side = -1; side <= 1; side += 2) {
+              partyPart(
+                px,
+                py,
+                pz,
+                pa,
+                side * 0.07,
+                0.04 + side * gait,
+                0,
+                0.075,
+                0.2,
+                0.09,
+                0.3,
+                0.38,
+                0.36,
+              );
+              partyPart(
+                px,
+                py,
+                pz,
+                pa,
+                side * 0.2,
+                0.35,
+                0,
+                0.07,
+                0.26,
+                0.075,
+                0.85,
+                0.68,
+                0.49,
+              );
+            }
+            if (i % 3 === 0) {
+              partyPart(
+                px,
+                py,
+                pz,
+                pa,
+                0.23,
+                0.6,
+                0,
+                0.025,
+                0.55,
+                0.025,
+                0.58,
+                0.44,
+                0.29,
+              );
+              partyPart(
+                px,
+                py,
+                pz,
+                pa,
+                0.35,
+                0.92,
+                0,
+                0.25,
+                0.18,
+                0.035,
+                0.94,
+                0.74,
+                0.37,
+              );
+            }
+          }
+        }
+        partyInstances = dynamicCount - start;
+      }
+      function celebrationInfo() {
+        return {
+          sky: party.sky,
+          parade: party.parade,
+          quiet: reducedMotion || lifeMotion === "still",
+          anchorX: skyLayout[3],
+          anchorZ: skyLayout[4],
+          skyScale: skyLayout[0],
+          skyAltitude: skyLayout[1],
+          skyWidth: skyLayout[2],
+          skyAge: party.skyAge,
+          paradeAge: party.paradeAge,
+          skyTime: party.skyTime,
+          paradeTime: party.paradeTime,
+          routeLength: party.length,
+          marcherCap: Math.max(
+            0,
+            Math.min(
+              PARTY_LIMITS[quality],
+              Math.floor((party.length - 1) / 0.7),
+            ),
+          ),
+          skyDots,
+          instances: partyInstances,
+          limits: PARTY_LIMITS,
+        };
+      }
+      function showEthanCorner() {
+        openDialog(
+          `${dialogHeader("A whole little world for Ethan")}<p>A name up in the skyline. A cheer across the sky. Some very tall new neighbors. There’s always room for a little wonder.</p><div class="ethan-note">Made for Ethan.<br><small>Built by you, one little place at a time.</small></div><div class="actions ethan-actions"><button class="action secondary" id="gift-tower">Build Ethan Tower · ${town.mode === "sandbox" ? "Free" : "$6,000"}</button><button class="action secondary" id="gift-giraffes">Build giraffe garden · ${town.mode === "sandbox" ? "Free" : "$1,800"}</button><button class="action" id="gift-sky" ${party.sky || town.disasters.event ? "disabled" : ""}>Skywriting for Ethan · Free</button><button class="action" id="gift-parade" ${party.parade || town.disasters.event ? "disabled" : ""}>Invite a parade · Free</button>${party.sky || party.parade ? '<button class="action secondary" id="gift-stop">Finish the celebration</button>' : ""}</div><p>Celebrations last 45 active seconds. Pause or open a notebook to hold the moment. A parade needs a longer connected road. In reduced motion or a still moment, the plane, message and parade pose for a quiet celebration.</p><div class="feature-note">Ethan Tower offers 16 jobs, with $20 daily upkeep and a need for 6 power and water units. The giraffe garden brings +12 happiness within 8 tiles, with $4 daily upkeep. Celebrations never change your funds or goals.</div>`,
+        );
+        $("gift-tower").onclick = () => {
+          category = DEFS.ethantower.category;
+          renderCategories();
+          closeDialog();
+          selected = null;
+          selectTool("ethantower");
+        };
+        $("gift-giraffes").onclick = () => {
+          category = DEFS.giraffegarden.category;
+          renderCategories();
+          closeDialog();
+          selected = null;
+          selectTool("giraffegarden");
+        };
+        $("gift-sky").onclick = () => {
+          closeDialog();
+          startCelebration("sky");
+        };
+        $("gift-parade").onclick = () => {
+          closeDialog();
+          startCelebration("parade");
+        };
+        if ($("gift-stop"))
+          $("gift-stop").onclick = () => {
+            stopCelebration();
+            closeDialog();
+          };
+      }
+      $("stop-celebration").onclick = () => stopCelebration();
+
       /* 06 · DISASTERS — chosen adventures, preserved homes and recovery. */
       /* DISASTER_CORE_START */
       const DISASTER_TYPES = ["tornado", "earthquake", "meteor", "tsunami"];
@@ -6484,6 +7418,7 @@ void main(){
           x: 40,
           z: 36,
         };
+        stopCelebration();
         d.event = {
           type,
           time: 0,
@@ -6996,6 +7931,7 @@ void main(){
           "3D town map. Use arrow keys to move, plus and minus to zoom. Select a building and tap the map to place it.",
         );
         updateCamera();
+        fitCelebrationLayout();
         dirty = true;
         canvas.focus({ preventScroll: true });
         return true;
@@ -7818,7 +8754,13 @@ void main(){
           c = d.color,
           r = d.roof || "#82927b";
         let shape = "";
-        if (["road", "bridge", "dock", "seawall"].includes(k)) {
+        if (k === "ethantower") {
+          shape =
+            '<path d="M17 52V28l22-11 24 12v23L39 62z" fill="#a3bfb1"/><path d="M25 30V14L39 6l16 8v16L39 39z" fill="#83a59c"/><path d="M33 15V5l7-4 8 4v10l-8 5z" fill="#d0b876"/><path d="M21 36v9m9-14v9m17-3v10m9-15v10" stroke="#52776b" stroke-width="3"/><text x="23" y="54" font-size="7" font-weight="bold" fill="#244b3d">ETHAN</text>';
+        } else if (k === "giraffegarden") {
+          shape =
+            '<path d="M10 48l30-16 30 16-30 16z" fill="#9cbb7d"/><path d="M24 46V28h12v18m-12-12h16V13h7v-4h-8v4m-3 19h8v15" stroke="#bb934e" stroke-width="5" fill="none"/><path d="M51 46V30h8V20h7m-9 15v12" stroke="#d2ad69" stroke-width="4" fill="none"/>';
+        } else if (["road", "bridge", "dock", "seawall"].includes(k)) {
           shape = `<path d="M8 40l34-18 28 15-34 19z" fill="${c}"/><path d="M17 42l27-14M27 48l27-14" stroke="#ece5c9" stroke-width="2"/>`;
         } else if (k === "tree" || k === "park") {
           shape =
@@ -7934,7 +8876,7 @@ void main(){
             "aria-label",
             `${d.name}, ${affordable ? money(d.cost) : "needs " + money(d.cost)}${!affordable ? ", cannot afford yet" : ""}`,
           );
-          b.innerHTML = `<span class="card-key">${String(i + 1).padStart(2, "0")}</span><i class="selected-dot"></i><span class="thumb">${thumbs.has(type) ? `<img alt="" src="${thumbs.get(type)}">` : thumbSVG(type)}</span><strong>${d.name}</strong><span class="price${affordable ? "" : " unaffordable"}">${type === "remove" ? "Full refund" : town.mode === "sandbox" ? "Free to build" : (affordable ? "" : "Needs ") + money(d.cost)}${d.drag && type !== "remove" ? " / tile" : ""}</span>`;
+          b.innerHTML = `<span class="card-key">${String(i + 1).padStart(2, "0")}</span><i class="selected-dot"></i><span class="thumb">${thumbs.has(type) ? `<img alt="" src="${thumbs.get(type)}">` : thumbSVG(type)}</span><strong>${d.name}</strong><span class="price${affordable ? "" : " unaffordable"}">${type === "remove" ? "Clear / refund" : town.mode === "sandbox" ? "Free to build" : (affordable ? "" : "Needs ") + money(d.cost)}${d.drag && type !== "remove" ? " / tile" : ""}</span>`;
           b.addEventListener("click", () => {
             if (!affordable) {
               toast(
@@ -7983,7 +8925,7 @@ void main(){
         const d = DEFS[selected];
         $("hint-text").textContent =
           selected === "remove"
-            ? "Tap a built place to remove it · paid places get a full refund"
+            ? "Clear a place · healthy paid places refund their price · mountains use Dynamite"
             : d.drag
               ? `Drag to draw ${d.name.toLowerCase()} tiles · drag with two fingers to move the map`
               : `Tap an open spot for your ${d.name.toLowerCase()} · two fingers to move · use ↻ to turn`;
@@ -8068,7 +9010,7 @@ void main(){
       function showWelcome(isNew = false) {
         let mode = "starter";
         openDialog(
-          `<div class="welcome"><div class="welcome-art">${thumbSVG("cottage")}${thumbSVG("lighthouse")}${thumbSVG("tree")}</div><div class="eyebrow">Welcome to your little corner of the coast</div><h2 id="dialog-title">Let's make<br>somewhere lovely.</h2><p>A road by the water. A home under the trees.<br>A whole little world, built your way.</p><label for="town-name">What should we call your town?</label><input id="town-name" maxlength="32" value="Baytown Bay" autocomplete="off"><div class="mode-options"><button class="mode-option" data-mode="starter" aria-pressed="true">${icon("town")}<span><strong>A little head start</strong><small>A seaside village, ready to make your own</small></span></button><button class="mode-option" data-mode="empty" aria-pressed="false">${icon("leaf")}<span><strong>A blank canvas</strong><small>Just the coast, the trees, and $30,000</small></span></button><button class="mode-option" data-mode="sandbox" aria-pressed="false">${icon("infinity")}<span><strong>Big imagination</strong><small>Unlimited funds. Build as you please.</small></span></button></div><button class="action" id="begin-town">Let's build a town <span aria-hidden="true">↗</span></button>${isNew ? '<button class="action secondary" id="cancel-new">Back to my town</button>' : ""}<div class="feature-note">Chapter 5: make yourself at home.<br>Neighbors take a stroll. Boats come and go. Windows glow after sunset.</div></div>`,
+          `<div class="welcome"><div class="welcome-art">${thumbSVG("cottage")}${thumbSVG("lighthouse")}${thumbSVG("tree")}</div><div class="eyebrow">Welcome to your little corner of the coast</div><h2 id="dialog-title">Let's make<br>somewhere lovely.</h2><p>A road by the water. A home under the trees.<br>A whole little world, built your way.</p><label for="town-name">What should we call your town?</label><input id="town-name" maxlength="32" value="Baytown Bay" autocomplete="off"><div class="mode-options"><button class="mode-option" data-mode="starter" aria-pressed="true">${icon("town")}<span><strong>A little head start</strong><small>A seaside village, ready to make your own</small></span></button><button class="mode-option" data-mode="empty" aria-pressed="false">${icon("leaf")}<span><strong>A blank canvas</strong><small>Just the coast, the trees, and $30,000</small></span></button><button class="mode-option" data-mode="sandbox" aria-pressed="false">${icon("infinity")}<span><strong>Big imagination</strong><small>Unlimited funds. Build as you please.</small></span></button></div><button class="action" id="begin-town">Let's build a town <span aria-hidden="true">↗</span></button>${isNew ? '<button class="action secondary" id="cancel-new">Back to my town</button>' : ""}<div class="feature-note">Made for Ethan. Built by you.<br>Find Ethan’s corner in Settings for a tower, skywriting, a parade, and very tall neighbors.</div></div>`,
         );
         for (const b of $("dialog").querySelectorAll("[data-mode]"))
           b.addEventListener("click", () => {
@@ -8101,13 +9043,14 @@ void main(){
       }
       function showHelp() {
         openDialog(
-          `${dialogHeader("A little town planner’s guide")}<p>There’s no hurry here. Choose a place, find a little space, and make the bay your own.</p><div class="help-grid"><div><strong>Look around</strong>Drag the map with one finger when nothing is selected. With a tool selected, use two fingers. Pinch or scroll to zoom.</div><div><strong>Build a place</strong>Pick a card, then tap a clear spot. Drag to draw roads, bridges, or docks. Tap the same card to put your tool away.</div><div><strong>Change your mind</strong>Undo brings back the last change. Remove refunds the full price you paid. Starter places have no refund.</div><div><strong>Keep your town</strong>It saves as you build. Use the save button for three extra slots and a file you can keep somewhere safe.</div></div><h3>A few handy keys</h3><p>Arrow keys / WASD: move · + / −: zoom · Q / E: turn view · R: turn building · Escape: put tool away · ⌘/Ctrl Z: undo · ⌘/Ctrl S: save.</p><div class="feature-note">This is milestone 5. Homes earn $8 per neighbor each day. Power and water follow roads. Both utilities and 75 happiness help homes grow. Shops need nearby road-connected customers and people at work. Use the map layers and town budget to see why places work. Missing power or water only makes a place run at half strength. Time pauses while a notebook is open or you leave the game. Neighbors, pets, and traffic follow the paths you build. Harbor ships need a dock and open water. Night brings warm windows, lamps, and stars. Choose disasters in Settings. Tap a home and Come inside to walk and decorate. Decorating is free. Town time rests while you visit.</div>`,
+          `${dialogHeader("A little town planner’s guide")}<p>There’s no hurry here. Choose a place, find a little space, and make the bay your own.</p><div class="help-grid"><div><strong>Look around</strong>Drag the map with one finger when nothing is selected. With a tool selected, use two fingers. Pinch or scroll to zoom.</div><div><strong>Build a place</strong>Pick a card, then tap a clear spot. Drag to draw roads, bridges, or docks. Tap the same card to put your tool away.</div><div><strong>Change your mind</strong>Undo brings back the last change. Healthy paid places refund their price. Starter places and repair sites have no refund. Clear mountains with Dynamite in their details.</div><div><strong>Keep your town</strong>It saves as you build. Use the save button for three extra slots and a file you can keep somewhere safe.</div></div><h3>A few handy keys</h3><p>Arrow keys / WASD: move · + / −: zoom · Q / E: turn view · R: turn building · Escape: put tool away · ⌘/Ctrl Z: undo · ⌘/Ctrl S: save.</p><div class="feature-note">All six chapters are here. Homes earn $8 per neighbor each day. Power and water follow roads. Both utilities and 75 happiness help homes grow. Shops need nearby road-connected customers and people at work. Use the map layers and town budget to see why places work. Missing power or water only makes a place run at half strength. Time pauses while a notebook is open or you leave the game. Neighbors, pets, and traffic follow the paths you build. Harbor ships need a dock and open water. Night brings warm windows, lamps, and stars. Choose disasters in Settings. Tap a home and Come inside to walk and decorate. Decorating is free. Town time rests while you visit. Find Ethan’s corner in Settings for a named tower, giraffes, skywriting and a parade.</div>`,
         );
       }
       function showSettings() {
         openDialog(
-          `${dialogHeader("Your little corner")}<p>A few ways to make yourself comfortable.</p><div class="setting-row"><label for="quality">Graphics</label><select id="quality"><option value="auto">Balanced</option><option value="low">Easy on battery</option><option value="high">Extra crisp</option></select></div><div class="setting-row"><span>Gentle building sounds</span><button class="action secondary" id="sound">${sound ? "On" : "Off"}</button></div><div class="setting-row"><span>Motion</span><span id="motion-status" style="color:var(--muted);font-size:12px">${reducedMotion ? "Reduced · follows device" : "Gentle life around the bay"}</span></div><div class="setting-row"><label for="world-lighting">Light by the bay</label><select id="world-lighting"><option value="cycle">Follow the day</option><option value="day">Always sunny</option><option value="night">Starry night</option></select></div><div class="setting-row"><label for="world-motion">Town life</label><select id="world-motion"><option value="lively">A little bustle</option><option value="still">A still moment</option></select></div><div class="setting-row"><span>Disasters</span><button class="action secondary" id="open-disasters">Choose an adventure</button></div><div class="actions" style="margin-top:22px"><button class="action secondary" id="settings-help">How to play</button><button class="action secondary" id="new-town">Another town</button></div><div class="feature-note">Starting another town keeps this one in a recovery backup. Named save slots are kept too. Export a file for a lasting copy.</div>`,
+          `${dialogHeader("Your little corner")}<p>A few ways to make yourself comfortable.</p><div class="setting-row"><span>Made for Ethan</span><button class="action secondary" id="ethan-corner">Ethan’s corner</button></div><div class="setting-row"><label for="quality">Graphics</label><select id="quality"><option value="auto">Balanced</option><option value="low">Easy on battery</option><option value="high">Extra crisp</option></select></div><div class="setting-row"><span>Gentle building sounds</span><button class="action secondary" id="sound">${sound ? "On" : "Off"}</button></div><div class="setting-row"><span>Motion</span><span id="motion-status" style="color:var(--muted);font-size:12px">${reducedMotion ? "Reduced · follows device" : "Gentle life around the bay"}</span></div><div class="setting-row"><label for="world-lighting">Light by the bay</label><select id="world-lighting"><option value="cycle">Follow the day</option><option value="day">Always sunny</option><option value="night">Starry night</option></select></div><div class="setting-row"><label for="world-motion">Town life</label><select id="world-motion"><option value="lively">A little bustle</option><option value="still">A still moment</option></select></div><div class="setting-row"><span>Disasters</span><button class="action secondary" id="open-disasters">Choose an adventure</button></div><div class="actions" style="margin-top:22px"><button class="action secondary" id="settings-help">How to play</button><button class="action secondary" id="new-town">Another town</button></div><div class="feature-note">Starting another town keeps this one in a recovery backup. Named save slots are kept too. Export a file for a lasting copy.</div>`,
         );
+        $("ethan-corner").onclick = showEthanCorner;
         $("open-disasters").onclick = showDisasters;
         $("world-lighting").value = lifeLighting;
         $("world-motion").value = lifeMotion;
@@ -8167,6 +9110,7 @@ void main(){
       const migrations = {
         1: (s) => s,
         4: (s) => s,
+        5: (s) => s,
         2: (s) => initializeEconomy(s, true),
         3: (s) => {
           s.disasters = { enabled: false, event: null, serial: 0 };
@@ -8571,6 +9515,7 @@ void main(){
             "Could not back up your current town. Export it before loading another.",
           );
         if (roomSession) leaveHome();
+        stopCelebration();
         town = valid;
         generateTerrain(town.seed);
         rebuildOccupancy();
@@ -9198,6 +10143,21 @@ void main(){
             }
             return { windows, lamps, pools: batches.disc.count };
           },
+        },
+        celebrations: {
+          start: startCelebration,
+          stop: stopCelebration,
+          step: stepCelebrations,
+          info: celebrationInfo,
+          show: showEthanCorner,
+          get route() {
+            return paradeRoute;
+          },
+          get heights() {
+            return paradeHeights;
+          },
+          plan: planParade,
+          sample: sampleParade,
         },
         disasters: {
           start: startDisaster,

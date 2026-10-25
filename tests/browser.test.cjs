@@ -345,7 +345,7 @@ test(
               await readFile(await download.path(), "utf8"),
             );
             assert.deepEqual(exported.objects, before.objects);
-            assert.equal(exported.version, 4);
+            assert.equal(exported.version, 5);
             await page.locator("#import-input").setInputFiles({
               name: "broken.json",
               mimeType: "application/json",
@@ -497,7 +497,7 @@ test(
               }, sample);
               assert.equal(rejected, true);
             }
-            assert.equal((await api(page, "validateSave", fixture)).version, 4);
+            assert.equal((await api(page, "validateSave", fixture)).version, 5);
             const edgeID = {
               ...fixture,
               objects: [{ ...fixture.objects[0], id: 2147483646 }],
@@ -517,7 +517,7 @@ test(
           "v1 migration preserves the town and v2 preserves the calendar, grown homes and goals",
           async () => {
             const migrated = await api(page, "validateSave", fixture);
-            assert.equal(migrated.version, 4);
+            assert.equal(migrated.version, 5);
             assert.equal(migrated.money, fixture.money);
             assert.deepEqual(
               migrated.objects.map(({ id, type, x, z, rotation, paid }) => ({
@@ -814,7 +814,7 @@ test(
             assert.ok(stats.population > 11);
             assert.ok(matured.objects.some((o) => o.level === 2));
             assert.equal(matured.objects.length, initial.objects.length);
-            assert.equal((await api(page, "validateSave", matured)).version, 4);
+            assert.equal((await api(page, "validateSave", matured)).version, 5);
             assert.equal(
               await page.evaluate(
                 () => document.documentElement.scrollWidth > innerWidth,

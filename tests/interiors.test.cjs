@@ -402,7 +402,7 @@ test(
           const exported = await page.evaluate(() =>
             JSON.parse(__baytown.serialize()),
           );
-          assert.equal(exported.version, 4);
+          assert.equal(exported.version, 5);
           await page.reload();
           await page.waitForFunction(() => __baytown.getReady());
           assert.equal(
@@ -422,7 +422,7 @@ test(
             const f = require(`./fixtures/v${v}.json`);
             assert.equal(
               await page.evaluate((f) => __baytown.validateSave(f).version, f),
-              4,
+              5,
             );
           }
           const current = await page.evaluate(() => __baytown.serialize());
@@ -585,7 +585,7 @@ test(
               extra: false,
               blocked: false,
               retried: true,
-              readable: 4,
+              readable: 5,
               rejected: true,
             });
           }

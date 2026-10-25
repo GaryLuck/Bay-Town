@@ -87,7 +87,7 @@ test(
               (f) => __baytown.validateSave(f),
               fixture,
             );
-            assert.equal(migrated.version, 4);
+            assert.equal(migrated.version, 5);
             assert.equal(migrated.disasters.enabled, false);
           }
           // Exercise the touch-accessible settings flow, then keep time controlled for deterministic assertions.
